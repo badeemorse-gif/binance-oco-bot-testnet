@@ -1,0 +1,7 @@
+{
+  "active": false,
+  "task_id": null,
+  "note": "G1.50 مختوم (sealed). خامل — صفر بنود critical/major غير مختومة في defect_log؛ بوّابة G1 تنتظر فحص صلاحيات المفتاح + IP whitelist + عبارة اعتماد المستخدم الصريحة (§10.5). لا Live/T16 قبل ذلك.",
+  "last_sealed": "G1.50",
+  "updated_at": "2026-10-13T23:25:00Z"
+}

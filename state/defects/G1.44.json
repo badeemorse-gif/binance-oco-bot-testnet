@@ -1,0 +1,18 @@
+{
+  "id": "G1.44",
+  "status": "sealed",
+  "title": "حارس هبوط BTC الدفاعي (BTC-follow) كحارس ثالث في المراقبة الديناميكية — تضييق ستوب دفاعي عند انحدار BTC مؤكّد، معزول، بأولوية «الأقرب يفوز»، ومفتاح Off/Observe/Live (الافتراضي OFF)",
+  "severity": "major",
+  "protocol_version": "1.5",
+  "description": "ملاحظة المستخدم: جميع العملات تقريبًا (عدا قلّة في تريند خاص) تتبع BTC لحظة السقوط الفجائي. المطلوب حارس ثالث داخل فرع المراقبة الديناميكية يرصد انحدار BTC المتسارع ويحمي العملة المراقَبة دفاعيًا قبل اكتمال سقوطها بالتبعية، بجانب (شبكة أمان المركز) و(قوس الخروج بالسعر) دون التأثير عليها وبعزل عن طبقة المنطق الأساسية. حُسم فنيًا في ORIENT أن تأخّر BTC→Alts على مقياس ثوانٍ لا ملّي ثانية وغير قابل لسباق القاع بزمن بوت تجزئة على REST؛ لذا أُعيد التأطير إلى حارس ميل/زخم BTC مبكّر دفاعي يرصد انحدارًا مؤكّدًا خلال نافذة ثوانٍ (rate-of-change) ويتصرّف بتضييق/تحريك ستوب واقٍ لا ببيع ماركت عارٍ ولا شورت/هيدج (خارج النطاق).",
+  "professional_proposal": "تنفيذ عبر 4 أجزاء مرتّبة ببند واحد G1.44: chunk_1 منطق خالص ocobot/domain/btc_follow.py (آلة حالة IDLE→ARMED→TIGHTEN/IDLE على عتبة drop_pct ضمن window_seconds مع تأكيد confirm_seconds debounce، stdlib فقط بلا I/O) + اختبارات وحدة. chunk_2 تغذية BTC معزولة (MarketWebSocketSource ثانٍ لـ btcusdt@bookTicker) + fail-safe (فقد البيانات = لا فعل ولا إسقاط للمراقبة) + دمج التحكيم في GuardianSupervisor.tick. chunk_3 مسار التنفيذ: تضييق الستوب عبر مسار الستوب الواقي القائم place_protective_stop بإعادة استخدام القيدين البنيويين لمنع البيع المزدوج (has_resting_protective_sell + protective_qty=min(free_base_qty,monitored_qty)) و cancel-replace للتضييق فقط أحادي الاتجاه + اختبارات بمحاكاة بلا شبكة. chunk_4 UI مفتاح Off/Observe/Live مستقل + مؤشّر حالة + i18n ثنائي اللغة (AR_TO_EN + retranslate_widget_tree) + تنبيهات. التحكيم: أولوية 1 شبكة أمان المركز (مركز عارٍ/FAILED_NEEDS_ATTENTION لا يُسبَق) ثم 2 حارس هبوط BTC ثم 3 قوس الخروج بالسعر؛ تُحسم بقاعدة الستوب الواقي الأقرب يفوز (MAX على سعر ستوب SELL أحادي الاتجاه بلا تذبذب). عزل: BTC مُدخَل خارجي للقراءة فقط والفعل والقيود على عملة المراقبة النشطة فقط. acceptance_checks: كامل السويت أخضر (العدد ≥ 558)، القاعدة ثنائية اللغة §1.5، عدم كسر سكيمة الاستئناف (حالة الحارس طيّارة)، fail-safe عند فقد تغذية BTC، الافتراضي OFF ولا Live على الحساب الحقيقي قبل G1 §10.5.",
+  "discovered_at": "2026-10-12T19:16:33Z",
+  "evidence_path": "docs/G1_44_btc_follow_report.md",
+  "seal": {
+    "verified": true,
+    "evidence_path": "docs/G1_44_btc_follow_report.md",
+    "evidence_count": 605,
+    "docs_synced": true,
+    "ts": "2026-10-12T21:03:57Z"
+  }
+}

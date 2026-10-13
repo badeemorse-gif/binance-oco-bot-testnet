@@ -1,0 +1,18 @@
+{
+  "id": "G1.26",
+  "title": "انجراف سكيمة الاستئناف: حقلا trade_uid/session_no في MonitoringState غير مُزامَنين مع MonitoringCheckpoint و_RESUME_FIELDS",
+  "description": "اختبار الحصانة tests/test_state_store.py::TestSchemaCompleteness::test_monitoring_state_has_no_unknown_resume_fields يفشل لأن MonitoringState (ocobot/domain/monitoring.py) يملك الحقلين trade_uid وsession_no غير المُدرَجين في سكيمة الحفظ MonitoringCheckpoint (ocobot/core/state_store.py) ولا في قائمة _RESUME_FIELDS بالاختبارات، فلا ينجوان في حفظ/استعادة الحالة عبر الجلسات. العطب سابق ومُثبّت على HEAD ومستقل عن G1.25.",
+  "severity": "major",
+  "professional_proposal": "مزامنة سكيمة الحفظ مع النموذج دون تغيير سلوك المراقبة: إضافة trade_uid/session_no إلى MonitoringCheckpoint (الحقول + to_dict + from_dict + from_state) وإلى _RESUME_FIELDS وضبطهما في _full_monitoring_state() بالاختبارات ليُغطّيا round-trip، بحيث تعود اختبارات TestSchemaCompleteness خضراء بلا انحدار.",
+  "status": "sealed",
+  "discovered_at": "2026-10-09T01:02:23Z",
+  "evidence_path": "_archive/_g1_26_verify.txt",
+  "seal": {
+    "task": "G1.26",
+    "verified": true,
+    "evidence_path": "_archive/_g1_26_verify.txt",
+    "evidence_count": 13,
+    "docs_synced": true,
+    "ts": "2026-10-09T01:06:36Z"
+  }
+}

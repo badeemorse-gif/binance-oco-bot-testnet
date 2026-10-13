@@ -1,0 +1,17 @@
+{
+  "id": "G1.24",
+  "title": "قسم الصفقات المنتهية لا يعرض أي صفقة (توصيل الـ audit مفقود في الواجهة) + مطلوب عرض حيّ للصفقة عند بدء المراقبة ومع كل تموضع",
+  "description": "بعد ختم G1.23، جرّب المستخدم عدة صفقات مراقبة ديناميكية فعلية من الواجهة ولم تظهر أي بيانات في قسم «الصفقات المنتهية» إطلاقًا — لا أثناء المراقبة، ولا بعد الإيقاف اليدوي، ولا بعد الانتهاء بـ TP/SL. التشخيص الجذري (قراءة على القرص): الواجهة ocobot/ui/app.py تُنشئ MonitoringEngine بـ audit=None في main() وفي make_connect_wrapper ولا يوجد أي AuditLog تحت ocobot/ui/، لذا MonitoringEngine._record لا يكتب شيئًا ولا يُكتب ملف ocobot_audit.jsonl، فيقرأ read-model (ocobot/domain/completed_trades.py) ملفًا فارغًا ولا يظهر شيء. أسباب ثانوية: refresh() في ocobot/ui/completed_trades.py يُستدعى مرة واحدة عند الإنشاء وعند المسح فقط والتنقّل لا يُحدّث؛ وإغلاق TP/SL/قطع الاتصال (notify_external_close/notify_disconnect) غير مستدعى في الواجهة (kill_switch اليدوي موصول)؛ وread-model يعرض الجلسات المغلقة فقط بالتصميم. مطلوب إضافةً: عرض حيّ — تظهر الصفقة في القسم لحظة بدء المراقبة وتتحدّث مع كل إعادة تموضع، لا عند الإغلاق فقط.",
+  "severity": "critical",
+  "professional_proposal": "P1 (توصيل): في ocobot/ui/app.py إنشاء AuditLog واحد على مسار الـ audit الموحّد (OCOBOT_AUDIT_LOG وإلا cwd/ocobot_audit.jsonl) وتمريره إلى _build_executor(...) وإلى MonitoringEngine(...) في main() وفي make_connect_wrapper؛ وتمرير نفس audit_path إلى CompletedTradesScreen (عبر ocobot/ui/content.py)؛ واستدعاء refresh() للشاشة عند إظهارها (ocobot/ui/main_window._on_nav_select أو content.show_screen). P1-إغلاق: ربط إصدار monitor_closed لمسارات TP/SL/قطع الاتصال في الواجهة؛ kill_switch اليدوي يعمل بعد توصيل الـ audit. P2 (عرض حيّ): توسعة read-model ليعرض الجلسات المفتوحة (monitor_start + سلسلة repositioned) كصفقة حيّة بجانب المغلقة، وتحديث الشاشة عند البدء وكل repositioned. دون مساس بمنطق التنفيذ الحقيقي (SafeExecutor/reposition/create_oco) ولا بقرارات المحرك.",
+  "status": "sealed",
+  "discovered_at": "2026-10-07T22:52:03Z",
+  "scope_boundary": "توصيل الـ audit في الواجهة (ocobot/ui/app.py, ocobot/ui/content.py)، تحديث شاشة الصفقات المنتهية (ocobot/ui/completed_trades.py, ocobot/ui/main_window.py)، توسعة read-model للعرض الحيّ (ocobot/domain/completed_trades.py)، وإصدار أحداث الإغلاق في الواجهة عند الحاجة. لا مساس بمنطق تنفيذ الأوامر الحقيقي (SafeExecutor/reposition/create_oco) ولا بمنطق قرارات MonitoringEngine (on_price_tick/_interpret) ولا بمفاتيح Binance. لا Live/T16.",
+  "evidence_path": "_archive/_g1_24_verify.txt",
+  "seal": {
+    "verified": true,
+    "evidence_path": "_archive/_g1_24_verify.txt",
+    "docs_synced": true,
+    "ts": "2026-10-08T01:05:50Z"
+  }
+}

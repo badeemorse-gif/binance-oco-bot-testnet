@@ -1,0 +1,1304 @@
+{
+  "protocol_version": "1.5",
+  "bootstrapped_at": "2026-09-21T23:05:00Z",
+  "phase": "G1_MANUAL_TESTING",
+  "defect_log": [
+    {
+      "id": "G1.1",
+      "status": "sealed",
+      "title": "فشل الاتصال الحقيقي بـ Binance Testnet عبر المفاتيح",
+      "severity": "critical",
+      "ref": "state/defects/G1.1.json",
+      "detail_hash": "sha256:8ecb6914c41ead1ca9660fda62f6c894ca6aac2bc293583a8a75f48ce95cb414"
+    },
+    {
+      "id": "G1.2",
+      "status": "sealed",
+      "title": "عدم ظهور الأوامر المفتوحة للحساب التجريبي في قسم الأوامر المفتوحة بالواجهة",
+      "severity": "major",
+      "ref": "state/defects/G1.2.json",
+      "detail_hash": "sha256:0d192dff6c952508985081b3ea933a8df0016d2bd4e94aafdbadec4f63ceaaeb"
+    },
+    {
+      "id": "G1.3",
+      "status": "sealed",
+      "title": "الأمر المختار في قسم الأوامر المفتوحة لا ينتشر إلى الأقسام (تفاصيل/تعديل، المراقبة الديناميكية، لوحة القيادة)",
+      "severity": "major",
+      "ref": "state/defects/G1.3.json",
+      "detail_hash": "sha256:f23e83dab17ec8f5ba363de95a867787c67ee7b3e0ec0bf727cb94d8962b5dbb"
+    },
+    {
+      "id": "G1.4",
+      "status": "sealed",
+      "title": "إصلاح تداخل/عدم وضوح خانات القسمين 03 و04 عند تكبير النافذة",
+      "severity": "major",
+      "ref": "state/defects/G1.4.json",
+      "detail_hash": "sha256:3b5d0c42bfad69009c1f7bd9bd95b9cc3012c28c2fc25848bb4da6b2c7491e06"
+    },
+    {
+      "id": "G1.5",
+      "status": "sealed",
+      "title": "ارتداد خانات القسمين 03/04 عند التكبير على 1360×768 @ 100% — التحويل إلى تحجيم نسبي بدل البكسل الثابت",
+      "severity": "major",
+      "ref": "state/defects/G1.5.json",
+      "detail_hash": "sha256:9cbdd0a9a25a567cdf358b3d5f6591d91e3392c3bed7ed85d05e6e8dbe702714"
+    },
+    {
+      "id": "G1.6",
+      "status": "sealed",
+      "title": "النافذة تتجاوز حدود الشاشة وخانات سفلية غير مرئية بلا تمرير بعجلة الماوس (عام على كل الأقسام) — 1360x768 @125%",
+      "severity": "major",
+      "ref": "state/defects/G1.6.json",
+      "detail_hash": "sha256:00585cf958165aa22819482164cea45b22743d2693d8b67097982b29bc7931fa"
+    },
+    {
+      "id": "G1.7",
+      "status": "sealed",
+      "title": "لغة الواجهة مختلطة عربي/إنجليزي في كل الأقسام — المطلوب تعريب 100% لكل ما يراه المستخدم",
+      "severity": "major",
+      "ref": "state/defects/G1.7.json",
+      "detail_hash": "sha256:27752c86b3bebdae3e5d03ee40885b7d35973d88e0c34c5d7d4868a16353c9b9"
+    },
+    {
+      "id": "G1.8",
+      "status": "sealed",
+      "title": "كل حاجة مش واصلة في الواجهة على حساب Testnet",
+      "severity": "critical",
+      "ref": "state/defects/G1.8.json",
+      "detail_hash": "sha256:289465d433412920c0de54a534619b7175fef54714d6874cce03d0c26939ce1b"
+    },
+    {
+      "id": "G1.9",
+      "status": "sealed",
+      "title": "نافذة لوحة التحكم: أزرار التصغير/التكبير غير ظاهرة (X فقط) + عدم عمل تكبير المحتوى بـ Ctrl+عجلة الماوس",
+      "severity": "major",
+      "ref": "state/defects/G1.9.json",
+      "detail_hash": "sha256:f7b5d716c5f488a101e0b740070aadbf45171dba138951e84a9f20fbbbde874b"
+    },
+    {
+      "id": "G1.10",
+      "status": "sealed",
+      "title": "ثبات 3 خانات في اللوحة الحية بقسم المراقبة الديناميكية بعد إعادة التموضع",
+      "severity": "major",
+      "ref": "state/defects/G1.10.json",
+      "detail_hash": "sha256:21364f69b054f3e6b1152ec8960e25e2842454e8ad0e152c13a865553aeffb13"
+    },
+    {
+      "id": "G1.11",
+      "status": "sealed",
+      "title": "المسار الثابت لمفاتيح Binance يمنع مشاركة البوت — مطلوب واجهة اتصال مرنة مع مؤشر حالة",
+      "severity": "major",
+      "ref": "state/defects/G1.11.json",
+      "detail_hash": "sha256:376ed6c5d71026e79182727ceb4c5dfb053a3635a0de34f084d0a7231c7ed415"
+    },
+    {
+      "id": "G1.12",
+      "status": "sealed",
+      "title": "لا يوجد زر لإيقاف/قطع الاتصال بحساب Binance من الواجهة",
+      "severity": "major",
+      "ref": "state/defects/G1.12.json",
+      "detail_hash": "sha256:0c3f8ac82db93a62fd482eab735f13cbcf0d795c04b21ff3c1da96bb64064457"
+    },
+    {
+      "id": "G1.13",
+      "status": "sealed",
+      "title": null,
+      "severity": "major",
+      "ref": "state/defects/G1.13.json",
+      "detail_hash": "sha256:a7029fc44d08d2a3d13000c33576338d290e87400b044d339396d081201694ac"
+    },
+    {
+      "id": "G1.14",
+      "status": "sealed",
+      "title": null,
+      "severity": "major",
+      "ref": "state/defects/G1.14.json",
+      "detail_hash": "sha256:ca542c422fa766049a3324c3a410a8100caeb4f74899fe8953b91be504a6f13b"
+    },
+    {
+      "id": "G1.15",
+      "status": "sealed",
+      "title": "إنهاء توحيد الاتصال + انتشار حالة الاتصال من فرع الاتصال",
+      "severity": "major",
+      "ref": "state/defects/G1.15.json",
+      "detail_hash": "sha256:aefec0a0c62804ac0172a5afa3b6c3cb453b7b2786e40834225719a26ed20dfc"
+    },
+    {
+      "id": "G1.16",
+      "status": "sealed",
+      "title": "لا يوجد اختصار (shortcut) مباشر لفتح الواجهة الرسومية من جذر المشروع؛ الفتح يتطلب أمرًا يدويًا في cmd ويظهر نافذة console/log",
+      "severity": "minor",
+      "ref": "state/defects/G1.16.json",
+      "detail_hash": "sha256:3e426e3585a3522c6a297c0231d563ab99056b279a298b766e5243055df2e5a1"
+    },
+    {
+      "id": "G1.17",
+      "status": "sealed",
+      "title": "فرع Open Orders لا يعرض أي أوامر بعد الاتصال بحساب Testnet حتى مع الضغط على Refresh — انحدار (regression) بعد G1.14/G1.15/G1.16",
+      "severity": "major",
+      "ref": "state/defects/G1.17.json",
+      "detail_hash": "sha256:5b158f8e439c607792c4129b9169f522bc63fb79c251713483d8d98472e3af96"
+    },
+    {
+      "id": "G1.18",
+      "status": "sealed",
+      "title": "توقف أزرار التحكم في فرعَي «المراقبة الديناميكية» و«التفاصيل والتعديل» بعد اختيار صفقة (regression)",
+      "severity": "major",
+      "ref": "state/defects/G1.18.json",
+      "detail_hash": "sha256:d1aa4489089fcda1e29da22de922286c0a790e451d162aaca7db9ba2b85670c7"
+    },
+    {
+      "id": "G1.19",
+      "status": "sealed",
+      "title": "البوت لا يتتبّع الصفقات القديمة المفتوحة قبل تشغيله: المراقبة الديناميكية تظهر disconnected و«لا يوجد سعر حي بعد»، والتفاصيل والتعديل لا تجلب بيانات — بينما الصفقات التي تُفتح أثناء تشغيل البوت تُتتبَّع بالسعر الحي بشكل سليم",
+      "severity": "major",
+      "ref": "state/defects/G1.19.json",
+      "detail_hash": "sha256:7484a2a581123b4c8918ff638fd0dd8dbf891c1d211a242bc2c8ce7c55ea2088"
+    },
+    {
+      "id": "G1.20",
+      "status": "sealed",
+      "title": "إضافة إمكانية تبديل لغة الواجهة بين العربية والإنجليزية عبر زر تبديل، مع إبقاء العربية افتراضية و RTL ودون أي انحدار",
+      "severity": "major",
+      "ref": "state/defects/G1.20.json",
+      "detail_hash": "sha256:5d65143eddf7ebcc072fab1531dedef6e4b2ff96f3ee8534740cd892e06cc3cd"
+    },
+    {
+      "id": "G1.21",
+      "status": "sealed",
+      "title": "إعادة ترتيب خانات اللوحة الحيّة في المراقبة الديناميكية لعرض جني الأرباح/وقف الخسارة (الحالي والتالي) جنبًا إلى جنب دون تغيير الستايل أو المنطق أو انحدار",
+      "severity": "minor",
+      "ref": "state/defects/G1.21.json",
+      "detail_hash": "sha256:9920176ed88c22f74c36cca1e0c624677261fe74bac43d0828385c4cfd754b88"
+    },
+    {
+      "id": "G1.22",
+      "status": "sealed",
+      "title": "اللوحة الحيّة (المراقبة الديناميكية): جعل سعرَي الحالي/التالي متقابلَين في صفّي جني الأرباح ووقف الخسارة مع سهم ← بينهما وتلوين خانتَي السعر (أخضر TP/أحمر SL) بنص أبيض Bold، دون المساس بأي مواضع/ألوان/منطق أخرى",
+      "severity": "minor",
+      "ref": "state/defects/G1.22.json",
+      "detail_hash": "sha256:1ee099ad426e6185242001f1be05a9a126c81e899b9bbb4e193e1735451f36a8"
+    },
+    {
+      "id": "G1.23",
+      "status": "sealed",
+      "title": "قسم الصفقات المنتهية يشمل كل جلسات المراقبة الدينامِكية (منتهية/موقوفة) بترقيم ثابت من مستويين",
+      "severity": "major",
+      "ref": "state/defects/G1.23.json",
+      "detail_hash": "sha256:bd4cac8a7825b999492e1b02463fa5ce6afaa668c40b3bd15c95e3c2f514aecb"
+    },
+    {
+      "id": "G1.24",
+      "status": "sealed",
+      "title": "قسم الصفقات المنتهية لا يعرض أي صفقة (توصيل الـ audit مفقود في الواجهة) + مطلوب عرض حيّ للصفقة عند بدء المراقبة ومع كل تموضع",
+      "severity": "critical",
+      "ref": "state/defects/G1.24.json",
+      "detail_hash": "sha256:6228d4f331b318abc3663aa26a748c88d68ebd529c8dcd939adf25e2e8753397"
+    },
+    {
+      "id": "G1.25",
+      "status": "sealed",
+      "title": "قسم تنبيهات داخل الواجهة يُرسِل تفاصيل الصفقة عبر بوت Telegram عند بدء المراقبة الديناميكية ومع كل إعادة تموضع، مع إدارة حساب البوت والمستلمين وحفظ الحالة",
+      "severity": "major",
+      "ref": "state/defects/G1.25.json",
+      "detail_hash": "sha256:961434d411dcb8082200976347597b121928d08f47603fe030fa7b84e8d77992"
+    },
+    {
+      "id": "G1.26",
+      "status": "sealed",
+      "title": "انجراف سكيمة الاستئناف: حقلا trade_uid/session_no في MonitoringState غير مُزامَنين مع MonitoringCheckpoint و_RESUME_FIELDS",
+      "severity": "major",
+      "ref": "state/defects/G1.26.json",
+      "detail_hash": "sha256:e1b0c9d05fcc2f7150fed4d3f3311784682b3ad0205fbbf9b8840845411a6681"
+    },
+    {
+      "id": "G1.27",
+      "status": "sealed",
+      "title": "دالة الإنتاج test_connection في ocobot/core/connection.py تُجمَّع كاختبار بواسطة pytest فينتج ERROR (fixture 'cfg' not found)",
+      "severity": "minor",
+      "ref": "state/defects/G1.27.json",
+      "detail_hash": "sha256:f250a99821e0025a7bfff997ce13c56b41db2164fdadb836d289c26d10746a80"
+    },
+    {
+      "id": "G1.28",
+      "status": "sealed",
+      "title": "ترجمة إنجليزية ناقصة: بقاء نصوص عربية في الواجهة عند التشغيل باللغة الإنجليزية",
+      "severity": "major",
+      "ref": "state/defects/G1.28.json",
+      "detail_hash": "sha256:f6a342f7f229789adf5ff30bf099aaa8a98cef8f0caca100e4a649312309fc57"
+    },
+    {
+      "id": "G1.29",
+      "status": "wont_fix",
+      "title": "ترجمة إنجليزية ناقصة: نصوص طبقة domain/core العربية تظهر في اللوحات الحيّة عند التشغيل بالإنجليزية",
+      "severity": "minor",
+      "ref": "state/defects/G1.29.json",
+      "detail_hash": "sha256:d26a37a0c02cc049aa8ffc18c0fdb4897069fcd0b0823215824e5eaac544c960"
+    },
+    {
+      "id": "G1.30",
+      "status": "sealed",
+      "title": "شبكة أمان المركز (Position Guardian): حماية تلقائية ضد نتائج النافذة العارية D19 — داخل العملية، مقتصرة على عملة المراقبة النشطة",
+      "severity": "major",
+      "ref": "state/defects/G1.30.json",
+      "detail_hash": "sha256:36b3c9891e72723db18b60c5acf2c3a32beab60311e91279dde62f621e88a478"
+    },
+    {
+      "id": "G1.31",
+      "status": "sealed",
+      "title": "مؤشّر الحارس في الواجهة + مفتاح الوضع Off/Observe/Live — تحكّم بشري ظاهر",
+      "severity": "major",
+      "ref": "state/defects/G1.31.json",
+      "detail_hash": "sha256:73c71e6781d1b6a128b880403bde7b7b833ab42416623b22d830b727b003d85e"
+    },
+    {
+      "id": "G1.32",
+      "status": "sealed",
+      "title": "قوس خروج بالسعر (Price Exit Bracket): خانتا سعر علوي/سفلي تُوقف المراقبة وتخرج فورًا — مقسّم a/b",
+      "severity": "major",
+      "ref": "state/defects/G1.32.json",
+      "detail_hash": "sha256:b9429a3fc83dc87f304e89b7de59ee399323370df266cbf5d15fe4fbdd154849"
+    },
+    {
+      "id": "G1.33",
+      "status": "sealed",
+      "title": "إتاحة نِسب تسعير قوس الخروج للمستخدم من الواجهة (بدل ثوابت الكود) مع افتراضيات آمنة",
+      "severity": "minor",
+      "ref": "state/defects/G1.33.json",
+      "detail_hash": "sha256:038eeb835758de886abcb07d1f5c83cdc7492b41d1498d28b82a6c8b2679c679"
+    },
+    {
+      "id": "G1.34",
+      "status": "sealed",
+      "title": "تثبيت حالة الأمر بعد ملامسة القوس (إزالة لخبطة التموضع) — انتقال إلى ORDER_PLACED + بانل الأمر النشط + لوحة حية بقيم الأمر الجديد",
+      "severity": "major",
+      "ref": "state/defects/G1.34.json",
+      "detail_hash": "sha256:2f2465be95271ed209ff1852a652424427052dfd4d48ef19fd773d7259866efa"
+    },
+    {
+      "id": "G1.35",
+      "status": "sealed",
+      "title": "إضافة حذف مستلم في قسم التنبيهات (منع تسرّب الرسائل لمستلم قديم)",
+      "severity": "major",
+      "ref": "state/defects/G1.35.json",
+      "detail_hash": "sha256:2a436df4aeb179a87366065cfab962bbd61f42a4ecb70250d9e3a7083e5b1d98"
+    },
+    {
+      "id": "G1.36",
+      "status": "sealed",
+      "title": "تعبئة بيانات رسائل التموضع (🔁 Repositioned) في تيليجرام — إزالة الخانات الفارغة «—»",
+      "severity": "minor",
+      "ref": "state/defects/G1.36.json",
+      "detail_hash": "sha256:04e216145a586e4581cd140d6de1c7d5b4f45e0e857187c641984a21d237519a"
+    },
+    {
+      "id": "G1.37",
+      "status": "sealed",
+      "title": "تفعيل تنبيهات «شبكة أمان المركز الحارس» و«قوس الخروج بالسعر» عند تدخّلهما في الصفقة",
+      "severity": "major",
+      "ref": "state/defects/G1.37.json",
+      "detail_hash": "sha256:3672bc88db97d748cfb711e05863f47fa08e8d393fad5f200fa004557fe3dc5f"
+    },
+    {
+      "id": "G1.38",
+      "status": "sealed",
+      "title": "فصل حالة PROJECT_STATE إلى طبقة حارّة/باردة وتدوير السجلّات (بروتوكول 1.4)",
+      "severity": "major",
+      "ref": "state/defects/G1.38.json",
+      "detail_hash": "sha256:6446b438ba5de3286ac981d8c013f3d8a071bf122601f2f61322e75fc2b30a72"
+    },
+    {
+      "id": "G1.39",
+      "status": "sealed",
+      "title": "بناء أداة التدوير الدائمة tools/rotate_state.py + بندا البروتوكول 11.4/11.5 (قابلية الاستنساخ)",
+      "severity": "major",
+      "ref": "state/defects/G1.39.json",
+      "detail_hash": "sha256:ccd18ab19921fa679f90c57fde3781700ba58e8d225578ce9cae4198c3916f21"
+    },
+    {
+      "id": "G1.40",
+      "status": "sealed",
+      "title": "فهرس الأرشيف _archive/manifest.json (البند 11.6) + دعمه في rotate_state.py",
+      "severity": "minor",
+      "ref": "state/defects/G1.40.json",
+      "detail_hash": "sha256:f74c4f4c8dfffd351ffaa6ece80893e445c9f0a0f47fc2e7749677427e292768"
+    },
+    {
+      "id": "G1.41",
+      "status": "sealed",
+      "title": "تسرّب نصوص عربية في وضع الإنجليزية عبر عدة شاشات (نصوص واجهة غير مُسجَّلة في AR_TO_EN)، بما فيها دليل تشغيل بوت التنبيهات أسفل قسم التنبيهات",
+      "severity": "major",
+      "ref": "state/defects/G1.41.json",
+      "detail_hash": "sha256:6519e4ea9598560ea27b8bc901aef94fd240b2dc3e57c07ddf6043a8a23b39ef"
+    },
+    {
+      "id": "G1.43",
+      "status": "sealed",
+      "title": "إغلاق ثغرات حارس ثنائية اللغة: windowTitle + رؤوس QTableWidget (أفقي/عمودي) + QMenu/QAction في الحارس وفي retranslate_widget_tree",
+      "severity": "minor",
+      "ref": "state/defects/G1.43.json",
+      "detail_hash": "sha256:1a77e636798f373243d5a85c71393ec3e5347125baf648da0061e7ad4e973f11"
+    },
+    {
+      "id": "G1.44",
+      "status": "sealed",
+      "title": "حارس هبوط BTC الدفاعي (BTC-follow) كحارس ثالث في المراقبة الديناميكية — تضييق ستوب دفاعي عند انحدار BTC مؤكّد، معزول، بأولوية «الأقرب يفوز»، ومفتاح Off/Observe/Live (الافتراضي OFF)",
+      "severity": "major",
+      "ref": "state/defects/G1.44.json",
+      "detail_hash": "sha256:0ef190cc05bcabb9f4d26b020ba44b35123a66024fbca648269f0bf9f18f4bfd"
+    },
+    {
+      "id": "G1.45",
+      "status": "sealed",
+      "title": "لوحات التتبّع اللحظي للنِّسب داخل المراقبة الديناميكية — صندوق سعر حيّ/سابق/نسبة تغيّر/نسبة تتبّع لـBTC (في حارس هبوط BTC) ونسبة تغيّر العملة المراقَبة من سعر بدء المراقبة المثبّت (عرض فقط)",
+      "severity": "major",
+      "ref": "state/defects/G1.45.json",
+      "detail_hash": "sha256:6fb66fcd18772dbca602a2e163ab12dd504f51ff8ef73d8a237b421f182f6edf"
+    },
+    {
+      "id": "G1.46",
+      "status": "sealed",
+      "title": "بطاقة نتيجة الصفقة أسفل الوسيلة المنفِّذة — إسناد الخروج لإحدى الوسائل الأربع (المراقبة / قوس الخروج بالسعر / حارس هبوط BTC / شبكة أمان المركز) مع الدخول والخروج وربح/خسارة% من سعر بدء المراقبة",
+      "severity": "major",
+      "ref": "state/defects/G1.46.json",
+      "detail_hash": "sha256:790f898813a13f9f21e87d4ce12b6da1aa1de6eb5752a1e917fe4950425424f9"
+    },
+    {
+      "id": "G1.47",
+      "status": "sealed",
+      "title": "خروج يدوي فوري بأفضل سعر لحظي بأولوية عُليا — زرّ «تنفيذ» داخل المراقبة/إعادة التموضع يُقدَّم على الوسائل الأربع، عبر مسار الخروج المُختبَر، ببوّابة التنفيذ الآمن وقيد منع البيع المزدوج (Testnet فقط، لا Live قبل G1)",
+      "severity": "major",
+      "ref": "state/defects/G1.47.json",
+      "detail_hash": "sha256:9d375567b23d21f7a7b9d003a9b9de315f7595d041f10a1762d6eafa216b1cc9"
+    },
+    {
+      "id": "G1.46.1",
+      "status": "sealed",
+      "title": "ربط الاستدعاء التلقائي لتعبئة بطاقة نتيجة الصفقة (DealResultCard) عند التنقّل/دوريًا — متابعة G1.46",
+      "severity": "minor",
+      "ref": "state/defects/G1.46.1.json",
+      "detail_hash": "sha256:0e15abde34f494e8a4c055b09a71d022e43c357cab5e277a31f7b3c0b8e213a7"
+    },
+    {
+      "id": "G1.48",
+      "status": "sealed",
+      "title": "تصحيح دلالة «نسبة التغيّر» و«نسبة التتبّع» في متتبّعَي العملة المراقَبة وBTC: نسبة التغيّر عن كل انتقال سعري لحظي (مقابل السعر السابق)، ونسبة التتبّع مقابل سعر بدء المراقبة المُجمّد طوال الجلسة (Testnet، عرض فقط، لا Live قبل G1)",
+      "severity": "major",
+      "ref": "state/defects/G1.48.json",
+      "detail_hash": "sha256:dc2c556cead17baf43d485c1e409b663f70ccce3635e16a6176b4d4725d04018"
+    },
+    {
+      "id": "G1.49",
+      "status": "sealed",
+      "title": "سياسة تنفيذ خروج موحّدة مضادّة للتعليق ومحدِّدة للانزلاق عبر كل وسائل الخروج + إصلاح لمس القوس الكاذب",
+      "severity": "major",
+      "ref": "state/defects/G1.49.json",
+      "detail_hash": "sha256:1cd0892237b2bcb1e5bcbc204001f26877869ff23c3bb2af1d617dfb0b8c6254"
+    },
+    {
+      "id": "G1.50",
+      "status": "sealed",
+      "title": "لوحة تتبّع انزلاق BTC الثالثة بنافذة متحرّكة (عرض فقط) بجوار لوحتَي التتبّع الحاليتين",
+      "severity": "major",
+      "ref": "state/defects/G1.50.json",
+      "detail_hash": "sha256:bb214577d9f0a5ad9275bdce6986607e45cb27c18dbe16cc4c231488be218da9"
+    }
+  ],
+  "system_prompt": "[الهوية والمصدر]\r\nأنت نموذج منفّذ لمشروع OCOBot. تعمل على ملفَّي حالة:\r\n- PROJECT_STATE.json (مصدر الحقيقة الدائم، رشيق، لا يُحذف منه شيء): task_ledger + completion_seal لكل مهمة done + cursor + run_log (سطور handoff مختصرة) + decisions_log.\r\n- WORKING_MEMORY.json (الذاكرة العاملة، متطايِرة، لمهمة واحدة نشطة): عقد المهمة + تقدّم الخطوات + resume_point + قرارات الجلسة + أدلة جزئية. تُكتب باستمرار وتُصفَّر عند ختم المهمة.\r\nمصادرك حصرًا: هذان الملفّان + docs/OCOBot_Design_AR.md والكود (عند الحاجة التقنية فقط). ممنوع منعًا باتًّا قراءة سجلّ المحادثة أو البحث فيه. عند أي إعادة دخول اقرأ WORKING_MEMORY.json أولًا (رخيص) لتعرف أين توقّفت، ولا تُعِد قراءة ملفات المشروع لتتذكّر.\r\nWORKING_MEMORY.json ليست نسخة من المحادثة؛ هي ذاكرة عملٍ مبنيَنة فقط.\r\nهذه التعليمات تحكم استدلالك الداخلي فقط ولا تغيّر لغة أي مُخرَج: التسليمات تتبع docs/OCOBot_Design_AR.md (بالعربية حيثما تطلب المواصفة). لا تُترجم ولا تُبدّل أي معرّف حرفي أو مفتاح أو enum أو ID أو مسار ملف. اكتب كل ردودك وتقاريرك بالعربية.\r\nالأسبقية عند أي تعارض: قواعد الأمان > قواعد الأوضاع > ما عداها.\r\n\r\nالقسم 0 — نموذج الأوضاع (يحكم الدور كله)\r\n- الوضع يحدّده أمر المستخدم لهذا الدور:\r\n  • بلا أمر تنفيذ/استئناف صريح (أي مراجعة/سؤال/طلب حالة) ⇐ ORIENT.\r\n  • «نفّذ / EXECUTE [مهمة؟]» ⇐ EXECUTE. (اسم المهمة اختياري؛ تُختار من الحالة.)\r\n  • «استأنف / RECOVER» ⇐ RECOVER.\r\n- ثابتة صلبة: لا EXECUTE ولا RECOVER دون أمر صريح. وفي غيابه لا تعدّل ولا تنفّذ. ORIENT لا يترقّى ذاتيًّا إلى EXECUTE أبدًا.\r\n- عند أي إعادة دخول داخل مهمة: اقرأ WORKING_MEMORY.json أولًا.\r\n- مهمة واحدة لكل دور: لا تبدأ ثانية في الرسالة نفسها مهما بقي من budget/limit.\r\n\r\nالقسم 1 — ثوابت الأمان (أعلى أولوية)\r\n- مهمة human_gate=true غير معتمدة ⇐ قف وأبلِغ، ولا تنفّذ ما بعدها (خصوصًا Live).\r\n- لا Live (T16) قبل G1.\r\n- صفر كود خارج scope_boundary للمهمة الحالية.\r\n- الذرّية: لا توسم شيئًا done قبل التحقّق الفعلي؛ ولا نصف-منجَز يوسم done.\r\n- لا تتجاوز البوابتين أثناء أي استئناف أو مطابقة.\r\n\r\nالقسم 2 — وضع ORIENT (توجّه رخيص)\r\n- الغرض: صورة دقيقة + عقد المهمة + التأكّد أن السابقة مختومة والتوثيق متسق — بأقل تكلفة. لا تعدّل ولا تنفّذ.\r\n- إن كان أمر الدور EXECUTE فهذا مرحلةٌ صفر داخلية بلا توقّف، ثم إلى القسم 4 في الدور نفسه.\r\n- القراءة المستهدَفة: اقرأ WORKING_MEMORY.json (أثمّة مهمة نشطة غير مكتملة؟) + من PROJECT_STATE.json: cursor + completion_seal لآخر مهمة + قيد المهمة الهدف. لا تقرأ run_log ولا decisions_log ولا باقي المهام ولا الملف كاملًا ولا التصميم/الكود ولا المحادثة — إلا عند غياب ختمٍ أو فشل ثابتة، وحينها فقط وسجّل السبب.\r\n- إعادة الدخول: إن كانت WORKING_MEMORY.json تحوي مهمة نشطة (غير مكتملة) ⇐ المعلّقة أولى؛ في ORIENT المستقل أوصِ بـRECOVER، وفي EXECUTE أكملها. وإن كانت مهمتها مختومة بالفعل done في PROJECT_STATE.json ⇐ فهي بقيّة قديمة؛ عدّها خاملة (وتُصفَّر في أول دور EXECUTE/RECOVER).\r\n- بوّابة التقدّم: لا تدخل مهمة تالية إلا إذا: WORKING_MEMORY.json خاملة (لا مهمة نشطة) و completion_seal لآخر مهمة = verified وdocs_synced. وإلا (ختم غائب/تعارض) ⇐ عندها فقط أجرِ المطابقة الكاملة (README ليس مرجعًا؛ الحالة تفوز). المسار الباهظ استثناء.\r\n- اختيار المهمة: status=next؛ وإلا أول pending كل depends_on لها done.\r\n- التحجيم: قدّر ملاءمتها لميزانية واحدة؛ إن بدت كبيرة فأدرِجها كتوصية تخطيطية للمستخدم (لا تُعدّل ترتيب الـledger من تلقاء نفسك). شبكة الأمان: الذاكرة العاملة + RECOVER.\r\n- المخرَج: مسودة عقد + تقرير حالة موجز، ثم قف — إلا إذا كان الأمر EXECUTE فتمضي للقسم 4.\r\n\r\nالقسم 3 — عقد المهمة (يُنتَج في ORIENT/المرحلة صفر، ويعيش في WORKING_MEMORY.json)\r\ntask_id، title؛ definition_of_done وacceptance_checks[] (من الـledger)؛ ordered_steps[] — كل عنصر واصفٌ لنفسه {id، description، risk: low|long|irreversible، produces}؛ scope_boundary (داخل/خارج صراحةً)؛ expected_evidence {command، expected_count؟، evidence_path}؛ checkpoint_plan؛ dependencies_check؛ sizing_verdict؛ human_gate. يجب أن تكون الخطوات مفهومةً لنموذجٍ لاحق يقرأ الذاكرة العاملة وحدها.\r\n\r\nالقسم 4 — وضع EXECUTE (استقلال كامل حتى تسليم المهمة)\r\n- الدخول بأمر EXECUTE صريح؛ ابدأ بمرحلة ORIENT الداخلية (القسم 2) بلا توقّف.\r\n- أول فعل قبل أي خطوة: اكتب عقد المهمة كاملًا في WORKING_MEMORY.json (كتابةً ذرّية: ملف مؤقّت ثم إعادة تسمية)، واجعل حالة المهمة in_progress في PROJECT_STATE.json. لا تبدأ الخطوة الأولى قبل حفظ العقد في الذاكرة العاملة.\r\n- نفّذ الخطوات المرتّبة حتى الاكتمال الذرّي، ملتزمًا بـP1–P4 وجميع قرارات decisions_log؛ صفر كود خارج scope_boundary. أنت مسؤول عن المهمة كاملةً حتى تسليمها.\r\n- لا تطلب تأكيدًا بين الخطوات العادية؛ امضِ. التوقّف الوحيد المشروع هو أسباب القسم 6.\r\n- انضباط الذاكرة العاملة: بعد كل خطوة جوهرية حدّث WORKING_MEMORY.json (الخطوة المكتملة + resume_point + المتبقّي + القرارات + الأدلة الجزئية)، وقبل كل خطوة طويلة/خطرة اكتبها مسبقًا. الكتابة ذرّية دائمًا. هذه الذاكرة هي مرجعك الوحيد عند أي إعادة دخول — لا تُعِد قراءة ملفات المشروع لتتذكّر.\r\n- سلّم التحقّق: implemented ← verified ← done.\r\n  • implemented: مكتوب ومتماسك، بلا دليل مؤكَّد.\r\n  • verified: نُفّذت acceptance_checks وأكّد ملفُّ الدليل النجاح (سويت خضراء بالعدد المتوقَّع). بالدليل لا بالقراءة. إن عجزت البيئة عن التشغيل: علّم implemented (awaiting_verification) مع السبب، ولا توسم verified/done.\r\n  • done: verified والحالة الدائمة محدَّثة كليًّا.\r\n- إدارة المخرجات: عند مخرج كبير لا تقلّل التغطية ولا تتخطَّ فحصًا؛ وجّه المخرج الكامل إلى evidence_path، واقرأ الملخّص + كتل FAIL/ERROR + تأكيد expected_count.\r\n- عند النجاح، بالترتيب: (أ) اكتب completion_seal في PROJECT_STATE.json = {task، verified:true، evidence_path، evidence_count، docs_synced:true، ts}؛ لا done بلا هذا الختم. (ب) اجعل المهمة done، ورقِّ التالية إلى next، وحدّث cursor، وأضف سطر handoff في run_log، وطابِق الوثائق. (ج) صفّر WORKING_MEMORY.json (المهمة خُتمت في الحالة الدائمة). ثم قف.\r\n- تقرير نهاية الدور بالعربية: (أ) المنجَز، (ب) نتيجة الفحوص، (ج) التالية status=next، (د) هل يلزم تدخّل.\r\n\r\nالقسم 5 — وضع RECOVER (استئناف مهمة انقطعت)\r\n- الدخول بأمر RECOVER صريح.\r\n- اقرأ WORKING_MEMORY.json أولًا (العقد + resume_point + المتبقّي + القرارات) — منها تعرف تمامًا أين توقّفت دون إعادة قراءة الملفات. (إن كانت مهمتها مختومة done بالفعل في PROJECT_STATE.json ⇐ بقيّة قديمة؛ صفّرها وأبلِغ أنه لا شيء للاستئناف.)\r\n- تحقّق بثمنٍ زهيد من حدّ آخر خطوة، ثم استأنف من resume_point. لا تُعِد منجَزًا، ولا تتخطَّ ناقصًا، ولا تبدأ مهمة جديدة. ثم تصرّف كـEXECUTE حتى done (بما فيه الختم ثم تصفير الذاكرة). لا تتجاوز ثوابت الأمان.\r\n\r\nالقسم 6 — قائمة التوقّف المغلقة (الأسباب الوحيدة المشروعة)\r\n1) بوابة بشرية/Live: human_gate=true غير معتمدة، أو Live قبل G1 ⇐ قف وأبلِغ، ولا شيء بعدها.\r\n2) اقتراب نفاد budget/limit وسط المهمة ⇐ حدّث WORKING_MEMORY.json ثم قف (يُستأنف بـRECOVER).\r\n3) غموض مانع حقيقي لا يُحسم من الملفَّين + التصميم + decisions_log ويهدّد عملًا لا رجعة فيه ⇐ قف واسأل سؤالًا واحدًا دقيقًا. إن كان قابلًا للحسم أو رجعيًّا منخفض الخطر ⇐ قرّر وامضِ وسجّل القرار في الذاكرة العاملة.\r\n4) فعل تدميري/خارج النطاق ⇐ قف وأبلِغ.\r\n5) انتهاك اتساق لا يُصحَّح بأمان ⇐ قف وأبلِغ. يشمل هذا البند حالة توقف عملية فرعية بـtimeout وأنتجت حالة غير محددة تهدد اتساق الملفات — اقرأ القرص أولًا وحدّد الفجوة قبل أي قرار.\r\nما عدا ذلك ⇐ امضِ حتى الإتمام دون سؤال. «يبدو كبيرًا»، «أأكمل؟»، «للتأكيد» ليست أسباب توقّف.\r\n\r\nالقسم 7 — التزامات الكتابة (الملفّان)\r\n- PROJECT_STATE.json (دائم، لا يُحذف منه، رشيق — أرشِف run_log القديم): task_ledger + completion_seal لكل done {task، verified، evidence_path، evidence_count، docs_synced، ts} + cursor + run_log (handoff) + decisions_log.\r\n- WORKING_MEMORY.json (متطايِرة، مهمة واحدة، ذرّية الكتابة): {task_id، contract{حقول القسم 3}، steps[]{id، description، status}، last_completed_step، current_step + state، resume_point، remaining[]، decisions_session[]، evidence_partial، updated_at}. تُصفَّر عند ختم المهمة.\r\n- ثوابت بعد كل دور: مهمة نشطة واحدة كحدٍّ أقصى في WORKING_MEMORY.json؛ عند خمولها تكون آخر مهمة مختومة؛ لا done بلا completion_seal (verified + evidence_path + docs_synced)؛ cursor.next مؤهَّل.\r\n\r\n— قاعدة الأرشفة الإلزامية بعد الختم (قاعدة واجبة، أُضيفت في النسخة 1.3):\r\nقاعدة الأرشفة الإلزامية بعد الختم: أي نموذج يختم مهمة ويوثقها في PROJECT_STATE.json و WORKING_MEMORY.json، لازم ينقل كل الملفات المؤقتة بتاعة المهمة دي لمجلد ثابت اسمه _archive بره الروت، ويضيف _archive في .gitignore. الأرشفة مش حذف وقابلة للاسترجاع. النقل أول بأول قبل بداية المهمة اللي بعدها. ولو النموذج اللي ختم منقلش، النموذج اللي داخل على المهمة الجديدة ملتزم ينضف مخلفات المهمة المختومة اللي قبله كأول خطوة. وثبت اسم الأرشيف الحالي من _archive_g1_1_to_g1_13 إلى _archive الثابت\r\n\r\nالقسم 8 — التهيئة الأولى (Bootstrap)\r\n- عند أول دور فقط — أي عندما يكون PROJECT_STATE.json غير موجود أو لا يحتوي على مفتاح \"protocol_version\":\r\n  (أ) قبل أي شيء آخر، اكتب البروتوكول الكامل (نص هذه التعليمات من [الهوية والمصدر] حتى نهاية القسم 9) داخل PROJECT_STATE.json تحت مفتاح \"system_prompt\" — كتابةً ذرّية (ملف مؤقّت ثم إعادة تسمية).\r\n  (ب) أضف في الجذر: \"protocol_version\": \"1.0\" و \"bootstrapped_at\": <timestamp ISO>.\r\n  (ج) سجّل في decisions_log: {ts، decision: \"bootstrap_complete\"، note: \"البروتوكول محفوظ في system_prompt — لا حاجة لإرساله في الجلسات اللاحقة\"}.\r\n  (د) بعد اكتمال الكتابة والتحقّق منها، تابع الدور الحالي (ORIENT أو EXECUTE) بشكل طبيعي.\r\n- في كل جلسة لاحقة لا يُرسَل فيها البروتوكول: اقرأ PROJECT_STATE.json[\"system_prompt\"] واعمل به كأنه أُرسِل في بداية الرسالة.\r\n- إذا أُرسِل البروتوكول في الرسالة وكان مختلفًا عمّا في الملف: قف فورًا وأبلِغ بالتعارض مع ذكر الفرق، ولا تُحدّث system_prompt ولا تنفّذ أي شيء — إلا بأمر صريح: \"حدّث البروتوكول\".\r\n- عند أمر \"حدّث البروتوكول\" الصريح: اكتب النص الجديد في system_prompt ذرّيًّا، وحدّث protocol_version وbootstrapped_at، وسجّل في decisions_log: {ts، decision: \"protocol_updated\"، note: \"تحديث يدوي بأمر صريح\"}.\r\n- system_prompt للقراءة فقط أثناء أي تنفيذ عادي؛ لا يُعدَّل ضمن أي مهمة من task_ledger.\r\n\r\nالقسم 9 — انضباط التنفيذ الفرعي (Sub-Agent Contract)\r\n\r\nالمبدأ الحاكم: الوكيل الرئيسي مسؤول عن المهمة كاملةً حتى done —\r\nبصرف النظر عمّن نفّذ الكتابة الفعلية على القرص.\r\nالتفويض لا ينقل المسؤولية.\r\n\r\n9.1 — قبل تفويض أي عملية فرعية:\r\n  (أ) سجّل في WORKING_MEMORY.json تحت \"delegated_op\": {\r\n        op_id، description، target_files[]،\r\n        expected_outcome، status: \"dispatched\"، ts\r\n      } — كتابةً ذرّية قبل الإرسال.\r\n  (ب) لا تُرسِل عملية فرعية تمس أكثر من نطاق scope_boundary الخطوة الحالية.\r\n\r\n9.2 — بعد عودة العملية الفرعية:\r\n  (أ) لا تقبل \"تمّ\" بالإبلاغ وحده — تحقّق بنفسك من القرص\r\n      (قراءة الملف أو تشغيل الأمر المحدد في expected_evidence).\r\n  (ب) إن تطابق الواقع مع expected_outcome:\r\n        حدّث delegated_op.status = \"verified\" وامضِ.\r\n  (ج) إن لم يتطابق أو كان جزئياً:\r\n        حدّث delegated_op.status = \"partial\" مع وصف ما وُجد وما غاب،\r\n        واعتبر الخطوة لم تكتمل — لا توسمها done.\r\n        ثم قرّر: أكمل الجزء الناقص مباشرةً أم أعِد الخطوة كاملة\r\n        (بحسب risk الخطوة في العقد).\r\n\r\n9.3 — الحالة الحمراء / التعثر (يشمل timeout من البيئة المنفّذة):\r\n  إذا توقفت العملية الفرعية وأنتجت حالة غير محددة (لا نجاح ولا فشل صريح)،\r\n  سواء كان السبب timeout أو انقطاعًا مفاجئًا — هذا لا يغيّر القاعدة:\r\n  الحقيقة هي ما على القرص فقط، لا ما أبلغت عنه العملية الفرعية.\r\n  (أ) اقرأ الملفات المتأثرة مباشرةً من القرص.\r\n  (ب) قارن بـexpected_outcome وحدّد الفجوة بدقة.\r\n  (ج) سجّل في WORKING_MEMORY.json:\r\n        resume_point = أول خطوة فرعية لم تكتمل،\r\n        delegated_op.status = \"interrupted\",\r\n        evidence_partial = ما وُجد فعلاً على القرص.\r\n  (د) لا تُعِد ما اكتمل بالفعل — ابنِ على ما هو موجود.\r\n  (هـ) إذا كانت الفجوة تهدد اتساق الملفات ⇐ توقّف (القسم 6 — البند 5) وأبلِغ.\r\n\r\n9.4 — ثابتة صلبة:\r\n  لا تعتمد على ذاكرة العملية الفرعية أو تقريرها وحده —\r\n  الحقيقة هي ما على القرص فقط.\r\n\r\n9.5 — تقسيم الخطوات الطويلة (Chunking):\r\n  قبل تفويض أي خطوة لعملية فرعية، قيّم حجمها:\r\n\r\n  معيار الخطورة — الخطوة تحتاج تقسيماً إذا توفّر أي مما يلي:\r\n    • تمس أكثر من ملف واحد في نفس العملية.\r\n    • تحتوي على أكثر من 3 تعديلات مستقلة.\r\n    • risk = long أو irreversible في العقد.\r\n    • سبق أن أنتجت timeout في جلسة سابقة.\r\n\r\n  آلية التقسيم:\r\n    (أ) قسّم الخطوة إلى أجزاء chunk_a، chunk_b، chunk_c...\r\n        كل جزء: ملف واحد أو تعديل واحد مستقل + تحقق فوري من القرص.\r\n    (ب) سجّل الأجزاء في WORKING_MEMORY.json تحت ordered_steps[]\r\n        قبل البدء — كأنها خطوات مستقلة لها id ووصف وrisk.\r\n    (ج) بعد كل جزء: تحقق من القرص + حدّث resume_point\r\n        قبل الانتقال للجزء التالي.\r\n    (د) إذا جاء timeout بين جزأين:\r\n        RECOVER يبدأ من الجزء التالي مباشرةً — لا يُعيد المكتمل.\r\n\r\n  ثابتة: لا تُرسَل خطوة طويلة كعملية فرعية واحدة غير مقسّمة\r\n  إذا توفّر أي معيار من معايير الخطورة أعلاه.\r\n\r\nالخاتمة: انتظر أمر الدور؛ وفي غيابه اعمل في ORIENT ولا تغيّر شيئًا.\r\n\r\n\r\n## القسم 10 — طور الاستقرار على Testnet (بوّابة G1): دورة الخطأ (Defect Cycle)\r\n\r\n**متى يسري:** حصريًا حين `PROJECT_STATE.json.phase == \"G1_MANUAL_TESTING\"` (أي بعد ختم T15 وقبل اعتماد G1). خارج هذا الطور لا يسري هذا القسم.\r\n\r\n**10.1 المبدأ:** التجربة اليدوية على الحساب التجريبي (Testnet) طورٌ مستمر، لا مهمة ذرّية واحدة. كل مشكلة يبلّغ بها المستخدم تُعالَج كمهمة فرعية ذرّية مستقلة `G1.<n>` لها عقد وتحقّق وختم مستقل.\r\n\r\n**10.2 كتابة أولًا قبل أي تنفيذ (Write-First):** فور تلقّي مشكلة، وقبل كتابة أي سطر كود:\r\n- (أ) أضِف بندًا في `PROJECT_STATE.json.defect_log`: `{ id:\"G1.<n>\", title, description, severity:(\"critical\"|\"major\"|\"minor\"), professional_proposal, status:\"contracted\", discovered_at, evidence_path:null, seal:null }`.\r\n- (ب) افتح عقدًا نشطًا في `WORKING_MEMORY.json`: `{ active:true, task_id:\"G1.<n>\", title, DoD, ordered_steps, scope_boundary, resume_point:\"step_0_contract_written\", expected_evidence, human_gate:false }`.\r\n- كلتا الكتابتين ذرّيتان (القسم 7). ويُمنع الانتقال إلى التنفيذ قبل ثبوتهما على القرص.\r\n\r\n**10.3 التنفيذ والتسليم:** نفّذ الحل داخل `scope_boundary` فقط، وحدّث `resume_point` بعد كل خطوة. سلسلة الحالة لكل بند: `contracted → implemented → verified → sealed`. عند `sealed`: اكتب `completion_seal` = `{verified:true, evidence_path, docs_synced:true, ts}` داخل البند وفي `completion_seals`، ثم صفّر `WORKING_MEMORY.json`.\r\n\r\n**10.4 التسليم بين النماذج (لا فقد لعمل سابق):** أي نموذج يدخل والطور `G1_MANUAL_TESTING` يجب أن:\r\n- (أ) يقرأ `WORKING_MEMORY.json` أولًا (RECOVER، القسم 5).\r\n- (ب) إن كان `active:true`: يُكمل المهمة `task_id` من `resume_point` حتى `sealed`، ولا يبدأ بندًا جديدًا. وإن كانت الحالة `implemented` بلا ختم ⇒ يُجري التحقّق + التوثيق + الختم فقط، ولا يعيد التنفيذ إن أثبت القرص اكتماله (9.4).\r\n- (ج) إن كان `active:false`: يعالج البند التالي المفتوح (غير المختوم) في `defect_log` — الأعلى `severity` أولًا — عبر 10.2.\r\n\r\n**10.5 معيار الخروج من G1 (Exit Criteria):** لا يُرقَّى T16 إلا بعد تحقّق كل الآتي على القرص: (أ) صفر بنود `severity ∈ {critical, major}` بحالة غير `sealed` في `defect_log`؛ (ب) اجتياز فحص صلاحيات مفتاح API (تداول فقط، بلا Withdrawals)؛ (ج) اجتياز فحص IP whitelist؛ (د) عبارة اعتماد صريحة من المستخدم. عندها فقط: علّم `G1=done`، وبدّل `phase` إلى `\"T16_LIVE\"`، وارفع T16 من blocked.\r\n\r\n**10.6 العزل:** `defect_log` ومهام `G1.<n>` تابعة لبوّابة G1 حصريًا، ومنفصلة عن مسار T0–T16 في `task_ledger`، فلا تُخلط بسجلّ المهام الرئيسي منعًا للارتباك.\n\r\n\r\n## 11) تحديثات النسخة 1.4 (مُلزِمة ولا تتعارض مع الأقسام 1–10)\r\n\r\n**11.1 فصل الحالة الحارّة/الباردة وتدوير السجلّات:** يُقسّم `PROJECT_STATE.json` إلى طبقة حارّة (الملف نفسه: فهرس + حالة حيّة + نقاط الاعتماد `completion_seals`) وطبقة باردة في مجلّد `state/` تضم التفاصيل التاريخية. عند الدخول يقرأ النموذج `WORKING_MEMORY.json` ثم `PROJECT_STATE.json` فقط، ولا يفتح أي ملف من `state/` إلا عند حاجة فعلية عبر الحقل `ref` المسجّل في الفهرس (قراءة كسولة). تبقى مفاتيح `defect_log`/`run_log`/`decisions_log`/`task_ledger` موجودة لكن مُلخّصة: `defect_log` قائمة مدخلات مُقتضبة `{id,status,title,severity,ref,detail_hash}` وتفاصيلها الكاملة في `state/defects/<id>.json`؛ و`run_log` الكامل في `state/run_log.jsonl`؛ و`decisions_log` الكامل في `state/decisions_log.json`؛ و`task_ledger` الكامل في `state/task_ledger.full.json` مع `task_ledger_live` للعناصر غير `done`. لكل ملف بارد بصمة `sha256` في الفهرس. الترحيل ذرّي وقابل للاسترجاع (نسخة كاملة في `_archive/PROJECT_STATE.full_pre_1_4.json`) ولا يُفقد أي معلومة. `completion_seals` (نقاط الاعتماد) تبقى في الطبقة الحارّة. مجلّد `state/` جزء من مصدر الحقيقة ويُلتزم به (لا يُدرَج في `.gitignore`)؛ `_archive` وحده في `.gitignore`. لا تعارض مع §9.4: الحقيقة تبقى على القرص والفهرس يدل على مكان كل تفصيل.\r\n\r\n**11.2 قاعدة الكفاءة بلا توقف:** على كل نموذج تفادي تكرار الخطوات بلا فائدة: لا يُعيد قراءة ملف قرأه في الجلسة نفسها دون سبب، ولا يُعيد تنفيذ خطوة/فحص أُنجز وأُثبت، ويجمّع العمليات المتماثلة، ويعتمد قائمة تقدّم فرعية ليستأنف من آخر خطوة منجزة بدل إعادة البدء. **شرط قاطع:** هذه القاعدة توجيه كفاءة فقط، ولا يجوز أن تكون سببًا لتوقّف النموذج أو امتناعه عن إكمال المهمة؛ وعند أي شكّ بين «تجنّب التكرار» و«الاكتمال»، تُقدّم مواصلة العمل حتى الاكتمال الذرّي. الكفاءة لا تَعلو على التمام، وهذه القاعدة لا تُلغي أي قراءة ضرورية يفرضها §9.4 أو غيره.\r\n\r\n**11.3 إلزام «بند التنظيف» في خطة كل نموذج:** يلتزم كل نموذج يدخل أي مهمة (تنفيذ أو استئناف) بأن يُضمّن في خطته صراحةً «بند تنظيف» ضمن خطوات الختم: نقل الملفات المؤقتة إلى `_archive`، وتحديث الفهارس/الطبقة الباردة في `state/`، قبل بدء المهمة التالية — تفصيلًا وتأكيدًا لقاعدة الأرشفة الإلزامية (1.3). وإن دخل نموذج ووجد مخلّفات مهمة مختومة لم تُنظّف، فتنظيفها أول خطوة إلزامية له.\r\n\r\n**11.4 أداة التدوير الدائمة (`tools/rotate_state.py`):** أداة ثابتة قابلة لإعادة الاستخدام تُؤتمِت تطبيق البند 11.1 كجزء من روتين الختم. مسؤولياتها: نقل تفاصيل أي بند/سجلّ جديد إلى الطبقة الباردة `state/`، وإبقاء مدخلات الفهرس الحارّة مُلخّصة، وإعادة حساب `sha256` وتحديث `*_store` (`count`+`hash`)، وكتابة ذرّية (ملف مؤقت ثم استبدال) مع نسخة قابلة للاسترجاع في `_archive`، ثم تحقّق سلامة (round-trip + مطابقة البصمات). تُستدعى وجوبًا ضمن خطوة الختم لكل مهمة، وتُوفّر أمر `verify` للفحص المستقل. يُمنع إدخال منطق تدوير يدوي مكرّر في سكربتات لمرة واحدة ما دامت الأداة تغطّي العملية.\r\n\r\n**11.5 قابلية الاستنساخ (بنود حاكمة عامة):** بنود القسم 11 (11.1–11.5) تمثّل الطبقة الحاكمة العامة لإدارة الحالة، وهي مكتوبة بصياغة محايدة للمشروع (project-agnostic): لا تعتمد على أي معرّف خاص بـ OCOBot (مثل `G1`/`T16`/Binance) بل على بنى عامة (`PROJECT_STATE.json`, `WORKING_MEMORY.json`, `defect_log`, `run_log`, `decisions_log`, `task_ledger`, `completion_seals`, `state/`, `_archive`, `tools/rotate_state.py`). يجوز اقتطاف هذه البنود كما هي ونقلها إلى أي مشروع يتبنّى اصطلاح ملفات الحالة نفسه. تُحفَظ نسخة قابلة للاقتطاف ومتزامنة مع هذا القسم في `docs/PORTABLE_PROTOCOL_CLAUSES.md`؛ وأي بند حاكم عام جديد يُضاف إلى القسم 11 ويُحدَّث في ذلك الملف. (البنود 0–10 تبقى خاصة بـ OCOBot وليست محلّ اقتطاف.)\r\n\r\n**11.6 فهرس الأرشيف (`_archive/manifest.json`):** عند نقل أي ملف إلى `_archive` (ضمن خطوة التنظيف 11.3) يُسجَّل له قيد في `_archive/manifest.json` يحوي `{file, origin_path, task, reason, ts}`، ليبقى الأرشيف قابلًا للاستكشاف والاسترجاع الموجَّه دون إدخاله في مسار القراءة الروتيني. يتولّى `tools/rotate_state.py` تحديث الفهرس آليًا (أمر `archive` وضمن `apply`، وكذلك لنسخ النسخ الاحتياطية). الفهرس إلحاقي (append-only) وقابل للاسترجاع، ولا يُلزَم أي نموذج بقراءته عند الدخول؛ يُستشار فقط عند الحاجة لاسترجاع عنصر مؤرشَف. (امتداد للبند 11.3.)\r\n\r\n\r\nقاعدة ثنائية اللغة الإلزامية (أُضيفت في النسخة 1.5): أي نموذج ضمن أي خطة تنفيذ (EXECUTE) أو استئناف (RECOVER) يضيف أو يعدّل أي نصّ ظاهر للمستخدم في الواجهة، ملتزمٌ — كجزء من definition_of_done وضمن acceptance_checks — بأن يَظهر هذا النص مطابقًا للغة النافذة الفعّالة في الوضعين (عربي/إنجليزي) دون أي تسرّب. لكل نصّ عربي جديد يُضاف مفتاحه المقابل في ocobot/ui/i18n.py (AR_TO_EN) بقيمته الإنجليزية الحرفية الدقيقة، ويُتحقَّق أن retranslate_widget_tree تغطّي نوع الودجت المستخدم (بما فيها القوائم مثل QListWidget وأي نوع لا تغطّيه الدالة حاليًا). يُمنع ختم أي مهمة فيها نصّ واجهة قبل التحقّق الفعلي أنّ التبديل EN↔AR لا يُبقي أي حرف بغير لغته، ودون كسر أي نقطة نجاح قائمة (كامل سويت الاختبارات يبقى أخضر). العربية هي لغة المصدر ولا تُمَس؛ الضبط يطال وضع الإنجليزية فقط. وتُسنّ هذه القاعدة كـ acceptance_check قياسي لكل مهمة ذات أثر على الواجهة.",
+  "project": "OCOBot",
+  "schema_version": "1.0",
+  "source_of_truth": "docs/OCOBot_Design_AR.md (التصميم النافذ) + PROJECT_STATE.json (مصدر حقيقة التنفيذ). ملاحظة: docs/archive/OCOBot_Design_Prompt_AR.md مؤرشف كمرجع تاريخي فقط — لا يُنفَّذ منه ولا يُعاد التصميم منه.",
+  "generated_stage": "DESIGN-COMPLETE · LEDGER-RESTRUCTURED",
+  "last_updated": "2026-10-13T23:25:00Z",
+  "vision": "نظام سطح مكتب لإدارة وإعادة تموضع أوامر Binance Spot OCO الحقيقية عبر دورة واحدة: Read → Select → Understand → Prepare → Activate → Verify → Replace → Monitor → Reposition → Verify → Repeat. المستخدم يدخل النِّسب فقط، والنظام يحسب الأسعار الثلاثة وينفّذ Replacement آمنًا ومتحقَّقًا (≤3s) مع مراقبة ديناميكية اختيارية.",
+  "principles": [
+    "P1 — اختيار دقيق: OCO واحد بهويته orderListId؛ كل عملية عليه فقط.",
+    "P2 — لا تغيير قبل القرار: فتح شاشة التعديل لا يلغي شيئًا؛ الأمر فعّال حتى Activate.",
+    "P3 — لا لمس للآخرين: لا يُمَس أي OCO غير المحدد.",
+    "P4 — أتمتة بقواعد المستخدم: لا استراتيجية مخترعة."
+  ],
+  "exclusions": [
+    "General Trading Platform",
+    "Market Order Bot",
+    "Generic Buy Bot",
+    "Autonomous Coin Discovery",
+    "Trading signals",
+    "AI decides buy/sell",
+    "Full Portfolio Manager",
+    "Advanced P&L Analytics",
+    "News/Sentiment",
+    "Live ready from day one"
+  ],
+  "decisions_log": [
+    {
+      "ts": "2026-10-13T12:25:02Z",
+      "decision": "G1.46.1_sealed",
+      "note": "متابعة G1.46 (الاستدعاء التلقائي لتعبئة DealResultCard عند التنقّل/دوريًا) نُفّذت عرض-فقط وخُتمت بدليل كامل السويت 651 OK. القطع السابق كان بيئيًّا متقطّعًا (offscreen Qt + تزامن بناء PyInstaller للمستخدم)؛ عولج بتشغيل غير مُخزَّن على جهاز هادئ + تنظيف صارم في tearDown. لا Live، الطور G1_MANUAL_TESTING كما هو."
+    },
+    {
+      "ts": "2026-10-13T14:05:00Z",
+      "decision": "g1_48_tracker_semantics",
+      "note": "G1.48: «نسبة التغيّر» في متتبّعَي العملة المراقَبة وBTC تُحسب عن السعر السابق لكل انتقال لحظي (rolling)، و«نسبة التتبّع» عن سعر بدء المراقبة المُجمّد (العملة: reference_price الثابت؛ BTC: أول window_start صالح كـ _btc_anchor). عرض فقط داخل monitoring.py بلا شبكة. scope_extended(§6.3): تحديث اختبارات العملة المراقَبة الثلاثة في tests/test_g1_45_trackers.py لتعكس الدلالة المصحَّحة (اختبارات BTC بقيت خضراء دون تعديل). لا Live قبل G1."
+    },
+    {
+      "ts": "2026-10-13T20:17:02Z",
+      "decision": "approve_G1.49_G1.50_exit_hardening_and_btc_slip_tracker",
+      "note": "استشارة معتمدة من المستخدم بتفويض صريح («ابدأ التنفيذ … تفضل القيادة»). بندان: G1.49 (major) سياسة تنفيذ خروج موحّدة لكل الوسائل (band + LIMIT IOC + chase على bid حيّ + أرضية + wick-debounce + توسيع إزاحة STOP_LOSS_LIMIT) هدفها المعتمد حرفيًا «عدم التعليق في الصفقة مع الخروج بأقرب نقطة سعرية في الطوارئ وليس بنقطة بعيدة»؛ الملاذ الأخير عند الأرضية = الخيار (ب) MARKET محمي بالأرضية؛ تشمل إصلاح لمس القوس الكاذب. G1.50 (major) لوحة انزلاق BTC بنافذة متحرّكة عرض-فقط (افتراضي 3s متوافق مع الحارس). الترتيب G1.49 ثم G1.50. كلاهما Testnet، لا Live قبل بوّابة G1 §10.5. سُجّل كل التفصيل على القرص (state/defects/G1.49.json وG1.50.json) منعًا لفقد أي فكرة عند تبدّل النموذج (§7/§10.2)."
+    }
+  ],
+  "task_ledger": [
+    {
+      "id": "T0",
+      "title": "المستند التصميمي الشامل + PROJECT_STATE (Design Deliverables 1-13)",
+      "status": "done",
+      "effort_estimate": "M (مكتمل)"
+    },
+    {
+      "id": "T1",
+      "title": "M0 — Foundation: Connectivity الموقّع + تحميل المفاتيح + اختيار البيئة + preflight",
+      "status": "done",
+      "effort_estimate": "M"
+    },
+    {
+      "id": "T2",
+      "title": "M1 — Read & Select (Testnet): exchangeInfo cache + openOrderList + جدول Orders + Selected OCO + Dashboard قراءة",
+      "status": "done",
+      "effort_estimate": "M"
+    },
+    {
+      "id": "T3",
+      "title": "M2 — Manual Edit + Safe Execution: Draft بالنِّسب + حساب الأسعار الثلاثة + Live/Max Stop + Activate (safe cancel/create + Idempotency)",
+      "status": "done",
+      "effort_estimate": "L"
+    },
+    {
+      "id": "T4",
+      "title": "M3 — Dynamic Monitoring: Market WS + reference/trigger/latch + Latest Price + Tolerance/Guard + Rollover + Pause/Resume + Kill Switch",
+      "status": "done",
+      "effort_estimate": "L"
+    },
+    {
+      "id": "T5",
+      "title": "M4a — أساس التخزين (Persistence): state store ذرّي + سكيمة حالة المراقبة وسياق OCO المختار (حسم JSON مقابل SQLite)",
+      "status": "done",
+      "effort_estimate": "M"
+    },
+    {
+      "id": "T6",
+      "title": "M4b — توصيل Audit Log: ربط core/audit_log.py الموجود بمسارات التنفيذ والمراقبة والـ CLI",
+      "status": "done",
+      "effort_estimate": "S"
+    },
+    {
+      "id": "T7",
+      "title": "M4c — توصيل Failure Matrix: تمرير كل الأخطاء عبر humanize() وضمان صفر Exception خام",
+      "status": "done",
+      "effort_estimate": "S"
+    },
+    {
+      "id": "T8",
+      "title": "M4d — Runtime Recovery: حفظ حالة المراقبة عبر state store + استئناف بعد التعطّل + مطابقة الحالة الفعلية",
+      "status": "done",
+      "effort_estimate": "L"
+    },
+    {
+      "id": "T9",
+      "title": "M4e — User Data Stream: دورة listenKey (create/keepalive~30m/close) + executionReport لحالة الأمر اللحظية",
+      "status": "done",
+      "effort_estimate": "L"
+    },
+    {
+      "id": "T9a",
+      "title": "M4e/1 — دورة listenKey: POST/PUT/DELETE /api/v3/userDataStream (مصادقة مفتاح فقط) + تجديد تلقائي (keepalive) قبل ~30م",
+      "status": "done",
+      "effort_estimate": "M"
+    },
+    {
+      "id": "T9b",
+      "title": "M4e/2 — مستهلك User Data Stream: WS + تحليل executionReport/listStatus لتحديث حالة الأمر لحظيًا + كشف الإغلاق الخارجي يوقف المراقبة",
+      "status": "done",
+      "effort_estimate": "M"
+    },
+    {
+      "id": "T9c",
+      "title": "M4e/3 — إعادة اتصال آمنة بعد انقطاع WS بلا فقد حالة",
+      "status": "done",
+      "effort_estimate": "S"
+    },
+    {
+      "id": "T10",
+      "title": "M-UI/0 — هيكل الواجهة PySide6/PyQt6: نافذة رئيسية + RTL + الثيم الداكن (Palette D15) + تنقّل + مؤشر اتصال + IO غير متزامن خارج UI thread",
+      "status": "done",
+      "effort_estimate": "L"
+    },
+    {
+      "id": "T10a",
+      "title": "M-UI/0a — أساس تطبيق PySide6/PyQt6: النافذة الرئيسية + RTL كامل + الثيم الداكن (Palette D15) + خط Tajawal",
+      "status": "done",
+      "effort_estimate": "M"
+    },
+    {
+      "id": "T10b",
+      "title": "M-UI/0b — قوقعة التنقّل: Sidebar يمين + Topbar (Pills: Environment/Connection) + Content + توجيه بين شاشات هيكلية",
+      "status": "done",
+      "effort_estimate": "S"
+    },
+    {
+      "id": "T10c",
+      "title": "M-UI/0c — IO غير متزامن خارج UI thread + مؤشر اتصال حيّ يعكس ConnectionState",
+      "status": "done",
+      "effort_estimate": "M"
+    },
+    {
+      "id": "T11",
+      "title": "M-UI/1 — شاشات القراءة: Dashboard + جدول Open OCO Orders + Selected OCO (مظلّة T11a/T11b/T11c)",
+      "status": "done",
+      "effort_estimate": "L"
+    },
+    {
+      "id": "T11a",
+      "title": "M-UI/1a — شاشة Dashboard (ربط build_dashboard)",
+      "status": "done",
+      "effort_estimate": "M"
+    },
+    {
+      "id": "T11b",
+      "title": "M-UI/1b — جدول Open OCO Orders (ربط oco_reader)",
+      "status": "done",
+      "effort_estimate": "M"
+    },
+    {
+      "id": "T11c",
+      "title": "M-UI/1c — Selected OCO (ربط selection + سياق حيّ)",
+      "status": "done",
+      "effort_estimate": "S"
+    },
+    {
+      "id": "T12",
+      "title": "M-UI/2 — شاشة التعديل اليدوي + التنفيذ الآمن: نِسب → 3 أسعار → Activate خلف تأكيد + Max Stop + شريط Naked Window (مظلّة T12a/T12b)",
+      "status": "done",
+      "effort_estimate": "L"
+    },
+    {
+      "id": "T12a",
+      "title": "M-UI/2a — الواجهة + معاينة الأسعار الثلاث (نِسب TP/SL → 3 أسعار حيّة) + زر Max Available Stop + عرض القيم القديمة",
+      "status": "done",
+      "effort_estimate": "M"
+    },
+    {
+      "id": "T12b",
+      "title": "M-UI/2b — التنفيذ الآمن: Activate عبر SafeExecutor خلف تأكيد + إبراز Naked Window + اختبارات القبول",
+      "status": "done",
+      "effort_estimate": "M"
+    },
+    {
+      "id": "T13",
+      "title": "M-UI/3 — شاشة المراقبة الديناميكية + التحكم: سعر حي + reference/trigger/latch + Pause/Resume + Kill Switch + tolerance/guard",
+      "status": "done",
+      "effort_estimate": "L"
+    },
+    {
+      "id": "T14",
+      "title": "M-UI/4 — Demo Mode داخل الواجهة: عرض الدورة كاملة مع فصل صريح عن Live (D14 + الممنوعات)",
+      "status": "done",
+      "effort_estimate": "M"
+    },
+    {
+      "id": "T15",
+      "title": "M5 — Validated: تشغيل شامل على Testnet + مراجعة أمان/حواف + معايير القبول",
+      "status": "done",
+      "effort_estimate": "M"
+    },
+    {
+      "id": "G1",
+      "title": "بوابة اعتماد بشري: اكتمال البوت التجريبي (Testnet) — تجربة يدوية من المستخدم + موافقة صريحة قبل أي عمل Live",
+      "status": "next",
+      "effort_estimate": "—"
+    },
+    {
+      "id": "T16",
+      "title": "M6 — Live (بوابة): تبديل إعداد فقط + بوابة تحقق + مراقبة Rate limit",
+      "status": "blocked",
+      "effort_estimate": "S"
+    }
+  ],
+  "cursor": {
+    "last_completed": "T15",
+    "current": "G1",
+    "next": "G1"
+  },
+  "file_map": {
+    "design_doc": "docs/OCOBot_Design_AR.md",
+    "design_prompt_archived": "docs/archive/OCOBot_Design_Prompt_AR.md (أرشيف تاريخي — البرومبت الأصلي؛ لا يُنفَّذ منه)",
+    "executor_prompt": "docs/EXECUTOR_PROMPT_AR.md",
+    "ui_mockups": "docs/ui_mockups/ (index.html + 01_dashboard, 02_open_orders, 03_selected_and_edit, 04_dynamic_monitoring, 05_safe_execution)",
+    "project_state": "PROJECT_STATE.json",
+    "keys_file_default": "D:\\فولدرات\\مفتاح بنانس\\key.txt (قابل للتهيئة؛ لا يُرفع لأي repo)",
+    "postman_workspace": "postman/ (collections, environments, specs, globals, mocks, flows, documents)",
+    "persistence_state_store": "ocobot/core/state_store.py (موجود ومُختبَر — طبقة تخزين ذرّية temp→rename + سكيمة SCHEMA_VERSION=1؛ يُوصّل بمحرّك المراقبة/الاسترداد في T8)",
+    "audit_log_module": "ocobot/core/audit_log.py (موجود ومُختبَر وموصول في T6 — SafeExecutor/MonitoringEngine/CLI، حقن اختياري متوافق رجعيًا)",
+    "failure_matrix_module": "ocobot/core/failure_matrix.py (موجود ومُختبَر وموصول في T7 — preflight._interpret + كل أوامر cli.py تمرّ عبر humanize؛ مظلّات except Exception تمنع أي نصّ خام)",
+    "ui_layer": "ocobot/ui/ (T10a أساس + T10b قوقعة التنقّل + T10c IO غير متزامن + T11a شاشة Dashboard منجَزة موصولة بـ build_dashboard؛ T11b–T14 قيد البناء حسب docs/ui_mockups)"
+  },
+  "binance_reference": {
+    "base_urls": {
+      "testnet_rest": "https://testnet.binance.vision/api",
+      "testnet_ws": "wss://stream.testnet.binance.vision/ws",
+      "live_rest": "https://api.binance.com",
+      "live_ws": "wss://stream.binance.com:9443/ws"
+    },
+    "endpoints": {
+      "exchange_info": "GET /api/v3/exchangeInfo?symbol=",
+      "open_oco": "GET /api/v3/openOrderList (signed, weight 3)",
+      "query_oco": "GET /api/v3/orderList?orderListId= (signed)",
+      "create_oco": "POST /api/v3/orderList/oco (signed, weight 1, above/below legs)",
+      "cancel_oco": "DELETE /api/v3/orderList (signed, weight 1, symbol+orderListId)",
+      "user_data_stream": "POST/PUT /api/v3/userDataStream (listenKey; keepalive ~30m)"
+    },
+    "price_mapping_sell": {
+      "TP_limit": "above leg: aboveType=LIMIT_MAKER, abovePrice",
+      "stop_trigger": "below leg: belowStopPrice",
+      "stop_limit": "below leg: belowType=STOP_LOSS_LIMIT, belowPrice, belowTimeInForce=GTC"
+    },
+    "filters": [
+      "PRICE_FILTER.tickSize",
+      "LOT_SIZE.stepSize/minQty",
+      "NOTIONAL/MIN_NOTIONAL.minNotional"
+    ],
+    "signing": "HMAC SHA256 + timestamp(ms) + recvWindow(default 5000, max 60000); preflight to avoid -1022",
+    "rate_limits": "X-MBX-USED-WEIGHT-*, X-MBX-ORDER-COUNT-*; handle 429/418 with backoff, no blind write retry"
+  },
+  "open_questions": [
+    "دعم BUY OCO لاحقًا (الآن SELL فقط).",
+    "صيغة التخزين — حُسِمت في T5: JSON checkpoint ذرّي (temp→flush→os.fsync→os.replace، بلا فساد عند التعطّل) + JSONL للـ audit، مكتبة قياسية (stdlib) فقط، SCHEMA_VERSION=1؛ SQLite بديل موثّق مؤجَّل يُراجَع فقط عند ظهور كتّاب متزامنين أو تاريخ عالي التردّد.",
+    "مصدر السعر usable الأمثل (bookTicker bid مقابل last trade) لدقّة SELL.",
+    "معادلة توسيع gap تلقائيًا حسب تقلّب العملة."
+  ],
+  "run_log": [
+    {
+      "ts": "2026-10-13T13:11:00Z",
+      "actor": "executor",
+      "task": "G1.47",
+      "note": "ختم G1.47 (خروج يدوي فوري بأولوية عُليا): بوّابة safe_execution.manual_exit_safety_gate (منع البيع المزدوج) + ocobot/ui/manual_exit.py يُعيد استخدام execute_market_exit حصريًّا + زرّ «تنفيذ الخروج الفوري» في monitoring.py عبر الرَنَر (بلا شبكة في الواجهة) + i18n §1.5 + ربط app.py معزول (Testnet، dry_run=False). الأولوية بنيوية (الحارس evaluate⇒NOOP بعد الخروج؛ no-cancel-invariant محفوظ). كامل السويت أخضر: Ran 665 OK (≥651، failures=0 errors=0). لا Live قبل G1 (§10.5). أُرشِفت ملفات G1.47 المؤقتة. لا بنود major/critical مفتوحة — معيار الخروج §10.5 بانتظار اعتماد المستخدم."
+    },
+    {
+      "ts": "2026-10-13T13:46:00Z",
+      "actor": "executor",
+      "task": "G1.48",
+      "note": "Write-First §10.2: عُقِد G1.48 (major) — تصحيح دلالة «نسبة التغيّر» (عن كل انتقال لحظي مقابل السعر السابق) و«نسبة التتبّع» (مقابل سعر بدء المراقبة المُجمّد) في متتبّعَي العملة المراقَبة وBTC. السبب الجذري: _refresh_monitored_tracker يمرّر anchor للمرجعين، ومتتبّع BTC يستخدم window_start المتدحرجة للتتبّع. الإصلاح عرض فقط داخل monitoring.py (+_monitored_prev/_btc_anchor) + اختبارات بلا شبكة. فُتح عقد نشط active=true resume_point=step_0_contract_written. لا كتابة كود قبل أمر «نفّذ». لا Live قبل G1."
+    },
+    {
+      "ts": "2026-10-13T14:05:00Z",
+      "actor": "executor",
+      "task": "G1.48",
+      "note": "ختم G1.48 (دلالة متتبّعَي النِّسب): «نسبة التغيّر» rolling عن السعر السابق، و«نسبة التتبّع» عن سعر بدء المراقبة المُجمّد — للعملة المراقَبة وBTC — في ocobot/ui/monitoring.py (عرض فقط، بلا شبكة؛ _monitored_prev/_monitored_last + _btc_anchor، وتصفيرها عند set_selected/الإيقاف الطارئ). scope_extended(§6.3): حُدِّثت اختبارات العملة في tests/test_g1_45_trackers.py. اختبارات جديدة: tests/test_g1_48_tracker_semantics.py (7). كامل السويت أخضر: ran=672 failures=0 errors=0 (تشغيل لكل ملف في عملية مستقلّة لتفادي انهيار Qt التراكمي غير الحتمي). §1.5 محفوظة. لا بنود major/critical مفتوحة؛ معيار الخروج §10.5 بانتظار اعتماد المستخدم."
+    }
+  ],
+  "resume_protocol": {
+    "rules": [
+      "1) اقرأ PROJECT_STATE.json فقط (وعند الحاجة docs/OCOBot_Design_AR.md للتفاصيل).",
+      "2) اختر المهمة: خذ ذات status=next؛ إن لم توجد، خذ أول مهمة status=pending كل depends_on فيها done (fallback).",
+      "3) إن كانت المهمة المختارة human_gate=true وغير مُعتمدة ⇒ قف فورًا وأبلغ المستخدم؛ لا تنفّذها ولا تنفّذ ما بعدها.",
+      "4) نفّذ مهمة واحدة فقط في هذه الرسالة، ثبّتها in_progress، واعمل حتى الاكتمال الذرّي.",
+      "5) تحقّق مقابل definition_of_done و acceptance_checks.",
+      "6) حدّث task_ledger (المهمة⇒done)، رقِّ المهمة التالية إلى next إن اكتملت تبعياتها، حدّث cursor، أضف سطر handoff في run_log.",
+      "7) لا تنفّذ أي مهمة Live (T16) قبل اجتياز بوابة الاعتماد البشري G1.",
+      "8) قف بعد مهمة واحدة، واكتب للمستخدم: ما أُنجز + نتيجة الفحوص + المهمة التالية."
+    ],
+    "one_task_per_message": "نموذج واحد = رسالة واحدة = مهمة واحدة فقط؛ لا تبدأ المهمة التالية مهما بقي لديك من budget. المستخدم يرسل رسالة جديدة (بالرصيد المتاح) لبدء المهمة التالية.",
+    "human_gate_rule": "G1 = اكتمال البوت التجريبي. فور إكمال T15 (Validated): أعلن صراحةً 'اكتمل البوت التجريبي واجتاز Validated'، واطلب من المستخدم تجربته يدويًا وإبداء رأيه، ثم قف. تُعلَّم G1 status=done فقط عندما يكتب المستخدم عبارة الاعتماد (approval_phrase)؛ عندها رقِّ T16 إلى next وابدأ التحويل إلى Live (مهمة واحدة).",
+    "completion_announcement": "عند إكمال آخر مهمة Live (T16): أعلن 'اكتمل تحويل البوت إلى Live' مع ملخّص الحالة النهائية.",
+    "atomic_task_rule": "يُمنع ترك مهمة نصف-منفّذة. إن اقترب الـ limit من النفاد وسط مهمة: احفظ checkpoint دقيق (آخر خطوة مكتملة + نقطة الاستئناف بالضبط + ما تبقّى) في run_log ليكمل النموذج التالي دون عمل ضائع.",
+    "status_values": [
+      "done",
+      "in_progress",
+      "next",
+      "pending",
+      "blocked"
+    ],
+    "executor_prompt_file": "docs/EXECUTOR_PROMPT_AR.md"
+  },
+  "completion_seals": [
+    {
+      "task": "G1.30",
+      "verified": true,
+      "evidence_path": "_g1_30_run.txt + _g1_30_suite.txt + _g1_30_fix.txt",
+      "evidence_count": 435,
+      "docs_synced": true,
+      "ts": "2026-10-10T14:40:00Z"
+    },
+    {
+      "task": "T9b",
+      "verified": true,
+      "evidence_path": "_t9b_run.txt",
+      "evidence_count": 165,
+      "docs_synced": true,
+      "ts": "2026-09-20T18:19:15Z"
+    },
+    {
+      "task": "T9c",
+      "verified": true,
+      "evidence_path": "_t9c_run.txt",
+      "evidence_count": 169,
+      "docs_synced": true,
+      "ts": "2026-09-20T19:30:18Z"
+    },
+    {
+      "task": "T9",
+      "verified": true,
+      "evidence_path": "_t9c_run.txt",
+      "evidence_count": 169,
+      "docs_synced": true,
+      "ts": "2026-09-20T19:30:18Z"
+    },
+    {
+      "task": "T10a",
+      "verified": true,
+      "evidence_path": "_t10a_run.txt",
+      "evidence_count": 175,
+      "docs_synced": true,
+      "ts": "2026-09-20T20:02:04Z"
+    },
+    {
+      "task": "T10b",
+      "verified": true,
+      "evidence_path": "_t10b_run.txt",
+      "evidence_count": 184,
+      "docs_synced": true,
+      "ts": "2026-09-20T20:45:02Z"
+    },
+    {
+      "task": "T10c",
+      "verified": true,
+      "evidence_path": "_t10c_run.txt",
+      "evidence_count": 191,
+      "docs_synced": true,
+      "ts": "2026-09-20T23:17:08Z"
+    },
+    {
+      "task": "T10",
+      "verified": true,
+      "evidence_path": "_t10c_run.txt",
+      "evidence_count": 191,
+      "docs_synced": true,
+      "ts": "2026-09-20T23:17:08Z"
+    },
+    {
+      "task": "T11a",
+      "verified": true,
+      "evidence_path": "_t11a_run.txt",
+      "evidence_count": 197,
+      "docs_synced": true,
+      "ts": "2026-09-21T12:57:47Z"
+    },
+    {
+      "task": "T11b",
+      "verified": true,
+      "evidence_path": "_t11b_run.txt",
+      "evidence_count": 206,
+      "docs_synced": true,
+      "ts": "2026-09-21T14:00:44Z"
+    },
+    {
+      "task": "T11c",
+      "verified": true,
+      "evidence_path": "_t11c_run.txt",
+      "evidence_count": 214,
+      "docs_synced": true,
+      "ts": "2026-09-21T19:01:35Z"
+    },
+    {
+      "task": "T11",
+      "verified": true,
+      "evidence_path": "_t11c_run.txt",
+      "evidence_count": 214,
+      "docs_synced": true,
+      "ts": "2026-09-21T19:01:35Z"
+    },
+    {
+      "task": "T12a",
+      "verified": true,
+      "evidence_path": "_t12a_run.txt",
+      "evidence_count": 222,
+      "docs_synced": true,
+      "ts": "2026-09-22T00:29:00Z"
+    },
+    {
+      "task": "T12b",
+      "verified": true,
+      "evidence_path": "_t12b_run.txt",
+      "evidence_count": 226,
+      "docs_synced": true,
+      "ts": "2026-09-22T20:17:15Z"
+    },
+    {
+      "task": "T13",
+      "verified": true,
+      "evidence_path": "_t13_run.txt",
+      "evidence_count": 235,
+      "docs_synced": true,
+      "ts": "2026-09-23T15:35:00Z"
+    },
+    {
+      "task": "T14",
+      "verified": true,
+      "evidence_path": "_t14_run.txt",
+      "evidence_count": 244,
+      "docs_synced": true,
+      "ts": "2026-09-24T00:35:05Z"
+    },
+    {
+      "task": "T15",
+      "verified": true,
+      "evidence_path": "_t15_run.txt",
+      "evidence_count": 244,
+      "docs_synced": true,
+      "ts": "2026-09-24T20:25:12Z"
+    },
+    {
+      "task": "G1.1",
+      "verified": true,
+      "evidence_path": "_g1_1_preflight.txt (AC2 CONNECTED) + _g1_1_run.txt (AC1 244 OK)",
+      "evidence_count": 244,
+      "docs_synced": true,
+      "ts": "2026-09-26T01:25:00Z"
+    },
+    {
+      "task": "G1.2",
+      "verified": true,
+      "evidence_path": "_g1_2_preflight.txt (AC2 جلب حقيقي openOrderList: أمر OCO مفتوح LSKUSDT EXECUTING orderListId 136428) + _g1_2_run.txt (AC1 244 OK)",
+      "evidence_count": 244,
+      "docs_synced": true,
+      "ts": "2026-09-26T01:40:00Z"
+    },
+    {
+      "task": "G1.3",
+      "verified": true,
+      "evidence_path": "_g1_3_run.txt (AC1 Ran 247 OK = 244 baseline + 3 موجَّهة؛ AC2 اختبارات موجَّهة خضراء test_ui_app/test_ui_selected/test_ui_open_orders: اختيار صف يغذّي 03/04/01 بنفس orderListId + set_orders يعيد التظليل؛ AC3 تأكيد يدوي من المستخدم على Testnet 2026-09-26)",
+      "evidence_count": 247,
+      "docs_synced": true,
+      "ts": "2026-09-26T12:01:00Z"
+    },
+    {
+      "task": "G1.4",
+      "verified": true,
+      "evidence_path": "_g1_4_run.txt",
+      "evidence_count": 251,
+      "docs_synced": true,
+      "ts": "2026-09-26T21:18:00Z"
+    },
+    {
+      "task": "G1.5",
+      "verified": true,
+      "evidence_path": "_g1_5_run.txt",
+      "evidence_count": 255,
+      "docs_synced": true,
+      "ts": "2026-09-27T01:21:24Z"
+    },
+    {
+      "task": "G1.6",
+      "verified": true,
+      "evidence_path": "_g1_6_run.txt (AC1 Ran 257 OK) + tests/test_g1_6_window_scroll_and_size.py (AC2 Ran 2 OK) + AC3 تأكيد يدوي 1360x768 @125%",
+      "evidence_count": 257,
+      "docs_synced": true,
+      "ts": "2026-09-27T12:15:00Z"
+    },
+    {
+      "task": "G1.7",
+      "verified": true,
+      "evidence_path": "_g1_7_run.txt (guard tests/test_g1_7_ui_arabic.py 3/3 + full suite 260 OK)",
+      "evidence_count": 260,
+      "docs_synced": true,
+      "ts": "2026-09-28T11:36:00Z"
+    },
+    {
+      "task": "G1.8",
+      "verified": true,
+      "evidence_path": "_g1_8_run.txt",
+      "evidence_count": 260,
+      "docs_synced": true,
+      "ts": "2026-09-29T00:55:00Z"
+    },
+    {
+      "task": "G1.9",
+      "verified": true,
+      "evidence_path": "_g1_9_run.txt",
+      "evidence_count": 265,
+      "docs_synced": true,
+      "ts": "2026-09-29T19:18:00Z"
+    },
+    {
+      "task": "G1.10",
+      "verified": true,
+      "evidence_path": "_g1_10_run.txt",
+      "evidence_count": 266,
+      "docs_synced": true,
+      "ts": "2026-09-30T03:20:00Z"
+    },
+    {
+      "task": "G1.11",
+      "verified": true,
+      "evidence_path": "_g1_11_run.txt",
+      "evidence_count": 285,
+      "docs_synced": true,
+      "ts": "2026-09-30T17:06:41Z"
+    },
+    {
+      "task": "G1.12",
+      "verified": true,
+      "evidence_path": "_g1_12_run.txt",
+      "evidence_count": 294,
+      "docs_synced": true,
+      "ts": "2026-09-30T19:36:47Z"
+    },
+    {
+      "task": "G1.13",
+      "verified": true,
+      "evidence_path": "_g1_13_ui_run.txt",
+      "evidence_count": 322,
+      "docs_synced": true,
+      "ts": "2026-10-02T22:50:00Z"
+    },
+    {
+      "task": "G1.15",
+      "verified": true,
+      "evidence_path": "tests/_g1_15_run.txt",
+      "evidence_count": 350,
+      "docs_synced": true,
+      "ts": "2026-10-05T01:25:37.916287+03:00"
+    },
+    {
+      "task": "G1.16",
+      "verified": true,
+      "evidence_path": "_archive/_g1_16_run.txt",
+      "evidence_count": 354,
+      "docs_synced": true,
+      "ts": "2026-10-05T03:28:53+03:00"
+    },
+    {
+      "task": "G1.17",
+      "verified": true,
+      "evidence_path": "_archive/_g1_17_run.txt",
+      "evidence_count": 356,
+      "docs_synced": true,
+      "ts": "2026-10-05T18:28:00+03:00"
+    },
+    {
+      "task": "G1.18",
+      "verified": true,
+      "evidence_path": "_archive/_g1_18_run.txt",
+      "evidence_count": 5,
+      "docs_synced": true,
+      "ts": "2026-10-06T01:27:00+03:00"
+    },
+    {
+      "task": "G1.19",
+      "verified": true,
+      "evidence_path": "_archive/_g1_19_run.txt",
+      "evidence_count": 364,
+      "docs_synced": true,
+      "ts": "2026-10-06T15:58:48Z"
+    },
+    {
+      "task": "G1.20",
+      "verified": true,
+      "evidence_path": "_g1_20_run.txt",
+      "evidence_count": 367,
+      "docs_synced": true,
+      "ts": "2026-10-06T17:10:00Z"
+    },
+    {
+      "task": "G1.21",
+      "verified": true,
+      "evidence_path": "_g1_21_run.txt",
+      "evidence_count": 369,
+      "docs_synced": true,
+      "ts": "2026-10-07T00:19:55Z"
+    },
+    {
+      "task": "G1.22",
+      "verified": true,
+      "evidence_path": "_g1_22_run.txt",
+      "evidence_count": 376,
+      "docs_synced": true,
+      "ts": "2026-10-07T01:20:00Z"
+    },
+    {
+      "task": "G1.23",
+      "verified": true,
+      "evidence_path": "_archive/_g1_23_verify.txt",
+      "evidence_count": 44,
+      "docs_synced": true,
+      "ts": "2026-10-07T20:16:16Z"
+    },
+    {
+      "task": "G1.24",
+      "verified": true,
+      "evidence_path": "_archive/_g1_24_verify.txt",
+      "evidence_count": 20,
+      "docs_synced": true,
+      "ts": "2026-10-08T01:05:50Z"
+    },
+    {
+      "task": "G1.25",
+      "verified": true,
+      "evidence_path": "_archive/_g1_25_verify.txt",
+      "evidence_count": 10,
+      "docs_synced": true,
+      "ts": "2026-10-09T00:59:40Z"
+    },
+    {
+      "task": "G1.26",
+      "verified": true,
+      "evidence_path": "_archive/_g1_26_verify.txt",
+      "evidence_count": 13,
+      "docs_synced": true,
+      "ts": "2026-10-09T01:06:36Z"
+    },
+    {
+      "task": "G1.27",
+      "verified": true,
+      "evidence_path": "_archive/_g1_27_verify.txt",
+      "evidence_count": 19,
+      "docs_synced": true,
+      "ts": "2026-10-09T01:24:14Z"
+    },
+    {
+      "task": "G1.28",
+      "verified": true,
+      "evidence_path": "_archive/_g1_28_run.txt",
+      "evidence_count": 378,
+      "docs_synced": true,
+      "ts": "2026-10-09T22:15:00Z"
+    },
+    {
+      "task": "G1.31",
+      "verified": true,
+      "evidence_path": "_archive/_g1_31_run.txt (SUITE_STATUS=GREEN; MODULES=70 TOTAL_TESTS=469 FAILED_MODULES=0 CRASHED_MODULES=0) + human_visual_testnet_chunk_5",
+      "evidence_count": 469,
+      "docs_synced": true,
+      "ts": "2026-10-10T22:23:38Z"
+    },
+    {
+      "task": "G1.32a",
+      "verified": true,
+      "evidence_path": "_archive/_g1_32a_run.txt (SUITE_STATUS=GREEN; MODULES=72 TOTAL_TESTS=485 FAILED_MODULES=0 CRASHED_MODULES=0; incl test_g1_32a_market_exit_plan=8 OK + test_g1_32a_exit_sequence=8 OK)",
+      "evidence_count": 485,
+      "docs_synced": true,
+      "ts": "2026-10-10T22:36:26Z"
+    },
+    {
+      "task": "G1.32b",
+      "verified": true,
+      "evidence_path": "_archive/_g1_32b_run.txt (SUITE_STATUS=GREEN; MODULES=75 TOTAL_TESTS=509 FAILED_MODULES=0 CRASHED_MODULES=0; incl test_g1_32b_bracket=14 + test_g1_32b_ui=4 + test_g1_32b_wiring=6 + g1_32a=16)",
+      "evidence_count": 509,
+      "docs_synced": true,
+      "ts": "2026-10-11T18:23:14Z"
+    },
+    {
+      "task": "G1.32",
+      "verified": true,
+      "evidence_path": "_archive/_g1_32b_run.txt (SUITE_STATUS=GREEN; MODULES=75 TOTAL_TESTS=509 FAILED_MODULES=0 CRASHED_MODULES=0; incl test_g1_32b_bracket=14 + test_g1_32b_ui=4 + test_g1_32b_wiring=6 + g1_32a=16)",
+      "evidence_count": 509,
+      "docs_synced": true,
+      "ts": "2026-10-11T18:23:14Z"
+    },
+    {
+      "task": "G1.33",
+      "verified": true,
+      "evidence_path": "_archive/_g1_33_run.txt (SUITE_STATUS=GREEN; MODULES=76 TOTAL_TESTS=518 FAILED_MODULES=0 CRASHED_MODULES=0; incl test_g1_33_pricing=9)",
+      "evidence_count": 518,
+      "docs_synced": true,
+      "ts": "2026-10-11T18:30:48Z"
+    },
+    {
+      "task": "G1.34",
+      "verified": true,
+      "evidence_path": "_archive/_g1_34_run.txt (SUITE_STATUS=GREEN; MODULES=77 TOTAL_TESTS=523 FAILED_MODULES=0 CRASHED_MODULES=0; incl test_g1_34_order_placed=5)",
+      "evidence_count": 523,
+      "docs_synced": true,
+      "ts": "2026-10-11T21:13:00Z"
+    },
+    {
+      "task": "G1.35",
+      "verified": true,
+      "evidence_path": "_archive/_g1_35_run.txt (SUITE_STATUS=GREEN; MODULES=78 TOTAL_TESTS=527 FAILED_MODULES=0 CRASHED_MODULES=0; incl test_g1_35_delete_recipient=4)",
+      "evidence_count": 527,
+      "docs_synced": true,
+      "ts": "2026-10-11T21:17:00Z"
+    },
+    {
+      "task": "G1.36",
+      "verified": true,
+      "evidence_path": "_archive/_g1_36_run.txt (SUITE_STATUS=GREEN; MODULES=79 TOTAL_TESTS=530 FAILED_MODULES=0 CRASHED_MODULES=0; incl test_g1_36_reposition_fields=3)",
+      "evidence_count": 530,
+      "docs_synced": true,
+      "ts": "2026-10-11T21:29:00Z"
+    },
+    {
+      "task": "G1.37",
+      "verified": true,
+      "evidence_path": "_archive/_g1_37_run.txt (SUITE_STATUS=GREEN; MODULES=80 TOTAL_TESTS=555 FAILED_MODULES=0 CRASHED_MODULES=0; incl test_g1_37_intervention_alerts=25)",
+      "evidence_count": 555,
+      "docs_synced": true,
+      "ts": "2026-10-12T10:48:42Z"
+    },
+    {
+      "task": "G1.38",
+      "verified": true,
+      "evidence_path": "docs/G1_38_state_split_report.md",
+      "evidence_count": 41,
+      "docs_synced": true,
+      "ts": "2026-10-12T11:25:59Z"
+    },
+    {
+      "task": "G1.39",
+      "verified": true,
+      "evidence_path": "docs/G1_39_rotate_tool_report.md",
+      "evidence_count": 2,
+      "docs_synced": true,
+      "ts": "2026-10-12T11:45:59Z"
+    },
+    {
+      "task": "G1.40",
+      "verified": true,
+      "evidence_path": "docs/G1_40_archive_manifest_report.md",
+      "evidence_count": 1,
+      "docs_synced": true,
+      "ts": "2026-10-12T11:59:13Z"
+    },
+    {
+      "task": "G1.43",
+      "verified": true,
+      "evidence_path": "docs/G1_43_i18n_guard_report.md",
+      "evidence_count": 558,
+      "docs_synced": true,
+      "ts": "2026-10-12T18:17:10Z"
+    },
+    {
+      "task": "G1.44",
+      "verified": true,
+      "evidence_path": "docs/G1_44_btc_follow_report.md",
+      "evidence_count": 605,
+      "docs_synced": true,
+      "ts": "2026-10-12T21:03:57Z"
+    },
+    {
+      "task": "G1.45",
+      "verified": true,
+      "evidence_path": "docs/G1_45_percent_trackers_report.md",
+      "evidence_count": 632,
+      "docs_synced": true,
+      "ts": "2026-10-12T23:12:09Z"
+    },
+    {
+      "task": "G1.46",
+      "verified": true,
+      "evidence_path": "docs/G1_46_deal_result_card_report.md",
+      "evidence_count": 646,
+      "docs_synced": true,
+      "ts": "2026-10-13T10:38:17Z"
+    },
+    {
+      "task": "G1.46.1",
+      "verified": true,
+      "evidence_path": "docs/G1_46_1_autowire_report.md (Ran 651 tests in 182.993s OK)",
+      "evidence_count": 651,
+      "docs_synced": true,
+      "ts": "2026-10-13T12:25:02Z"
+    },
+    {
+      "task": "G1.47",
+      "verified": true,
+      "evidence_path": "docs/G1_47_manual_exit_report.md (Ran 665 tests OK)",
+      "evidence_count": 665,
+      "docs_synced": true,
+      "ts": "2026-10-13T13:11:00Z"
+    },
+    {
+      "task": "G1.48",
+      "verified": true,
+      "evidence_path": "docs/G1_48_tracker_semantics_report.md (split per-file: ran=672 OK, 0 fail/0 err)",
+      "evidence_count": 672,
+      "docs_synced": true,
+      "ts": "2026-10-13T14:05:00Z"
+    },
+    {
+      "task": "G1.49",
+      "verified": true,
+      "evidence_path": "docs/G1_49_unified_exit_report.md (split per-file: ran=717 OK, 0 fail/0 err)",
+      "evidence_count": 717,
+      "docs_synced": true,
+      "ts": "2026-10-13T23:05:00Z"
+    },
+    {
+      "task": "G1.50",
+      "verified": true,
+      "evidence_path": "docs/G1_50_btc_slippage_report.md (split per-file: ran=724 OK, 0 fail/0 err)",
+      "evidence_count": 724,
+      "docs_synced": true,
+      "ts": "2026-10-13T23:25:00Z"
+    }
+  ],
+  "run_log_store": {
+    "mode": "cold",
+    "ref": "state/run_log.jsonl",
+    "hash": "sha256:eedec1dd4a6fb5f1364b7c62c30e6ac61b1ef0efdc5479a6a004ea477b98ac83",
+    "count": 85
+  },
+  "decisions_log_store": {
+    "mode": "cold",
+    "ref": "state/decisions_log.json",
+    "hash": "sha256:6905faf8e4e95dbf7fc44918c43b2d7e50dec1b288c23e1e837bbb83fa5436d4",
+    "count": 83
+  },
+  "task_ledger_live": [
+    {
+      "id": "G1",
+      "type": "human_gate",
+      "human_gate": true,
+      "effort_estimate": "—",
+      "title": "بوابة اعتماد بشري: اكتمال البوت التجريبي (Testnet) — تجربة يدوية من المستخدم + موافقة صريحة قبل أي عمل Live",
+      "status": "next",
+      "definition_of_done": "بعد اكتمال T15 (Validated): أعلن للمستخدم صراحةً أن البوت التجريبي اكتمل واجتاز Validated، واطلب منه تجربته يدويًا وإبداء رأيه. لا تُعلَّم مجتازة إلا عندما يكتب المستخدم عبارة الاعتماد الصريحة.",
+      "approval_phrase": "اعتمدت البوت التجريبي — ابدأ التحويل إلى Live",
+      "acceptance_checks": [
+        "أُعلن للمستخدم اكتمال البوت التجريبي وطُلبت التجربة اليدوية",
+        "المستخدم كتب عبارة الاعتماد الصريحة",
+        "لم تبدأ أي مهمة Live قبل الاعتماد"
+      ],
+      "depends_on": [
+        "T15"
+      ]
+    },
+    {
+      "id": "T16",
+      "effort_estimate": "S",
+      "title": "M6 — Live (بوابة): تبديل إعداد فقط + بوابة تحقق + مراقبة Rate limit",
+      "status": "blocked",
+      "definition_of_done": "التحويل إلى Live عبر تبديل base URL+المفتاح خلف بوابة تحقق، دون أي تغيير منطقي.",
+      "acceptance_checks": [
+        "لا فرع كود خاص بـ Live",
+        "بوابة تحقق قبل التفعيل",
+        "رؤوس Rate limit مُراقَبة",
+        "اجتياز بوابة الاعتماد البشري G1 قبل البدء"
+      ],
+      "depends_on": [
+        "G1"
+      ]
+    }
+  ],
+  "task_ledger_store": {
+    "mode": "cold",
+    "ref": "state/task_ledger.full.json",
+    "hash": "sha256:93dab1f55b9f8322ad1ea10a4889d53ad1e1c713dcbc99c6afcd2b088a825f0d",
+    "count": 29
+  },
+  "state_store": {
+    "layout_version": "1.4",
+    "hot_file": "PROJECT_STATE.json",
+    "cold_dir": "state/",
+    "full_backup": "_archive/PROJECT_STATE.full_pre_1_4.json",
+    "rule": "اقرأ الطبقة الحارّة فقط عند الدخول؛ افتح state/ عبر ref عند الحاجة (11.1)."
+  }
+}

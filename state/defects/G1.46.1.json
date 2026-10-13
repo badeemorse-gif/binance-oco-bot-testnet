@@ -1,0 +1,44 @@
+{
+  "id": "G1.46.1",
+  "status": "sealed",
+  "severity": "minor",
+  "protocol_version": "1.5",
+  "parent": "G1.46",
+  "title": "ربط الاستدعاء التلقائي لتعبئة بطاقة نتيجة الصفقة (DealResultCard) عند التنقّل/دوريًا — متابعة G1.46",
+  "description": "متابعة شفافة من ختم G1.46 (نصّ المستخدم حرفيًّا بلا تغيير): «الوسم يُصدَر فعليًّا في الإنتاج والبطاقة جاهزة وتُعرض عبر set_deal_results(...)، لكنّني لم أربط الاستدعاء التلقائي لتعبئتها عند التنقّل/دوريًا (نقطة تكامل صغيرة متبقّية). خارج نطاق acceptance_checks المختومة، وأقترحه كمتابعة قصيرة.»",
+  "professional_proposal": "ربط عرض-فقط: مُنِحت DynamicMonitoringScreen مصدرَ بيانات (audit_path/dismiss_path) وطريقة refresh_deal_results تُحمّل الصفقات المنتهية عبر load_completed_trades (نموذج القراءة القائم) ثم تستدعي set_deal_results القائمة. تُستدعى عند إظهار الشاشة (التنقّل) ودوريًّا عبر QTimer(1s) أثناء ظهورها فقط (نمط CompletedTradesScreen في G1.24)، وعبر الرَنَر إن توفّر، fail-safe. وتمرّر ContentRouter نفس audit_path لشاشة المراقبة. بلا أي نص واجهة جديد، وبلا أي مساس بمنطق التنفيذ/الإصدار/المستويات أو بسجلّ التدقيق.",
+  "implementation_note": "ocobot/ui/monitoring.py (import os/QTimer/load_completed_trades/default_dismiss_path + معاملا audit_path/dismiss_path + refresh_deal_results + QTimer(1s) + showEvent/hideEvent) + ocobot/ui/content.py (تمرير audit_path لشاشة المراقبة) + tests/test_g1_46_1_deal_results_autowire.py (5 اختبارات مع tearDown صارم).",
+  "scope_boundary": {
+    "in": [
+      "ocobot/ui/monitoring.py",
+      "ocobot/ui/content.py",
+      "tests/test_g1_46_1_deal_results_autowire.py",
+      "docs/G1_46_1_autowire_report.md"
+    ],
+    "out": [
+      "منطق التنفيذ/الإصدار/المستويات",
+      "إصدار علامة exit_source أو أي حدث تدقيق جديد",
+      "ocobot/domain/completed_trades.py",
+      "ocobot/ui/deal_result_card.py",
+      "ocobot/ui/i18n.py",
+      "أي نص واجهة جديد"
+    ]
+  },
+  "acceptance_checks": [
+    "python -m unittest discover -s tests -t . ⇒ Ran 651 tests OK (646 خط الأساس + 5 موجَّهة) — متحقَّق",
+    "refresh_deal_results يحمّل من audit_path ويُظهر بطاقة الوسيلة المطابقة (PRICE_BRACKET) بقيمة الدخول الصحيحة — أخضر",
+    "showEvent (التنقّل) يملأ البطاقات ويبدأ المؤقّت الدوري؛ hideEvent يوقفه — أخضر",
+    "غياب ملف التدقيق fail-safe (بلا رمي، البطاقات مخفية) — أخضر",
+    "ContentRouter يمرّر audit_path إلى DynamicMonitoringScreen — أخضر",
+    "§1.5: لا نصوص واجهة جديدة؛ اختبارات G1.46 الثنائية تبقى خضراء بلا تسرّب"
+  ],
+  "discovered_at": "2026-10-13T11:00:00Z",
+  "evidence_path": "docs/G1_46_1_autowire_report.md",
+  "seal": {
+    "verified": true,
+    "evidence_path": "docs/G1_46_1_autowire_report.md",
+    "evidence_count": 651,
+    "docs_synced": true,
+    "ts": "2026-10-13T12:25:02Z"
+  }
+}

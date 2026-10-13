@@ -1,0 +1,22 @@
+{
+  "id": "G1.4",
+  "title": "إصلاح تداخل/عدم وضوح خانات القسمين 03 و04 عند تكبير النافذة",
+  "description": "في القسمين 03 (تفاصيل وتعديل) و04 (المراقبة الديناميكية): عند تصغير النافذة تكون الخانات والأرقام واضحة، وعند تكبير النافذة تنضغط الخانات وتتداخل الأرقام داخلها فلا تُرى.",
+  "severity": "major",
+  "discovered_at": "2026-09-26",
+  "reported_by": "user_manual_testing",
+  "professional_proposal": "خانات caption/value في selected_oco.py و monitoring.py بلا word-wrap/elide/حدّ أدنى للعرض، والفاصل المرن addStretch(1) في منتصف الصف؛ عند التكبير تذهب الزيادة للفاصل الأوسط فتتداخل النصوص. المقترح: إضافة قيود عرض/محاذاة/elide وضبط توزيع stretch — يُؤكَّد السبب في chunk_diag.",
+  "resolution_summary": null,
+  "status": "sealed",
+  "verification_status": "verified",
+  "next_action": "contracted",
+  "evidence_path": "_g1_4_run.txt",
+  "seal": {
+    "task": "G1.4",
+    "verified": true,
+    "evidence_path": "_g1_4_run.txt",
+    "evidence_count": 251,
+    "docs_synced": true,
+    "ts": "2026-09-26T21:18:00Z"
+  }
+}

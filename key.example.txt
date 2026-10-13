@@ -1,0 +1,13 @@
+# OCOBot — قالب مفاتيح API (نموذج فقط — لا تضع قيمًا حقيقية هنا)
+# انسخ هذا الملف إلى المسار المُهيّأ (الافتراضي: D:\فولدرات\مفتاح بنانس\key.txt)
+# أو مرّر مسارًا عبر --keys / OCOBOT_KEYS_PATH، ثم املأ القيم الحقيقية.
+#
+# قواعد أمان (D8):
+#   - صلاحيات المفتاح: تداول فقط، بدون Withdrawals.
+#   - يُنصح بتفعيل IP whitelist.
+#   - لا ترفع ملف المفاتيح الحقيقي لأي repo (مُدرَج في .gitignore).
+
+TESTNET_KEY=your_testnet_api_key_here
+TESTNET_SECRET=your_testnet_api_secret_here
+LIVE_KEY=your_live_api_key_here
+LIVE_SECRET=your_live_api_secret_here

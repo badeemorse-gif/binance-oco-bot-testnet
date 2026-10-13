@@ -1,0 +1,55 @@
+{
+  "id": "G1.16",
+  "label": "G-LAUNCH-01",
+  "severity": "minor",
+  "title": "لا يوجد اختصار (shortcut) مباشر لفتح الواجهة الرسومية من جذر المشروع؛ الفتح يتطلب أمرًا يدويًا في cmd ويظهر نافذة console/log",
+  "description": "عند فتح واجهة OCOBot الرسومية يضطر المستخدم لفتح نافذة cmd وكتابة الأمر يدويًا (cd /d D:\\oco ثم python -m ocobot.ui.app)، كما تظهر نافذة console/log مزعجة. المطلوب اختصار احترافي خفيف يفتح الواجهة بسلاسة من اختصار (لا أمر) ودون أي نافذة console/log، مع إبقاء الواجهة كما هي تمامًا دون أي تغيير في الكود أو الشكل.",
+  "professional_proposal": "إضافة اختصار Windows أصلي OCOBot.lnk في جذر المشروع هدفه pythonw.exe (مُفسِّر بلا console) ووسائطه -m ocobot.ui.app و(Start in)=جذر المشروع؛ يفتح الواجهة بنقرة مزدوجة بلا أي نافذة console. يُرفَق مولّد tools\\create_OCOBot_shortcut.ps1 لإعادة إنشاء الـ .lnk على أي جهاز، وبديل نصّي OCOBot.vbs يشغّل pythonw مخفيًّا. لا يُمسّ كود أو شكل الواجهة إطلاقًا — تغيير آلية التشغيل فقط. طرق التشغيل القائمة (python -m ocobot.ui.app و CLI python -m ocobot) تبقى كما هي.",
+  "plan_ar": [
+    "(أول خطوة إلزامية — §7 الأرشفة) نقل مخلفات المهام المختومة من tests/ إلى _archive: _g1_14_run.txt و_g1_15_run.txt (نقل لا حذف) — [منجز في مهمة التسجيل].",
+    "إنشاء اختصار بلا console: OCOBot.lnk في جذر المشروع هدفه pythonw.exe، وسائط -m ocobot.ui.app، Start in=جذر المشروع؛ مع مولّد tools\\create_OCOBot_shortcut.ps1 وبديل OCOBot.vbs.",
+    "عدم المساس بكود/شكل الواجهة أو بطرق التشغيل القائمة — إضافة تشغيل فقط.",
+    "إضافة اختبار تحقّق tests\\test_g1_16_launcher.py: وجود المُشغِّل/المولّد، إشارته إلى pythonw و ocobot.ui.app وضبط مجلد العمل على الجذر، وعدم استخدام python.exe مع console مرئية، وأن importlib يجد ocobot.ui.app.",
+    "تحديث README (قسم التشغيل): النقر المزدوج على اختصار OCOBot (pythonw، بلا console) كطريقة موصى بها.",
+    "تشغيل كامل الحزمة والتأكد أنها خضراء، حفظ الدليل في tests\\_g1_16_run.txt، ثم الختم والأرشفة."
+  ],
+  "acceptance_checks_ar": {
+    "AC1": "النقر المزدوج على الاختصار من جذر المشروع يفتح نافذة الواجهة مباشرةً دون كتابة أي أمر في cmd.",
+    "AC2": "لا تظهر أي نافذة console/log عند الفتح (التشغيل عبر pythonw.exe)، والفتح سلس.",
+    "AC3": "مجلد العمل=جذر المشروع فتُستورد حزمة ocobot وتُحلّ المسارات النسبية؛ وشكل/سلوك الواجهة مطابق تمامًا لما قبل (لا تغيير كود UI).",
+    "AC4": "Testnet فقط (app.main يثبّت OCOBOT_ENV=testnet)؛ لا Live ولا مساس ببوابة G1 (T16 محجوب).",
+    "AC5": "لا تراجع: python -m ocobot.ui.app و python -m ocobot يعملان كما قبل، والحزمة تبقى خضراء."
+  },
+  "risks_ar": {
+    "R1": "عدم إيجاد pythonw.exe أو اختلاف مساره — المولّد يحلّ المسار الكامل لـ pythonw عند الإنشاء.",
+    "R2": "خطأ مجلد العمل يمنع الاستيراد/إيجاد المفاتيح — يُضبط Start in/CWD على الجذر.",
+    "R3": "pythonw يُخفي الأخطاء (بلا console) — تخفيف: الاعتماد على audit_log/failure_matrix، مع إبقاء python -m ocobot.ui.app للتشخيص عند الحاجة.",
+    "R4": "الـ .lnk يحمل مسارات مطلقة خاصة بالجهاز — مولّد لإعادة التوليد وبديل .vbs نسبي.",
+    "R5": "GUI لا تُشغَّل بلا شاشة — التحقّق الآلي يقتصر على وجود/محتوى المُشغِّل وحلّ الوحدة؛ AC1/AC2 تحقّق بصري يدوي."
+  },
+  "progress": {
+    "done": [
+      "تسجيل البند في defect_log",
+      "أرشفة مخلفات G1.14/G1.15 من tests/ إلى _archive",
+      "تنفيذ OCOBot.lnk (الهدف pythonw.exe، -m ocobot.ui.app، Start in=الجذر) + مولّد tools/create_OCOBot_shortcut.ps1 + بديل OCOBot.vbs",
+      "إضافة tests/test_g1_16_launcher.py (4 اختبارات) وتحديث README",
+      "تشغيل كامل الحزمة 354/354 OK",
+      "الختم والأرشفة النهائية"
+    ],
+    "next_steps": []
+  },
+  "status": "sealed",
+  "discovered_at": "2026-10-05T03:07:23+03:00",
+  "evidence_path": "_archive/_g1_16_run.txt",
+  "seal": {
+    "task": "G1.16",
+    "verified": true,
+    "evidence_path": "_archive/_g1_16_run.txt",
+    "evidence_count": 354,
+    "docs_synced": true,
+    "ts": "2026-10-05T03:28:53+03:00"
+  },
+  "verification_status": "verified",
+  "next_action": null,
+  "resolution_summary": "أُضيف اختصار Windows بلا console: OCOBot.lnk (الهدف pythonw.exe، الوسائط -m ocobot.ui.app، Start in=جذر المشروع) + مولّد tools/create_OCOBot_shortcut.ps1 (يحلّ مسار pythonw) + بديل محمول OCOBot.vbs + اختبار tests/test_g1_16_launcher.py (4 اختبارات) + قسم في README. الحزمة كاملة خضراء 354/354. لم يُمَسّ أي كود أو شكل للواجهة — تغيير آلية التشغيل فقط. تحقّق آلي: AC3/AC4/AC5 + بنية الاختصار (pythonw/الوسائط/مجلد العمل=الجذر) + حلّ وحدة ocobot.ui.app. AC1/AC2 (الفتح بنقرة مزدوجة بلا نافذة console) تحقّق بصري نهائي لدى المستخدم."
+}

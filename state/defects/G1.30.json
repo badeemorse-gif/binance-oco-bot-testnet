@@ -1,0 +1,23 @@
+{
+  "id": "G1.30",
+  "title": "شبكة أمان المركز (Position Guardian): حماية تلقائية ضد نتائج النافذة العارية D19 — داخل العملية، مقتصرة على عملة المراقبة النشطة",
+  "kind": "hardening_feature",
+  "description": "شبكة أمان داخل العملية مقتصرة على ocobot MonitoringState.symbol النشط: تكتشف المركز العاري (لا أمر بيع قائم + رصيد حرّ للأصل الأساس) أثناء/بعد التموضع، وتضع أمر STOP_LOSS_LIMIT حمائيًّا واحدًا بحجم min(الرصيد الحرّ, الكمية المتبقّية المُراقَبة)، ثم توقف المراقبة بأمان عبر الدوال الموجودة (pause/kill_switch) وتُطلق تنبيهًا عبر وحدة alerts. v1 لا تُعدّل المسار الحار (on_price_tick/SafeExecutor/reposition/create_oco) ولا تقوم بتسليم عكسي تلقائي (مؤجّل). تعالج نتائج النافذة العارية D19 للتشغيل غير المراقَب (سيناريو انهيار العملية/الكهرباء خارج النطاق لأنها داخل العملية).",
+  "severity": "major",
+  "professional_proposal": "وحدة guardian مستقلّة + محوّل place_protective_stop عبر عميل الوساطة الموجود + مُشرِف دوري يقرأ الحالة ويستدعي الحارس؛ منع البيع المزدوج بنيويًّا لأن أي OCO قائم يقفل الرصيد فلا يجد الحارس رصيدًا حرًّا إلا والمركز عارٍ فعلًا. بلا أي تعديل للمسار الحار؛ تحقّق على Testnet نقطة تفتيش بشرية.",
+  "status": "sealed",
+  "verification_status": "verified",
+  "next_action": "sealed",
+  "discovered_at": "2026-10-10T00:20:00Z",
+  "evidence_path": "_g1_30_run.txt + _g1_30_suite.txt (Ran 435 status=OK failures=0 errors=0 skipped=0) + _g1_30_fix.txt",
+  "regression_resolution": "انحدار test_ui_no_direct_network: نقل العميل الكسول من ocobot/ui/guardian_arm.py الى ocobot/core/guardian_lazy_client.py (LazyGuardianRestClient) حفاظا على ثابتة P2/P3 — بلا مس المسار الحار.",
+  "seal": {
+    "task": "G1.30",
+    "verified": true,
+    "evidence_path": "_g1_30_run.txt + _g1_30_suite.txt + _g1_30_fix.txt",
+    "evidence_count": 435,
+    "docs_synced": true,
+    "testnet_behavioral": "deferred_human_confidence_gate — بقرار المستخدم؛ نسخة احتياطية كاملة كشبكة امان؛ لا يفتح T16/Live؛ معيار الخروج 10.5 يبقى ساريا",
+    "ts": "2026-10-10T14:40:00Z"
+  }
+}

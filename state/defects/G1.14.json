@@ -1,0 +1,52 @@
+{
+  "id": "G1.14",
+  "severity": "major",
+  "status": "sealed",
+  "phase": "G1_MANUAL_TESTING",
+  "title_ar": "فرع عرض الصفقات المنتهية (CLOSED) عبر البوت — قائمة + تفاصيل سلسلة التموضع + ربح $/%",
+  "problem_ar": "لا يوجد فرع يعرض الصفقات التي أنهاها البوت (ستوب أو جني ربح). المطلوب فرع عربي بالكامل (عدا الأرقام ورمز العملة والرمز) مقسوم نصفين: النصف العلوي قائمة رأسية بالصفقات المنتهية قابلة للتحديد بالضغط مع تمرير بعجلة الماوس، وأسفلها زرّا [مسح الصفقة المحددة] و[تفاصيل الصفقة]؛ النصف السفلي جدول تفاصيل تموضع الصفقة المحددة (تاريخ ووقت دقيق + سعر التموضع الذي تغيّرت عنده الصفقة عن سابقتها + أسعار الستوب والبيع) مع تمرير بعجلة الماوس، ويُظهر سلسلة التنقّل من بدء المراقبة حتى الانتهاء (مثال 371236 -> 371452 -> 371600)، وعند البيع يُعرض فرق الربح $ و% محسوبًا من سعر بدء المراقبة.",
+  "environment": "Tornado 24\" 1360x768 @125% — تغيير الدقة ممنوع",
+  "professional_proposal_ar": "إضافة معزولة: (1) ocobot/domain/completed_trades.py قراءة-فقط تعيد بناء سلسلة التموضعات لكل صفقة CLOSED من سجلّ التدقيق JSONL. (2) شاشة ocobot/ui/completed_trades.py بمفتاح 08_completed_trades مسجّلة في SCREENS و ContentRouter، والشريط الجانبي يبنيها تلقائيًا. (3) زر المسح = إخفاء عبر فهرس dismiss منفصل، لا حذف من سجلّ التدقيق append-only. (4) ربح $/% دالة نقية من reference_price وسعر البيع. (5) التقاط سعر البيع عبر خطّاف on_order_event القائم ككتابة تدقيق إضافية append-only (trade_closed_fill)؛ الصفقات القديمة بلا سعر بيع تُظهر «غير متاح».",
+  "data_mapping_ar": "القائمة = الصفقات التي بلغت الحدث monitor_closed. السلسلة تُبنى من monitor_start.order_list_id ثم أحداث repositioned (old_target -> new_target) حتى monitor_closed. أسعار كل خطوة من draft_built/reposition_success (stop_trigger/stop_limit/tp_price) مع الطابع الزمني ts. سعر بدء المراقبة = monitor_start.reference_price. سعر البيع الفعلي = حدث trade_closed_fill الإضافي (الحقل L).",
+  "plan_ar": [
+    "step_1_domain_module: إنشاء ocobot/domain/completed_trades.py (قراءة JSONL فقط + إعادة بناء السلسلة + دالة ربح نقية + طبقة dismiss)",
+    "step_2_domain_tests: tests/test_completed_trades_domain.py بـfixtures اصطناعية",
+    "step_3_fill_capture: ربط on_order_event عند التجميع لكتابة trade_closed_fill (إضافي، بلا تعديل منطق المحرّك)",
+    "step_4_fill_tests: اختبار الملتقط append-only",
+    "step_5_ui_screen: ocobot/ui/completed_trades.py (نصفان RTL+PALETTE، قائمة+تمرير عجلة، زرّا مسح/تفاصيل، جدول تفاصيل+تمرير عجلة)",
+    "step_6_register_screen: SCREENS (screens.py) key=08_completed_trades + import وelif في ContentRouter (content.py)",
+    "step_7_nav_tests: تحديث tests/test_ui_navigation.py EXPECTED_* والعدد 7->8",
+    "step_8_docs_sync: مزامنة docs/OCOBot_Design_AR.md",
+    "step_9_run_suite: python -m unittest discover -s tests -t . -> tests/_g1_14_run.txt",
+    "step_10_seal: completion_seal + status->sealed + run_log + decisions_log(G1.14_sealed) + تصفير WORKING_MEMORY"
+  ],
+  "acceptance_checks_ar": [
+    "AC1: python -m unittest discover -s tests -t . خضراء بعدد >=322، الدليل tests/_g1_14_run.txt",
+    "AC2: اختبار تنقّل يثبت تسجيل الشاشة 08_completed_trades وعدد الشاشات = 8",
+    "AC3: اختبار يثبت إعادة بناء سلسلة التموضعات من JSONL اصطناعي مع ts وأسعار الستوب/البيع لكل خطوة",
+    "AC4: اختبار يثبت حساب الربح $/% من reference_price وسعر البيع، وأن غياب سعر البيع يُرجع «غير متاح»",
+    "AC5: اختبار يثبت أن المسح يُخفي عبر dismiss ولا يحذف من سجلّ التدقيق (الملف يبقى كما هو)",
+    "AC6: اختبار يثبت أن trade_closed_fill كتابة append-only ولا يغيّر سلوك المحرّك"
+  ],
+  "risks_ar": [
+    "R-A: نوع الإغلاق (TP/SL) وسعر البيع الفعلي والاتجاه غير مسجّلة حاليًا؛ الاحتواء: التقاط سعر البيع عبر on_order_event ككتابة append-only؛ الصفقات القديمة تُظهر «غير متاح» (التزامًا بـD14)",
+    "R-B: اختبارات التنقّل تتحقق من عدد الشاشات (7) وقوائم EXPECTED_*؛ تُحدَّث 7->8",
+    "R-C: الربح دالة عرض نقية بسيطة من سعر البدء، ليست محرّك تحليلات P&L المستبعد",
+    "R-D: التمرير بعجلة الماوس للنصفين يُحاكي نمط QScrollArea/QTableWidget القائم بلا مساس بتكبير Ctrl+wheel"
+  ],
+  "resume_point": null,
+  "next_action": "SEALED — G1.14 مختوم؛ لا إجراء.",
+  "recorded_at": "2026-10-03T03:18:00Z",
+  "discovered_at": "2026-10-03",
+  "evidence_path": null,
+  "evidence_count": null,
+  "seal": {
+    "task": "G1.14",
+    "verified": true,
+    "evidence_path": "tests/_g1_14_run.txt",
+    "evidence_count": 347,
+    "docs_synced": true,
+    "ts": "2026-10-04T02:21:50Z"
+  },
+  "verified": true
+}

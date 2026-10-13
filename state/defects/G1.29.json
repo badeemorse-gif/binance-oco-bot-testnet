@@ -1,0 +1,14 @@
+{
+  "id": "G1.29",
+  "title": "ترجمة إنجليزية ناقصة: نصوص طبقة domain/core العربية تظهر في اللوحات الحيّة عند التشغيل بالإنجليزية",
+  "description": "≈34 نصًّا عربيًّا تنشأ من ocobot/domain/monitoring.py (رسائل MonitorTick + MSG_KILL_SWITCH ≈14) و ocobot/domain/reposition.py (result.reason/messages/إخفاقات البوّابات ≈12) و ocobot/domain/convert.py (عناوين الخطوات ≈8) و ocobot/domain/selection.py (≈1) و ocobot/core/failure_matrix.py (مخرجات humanize() ≈8). تُعرض حرفيًّا في اللوحات الحيّة بالواجهة (tick.message في monitoring، تفاصيل خطوات convert/reposition في safe_execution، مخرجات humanize()) فتظهر بالعربية في وضع الإنجليزية لأنها لا تمرّ عبر ocobot/ui/i18n.py. هذه الوحدات ضمن hot_path_DONOTTOUCH. مؤجّلة من G1.28.",
+  "severity": "minor",
+  "professional_proposal": "الترجمة عند حدود العرض في الواجهة فقط: إبقاء النصوص العربية كثوابت رسائل canonical في domain/core دون تغيير، وتمريرها عبر i18n.translate_for_current(...) في مواضع العرض داخل ocobot/ui حيث تُقرأ (tick.message / humanize() / تفاصيل الخطوات)، مع إضافة المفاتيح الإنجليزية في ocobot/ui/i18n.py حصرًا. لا تعديل لأي منطق في domain/core ولا للمسار الحار ولا لأي قيمة عربية ولا لسلوك التداول.",
+  "status": "wont_fix",
+  "discovered_at": "2026-10-09T22:20:00Z",
+  "evidence_path": null,
+  "seal": null,
+  "resolution": "wont_fix_by_design",
+  "resolution_ts": "2026-10-09T22:30:00Z",
+  "resolution_note": "رسائل المحرّك/اللوحات الحيّة المنشؤة من ocobot/domain/* و ocobot/core/failure_matrix.py تبقى بالعربية canonical عمدًا؛ تغطية الإنجليزية مقصورة على طبقة عرض الواجهة (G1.28). قرار بالتصميم: لا تُترجَم رسائل المحرّك تجنّبًا لأي خطر على المسار الحار، الآن وبعد Live."
+}

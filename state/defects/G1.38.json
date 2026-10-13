@@ -1,0 +1,21 @@
+{
+  "id": "G1.38",
+  "title": "فصل حالة PROJECT_STATE إلى طبقة حارّة/باردة وتدوير السجلّات (بروتوكول 1.4)",
+  "kind": "infra_protocol",
+  "severity": "major",
+  "status": "sealed",
+  "gate_impact": "none",
+  "discovered_at": "2026-10-12T11:25:59Z",
+  "reported_by": "user_consultation",
+  "description": "حجم PROJECT_STATE.json تضخّم (~279KB) بفعل السجلّات التراكمية ما يبطّئ دخول أي نموذج. الحل: فصل hot/cold + فهارس + بصمات + قراءة كسولة، دون فقد معلومة ومع قابلية الاسترجاع.",
+  "professional_proposal": "إبقاء المفاتيح موجودة بشكل مُلخّص مع ref+hash، ونقل التفاصيل إلى state/، وإبقاء completion_seals حارًا، وإضافة البنود 11.1/11.2/11.3 ورفع protocol_version إلى 1.4.",
+  "resolution_summary": "تم الترحيل الذرّي القابل للاسترجاع، وإضافة بنود 1.4، وتصغير الملف الحارّ مع التحقق من عدم فقد أي معلومة.",
+  "verification_status": "passed",
+  "next_action": "none",
+  "evidence_path": "docs/G1_38_state_split_report.md",
+  "seal": {
+    "sealed_at": "2026-10-12T11:25:59Z",
+    "by": "executor",
+    "protocol_version": "1.4"
+  }
+}

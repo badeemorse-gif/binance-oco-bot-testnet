@@ -1,0 +1,24 @@
+{
+  "id": "G1.11",
+  "label": null,
+  "title": "المسار الثابت لمفاتيح Binance يمنع مشاركة البوت — مطلوب واجهة اتصال مرنة مع مؤشر حالة",
+  "description": "البوت الحالي يتصل تلقائياً عند الفتح بمسار ثابت D:\\فولدرات\\مفتاح بنانس\\key.txt. عند بيع/مشاركة البوت مع مستخدم لا يملك قرص D أو لا يملك نفس الفولدر يفشل الاتصال ويصبح معقّداً جداً، ولا توجد طريقة لإدخال المفاتيح من الواجهة.",
+  "severity": "major",
+  "professional_proposal": "إضافة طبقة اتصال معزولة فقط لا تمس التداول/المراقبة الديناميكية/OCO/Live: Frame اتصال جديد يحوي حقلين (API Key + Secret مقنّع بـ*****) + زر «فتح ملف المفاتيح» (Open File Dialog لاختيار txt) + زر «اتصال». عند «اتصال» تُقرأ المفاتيح من الحقول أو الملف المختار ثم signed_request اختباري لـ /api/v3/account ثم لمبة حالة خضراء متصل / حمراء غير متصل مع رسالة خطأ. الإبقاء على المسار الثابت القديم كـfallback عند فراغ الحقول لضمان عدم كسر التركيبات الحالية. لا يمس monitoring_loop, create_oco_only, buy_and_oco, signed_request — فقط مصدر API_KEY, API_SECRET.",
+  "status": "sealed",
+  "discovered_at": "2026-09-30T11:41:00Z",
+  "evidence_path": "_g1_11_run.txt",
+  "seal": {
+    "task": "G1.11",
+    "verified": true,
+    "evidence_path": "_g1_11_run.txt",
+    "evidence_count": 285,
+    "docs_synced": true,
+    "ts": "2026-09-30T17:06:41Z"
+  },
+  "evidence_count": 285,
+  "verification_status": "verified",
+  "next_action": "sealed",
+  "environment": "Testnet",
+  "live_forbidden": true
+}

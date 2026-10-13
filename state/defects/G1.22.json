@@ -1,0 +1,73 @@
+{
+  "id": "G1.22",
+  "title": "اللوحة الحيّة (المراقبة الديناميكية): جعل سعرَي الحالي/التالي متقابلَين في صفّي جني الأرباح ووقف الخسارة مع سهم ← بينهما وتلوين خانتَي السعر (أخضر TP/أحمر SL) بنص أبيض Bold، دون المساس بأي مواضع/ألوان/منطق أخرى",
+  "severity": "minor",
+  "category": "enhancement",
+  "status": "sealed",
+  "opened_ts": "2026-10-07T01:03:00Z",
+  "description": "في اللوحة الحيّة للمراقبة الديناميكية، المطلوب في كل من صفّي جني الأرباح ووقف الخسارة: تبديل موضع السعر مع الليبل في جهة «التالي» بحيث يصبح الترتيب من اليمين (RTL): [ليبل الحالي] [سعر الحالي] ← [سعر التالي] [ليبل التالي]، فيتقابل السعران (وشّهما في وش بعض) ويتوسّطهما سهم صغير ← معكوس لليسار. تلوين خانتَي السعر في صف جني الأرباح بالأخضر، وفي صف وقف الخسارة بالأحمر، والكتابة بيضاء Bold واضحة. يبقى صف TP فوق صف SL مباشرةً، وتبقى بقية الحقول وكل المواضع والألوان والمنطق الأخرى كما هي تمامًا.",
+  "professional_proposal": "توسيع صفّي TP/SL في QGridLayout للّوحة الحيّة إلى ترتيب خمسة أعمدة لكل صف (RTL): caption_current | value_current | arrow | value_next | caption_next، بإعادة ترتيب خلايا «التالي» (تبديل value/caption) وإدراج QLabel سهم ← (ليس ضمن self._live) بين خانتَي السعر. تطبيق ستايل على خانتَي القيمة فقط: خلفية خضراء لصف TP وحمراء لصف SL ونص أبيض Bold، بإعادة استخدام آلية الستايل الموجودة في monitoring.py دون أي literal إنجليزي معروض. الإبقاء على objectNames الحالية (MonitoringLiveCaption_<key>/MonitoringLiveValue_<key>) ومفاتيح self._live الـ15 والأحجام الدنيا (قيمة ≥120) وسياسة Expanding والعناوين QLabel عربية. لا تغيير في _refresh_live_panel ولا في منطق المراقبة/التسعير/التحويل ولا في بقية الصفوف.",
+  "constraint": "صفر انحدار — كل الاختبارات الخضراء (≥369) تبقى خضراء؛ لا كسر لحرّاس test_ui_monitoring (حضور/ظهور الـ15 مفتاحًا — السهم ليس مفتاحًا في self._live) ولا test_g1_4_layout_geometry (لا تداخل عنوان/قيمة عند 420 و1920 + القيم minWidth≥120) ولا test_g1_5 ولا test_g1_7_ui_arabic (لا إنجليزية معروضة في monitoring.py) ولا test_g1_20_language_toggle.",
+  "contract": {
+    "task_id": "G1.22",
+    "definition_of_done": "في ocobot/ui/monitoring._build_live_panel يُعاد ترتيب خلايا صفّي TP وSL بحيث يصبح لكل صف (RTL من اليمين): caption_current | value_current | arrow(←) | value_next | caption_next؛ خانتا القيمة في صف TP بخلفية خضراء ونص أبيض Bold، وفي صف SL بخلفية حمراء ونص أبيض Bold؛ السهم ← QLabel مستقل غير مُضاف إلى self._live؛ صف TP يبقى مباشرةً فوق صف SL؛ تبقى بقية الحقول (sl_limit, tick_size, monitoring_state, last_operation, connection, environment) ومواضعها وألوانها كما هي؛ تبقى كل الـ15 مفتاحًا في self._live حاضرة وظاهرة؛ بلا أي سلسلة إنجليزية معروضة في monitoring.py؛ بلا تغيير في منطق المراقبة/التسعير/التحويل أو _refresh_live_panel؛ وكل الاختبارات خضراء (Ran ≥ 370، OK، صفر FAILED).",
+    "acceptance_checks": {
+      "AC1": "run_tests.cmd يُظهر Ran ≥ 370 (369 + اختبار G1.22 الجديد)، وسطر OK، وصفر FAILED.",
+      "AC2": "اختبار جديد tests/test_g1_22_live_panel_facing_prices.py: في شبكة اللوحة الحيّة لكل صف TP وSL، تقع الخلايا بالترتيب (RTL) caption_current ثم value_current ثم السهم ثم value_next ثم caption_next، بحيث value_current وvalue_next متجاورتان (يفصلهما عمود السهم فقط)، وصف TP مباشرةً فوق صف SL.",
+      "AC3": "خانتا القيمة في صف TP تحملان ستايل الخلفية الخضراء ونص أبيض Bold، وخانتا SL خلفية حمراء ونص أبيض Bold (تحقّق عبر stylesheet/خاصية اللون)؛ ووجود QLabel السهم ← بين الخانتين في كل صف.",
+      "AC4": "حرّاس test_ui_monitoring (الـ15 مفتاحًا حاضرة وظاهرة) وtest_g1_4_layout_geometry (لا تداخل عند 420 و1920 + minWidth≥120) وtest_g1_5 (نمو القيمة) تبقى خضراء.",
+      "AC5": "حارس test_g1_7_ui_arabic (لا إنجليزية معروضة في monitoring.py) وtest_g1_20_language_toggle يبقيان أخضرين؛ العناوين تبقى QLabel عربية.",
+      "AC6_manual": "فحص بصري يدوي على Testnet (اختياري بعد الختم الفني)."
+    },
+    "ordered_steps": {
+      "step_0_contract": "done",
+      "step_1_reflow_rows": "done",
+      "step_2_test": "done",
+      "step_3_run": "done",
+      "step_4_doc_seal": "done",
+      "step_5_archive": "done"
+    },
+    "scope_boundary": {
+      "inside": [
+        "ocobot/ui/monitoring.py (داخل _build_live_panel: إعادة ترتيب خلايا صفّي TP وSL + السهم + ستايل خانتَي القيمة فقط)",
+        "tests/test_g1_22_live_panel_facing_prices.py (جديد)"
+      ],
+      "outside": [
+        "بقية صفوف اللوحة الحيّة (sl_limit, tick_size, monitoring_state, last_operation, connection, environment) ومواضعها وألوانها",
+        "_refresh_live_panel (القيم والمنطق)",
+        "منطق المراقبة/النبض/التسعير/التحويل",
+        "طبقة core",
+        "ocobot/ui/demo_mode.py وبقية الشاشات",
+        "الثوابت/النصوص العربية للحقول (تبقى حرفيًا)",
+        "ocobot/ui/i18n.py AR_TO_EN",
+        "Live/T16"
+      ]
+    },
+    "expected_evidence": {
+      "command": "run_tests.cmd",
+      "expected_count": ">=370",
+      "evidence_path": "_g1_22_run.txt"
+    },
+    "checkpoint_plan": "chunk A (step_1): إعادة ترتيب خلايا صفّي TP/SL + السهم + ستايل خانتَي القيمة في monitoring.py ثم تحقّق من القرص؛ chunk B (step_2+step_3): إضافة test_g1_22 ثم تشغيل run_tests.cmd — صفر FAILED عند كل نقطة.",
+    "dependencies_check": "G1.21 مختوم ومؤرشف (archive_status=done)؛ لا بنود critical/major غير مختومة.",
+    "sizing_verdict": "صغير/متوسط §9.5 — ملف تنفيذ واحد + اختبار؛ تجزئة خفيفة (chunk A ثم B) مع تشغيل اختبارات.",
+    "human_gate": false,
+    "risks": {
+      "R1": "تداخل عنوان/قيمة أو تجاوز العرض عند 420px بعد زيادة الأعمدة. تخفيف: إبقاء minWidth≥120 للقيم وأعمدة بأدنى عرض؛ QGridLayout لا يُراكِب الخلايا.",
+      "R2": "كسر حرّاس الهندسة/المفاتيح. تخفيف: إبقاء objectNames وسياسة Expanding والأحجام الدنيا؛ عدم إضافة السهم إلى self._live (يبقى العدد 15).",
+      "R3": "كسر test_g1_7_ui_arabic بإدخال إنجليزية معروضة. تخفيف: السهم ← رمز غير إنجليزي؛ إعادة استخدام آلية الستايل الموجودة؛ لا نصوص إنجليزية معروضة جديدة.",
+      "R4": "لمس عناصر خارج النطاق سهوًا. تخفيف: تعديل خلايا صفّي TP/SL فقط داخل _build_live_panel دون غيرها."
+    }
+  },
+  "evidence_path": "_g1_22_run.txt",
+  "seal": {
+    "task": "G1.22",
+    "verified": true,
+    "evidence_path": "_g1_22_run.txt",
+    "evidence_count": 376,
+    "docs_synced": true,
+    "ts": "2026-10-07T01:20:00Z"
+  },
+  "evidence_count": 376,
+  "archive_status": "done"
+}

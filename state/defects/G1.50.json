@@ -1,0 +1,30 @@
+{
+  "id": "G1.50",
+  "status": "sealed",
+  "severity": "major",
+  "title": "لوحة تتبّع انزلاق BTC الثالثة بنافذة متحرّكة (عرض فقط) بجوار لوحتَي التتبّع الحاليتين",
+  "discovered_at": "2026-10-13T20:17:02Z",
+  "evidence_path": "docs/G1_50_btc_slippage_report.md (split per-file: ran=724 OK, 0 fail/0 err)",
+  "seal": {
+    "verified": true,
+    "evidence_path": "docs/G1_50_btc_slippage_report.md (split per-file: ran=724 OK, 0 fail/0 err)",
+    "evidence_count": 724,
+    "docs_synced": true,
+    "ts": "2026-10-13T23:25:00Z"
+  },
+  "description": "طلب المستخدم (بعد تصحيح طلبه الأصلي): لوحة ثالثة لتتبّع «انزلاق BTC» بنافذة متحرّكة (rolling window) وليست مرساة ثابتة عند بدء المراقبة؛ لأن المرساة الثابتة تُظهر التغيّر التراكمي لا الانزلاق اللحظي. الغرض رؤية سرعة/مقدار انزلاق BTC خلال آخر ثوانٍ (نفس ما يُسلّح حارس هبوط BTC).",
+  "professional_proposal": "لوحة عرض-فقط إضافية في ocobot/ui بجوار لوحتَي التتبّع الحاليتين (G1.45/G1.48)، تُعيد استخدام domain/btc_follow._window_drop وBtcFollowSupervisor.price_snapshot الموجودين (ذروة النافذة مقابل الحالي) ليطابق المعروض ما يُسلّح الحارس. تعرض: سعر BTC الحيّ، ذروة النافذة، نسبة الانزلاق = (الذروة − الحيّ)/الذروة×100 (أحمر هبوط/أخضر صعود، صيغة 0.00000%)، و(اختياري) طور الحارس IDLE/ARMED. النافذة قابلة للضبط، الافتراضي 3s متوافق مع window_seconds (خيار 5s أو عرض الاثنين). تحديث كل ثانية. معزولة تمامًا عن منطق التنفيذ/المسار الحار.",
+  "scope_boundary": {
+    "in": "ocobot/ui (لوحة التتبّع الجديدة) + قراءة فقط من BtcFollowSupervisor.price_snapshot / domain.btc_follow._window_drop + ocobot/ui/i18n.py",
+    "out": "أي منطق تداول/تنفيذ/hot_path/أوامر فعلية"
+  },
+  "acceptance_checks": [
+    "كامل السويت أخضر",
+    "اللوحة عرض-فقط لا تمسّ أي تنفيذ/أمر",
+    "الانزلاق محسوب بنافذة متحرّكة (اختبار يثبت rolling vs anchored-at-start)",
+    "§1.5 ثنائية اللغة لكل نص جديد",
+    "لا كسر للوحتَي التتبّع القائمتين"
+  ],
+  "human_gate": false,
+  "protocol_version": "1.5"
+}

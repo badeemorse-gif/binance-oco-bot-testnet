@@ -1,0 +1,31 @@
+{
+  "id": "G1.35",
+  "title": "إضافة حذف مستلم في قسم التنبيهات (منع تسرّب الرسائل لمستلم قديم)",
+  "kind": "bug",
+  "severity": "major",
+  "status": "sealed",
+  "discovered_at": "2026-10-11T19:34:30Z",
+  "reported_by": "user_manual_testing",
+  "after": "G1.33",
+  "description": "خانة «إضافة مستلم» في قسم التنبيهات تعمل بسرعة وتضيف أي عدد من المستلمين، لكن لا توجد وسيلة «حذف مستلم»؛ فمتى أُضيف مستلم تعذّر إزالته. الخطر: لو شُغِّل البوت لدى شخص آخر (صديق/مستلم سُلِّم له البوت) تظل الرسائل تصل للمستلم القديم (المالك الأصلي). المطلوب: زر/آلية لحذف أي مستلم من قائمة التنبيهات مع إزالته من التخزين الدائم فورًا.",
+  "professional_proposal": "إضافة عنصر «حذف» لكل مستلم في بطاقة التنبيهات (ocobot/ui/alerts.py) مربوطًا بإزالة من التخزين (ocobot/alerts/storage.py) وتحديث قائمة المُنبِّه (ocobot/alerts/notifier.py)، دون لمس منطق الإرسال/التوقيع/التنسيق المختوم ولا hot_path.",
+  "plan": [
+    "G1.35_chunk_1: عرض قائمة المستلمين الحاليين مع زر «حذف» لكل مستلم في ocobot/ui/alerts.py — اختبارات UI (offscreen).",
+    "G1.35_chunk_2: إزالة المستلم من التخزين الدائم في ocobot/alerts/storage.py وتحديث ocobot/alerts/notifier.py ليقرأ القائمة بعد الحذف + اختبارات.",
+    "G1.35_chunk_3: الحزمة كاملة خضراء عبر _run_suite_isolated.py + دليل _archive/_g1_35_run.txt.",
+    "G1.35_chunk_4 (نقطة تفتيش بشرية Testnet): إضافة مستلم ثم حذفه ⇒ تأكيد عدم وصول أي رسالة إليه بعد الحذف.",
+    "G1.35_chunk_5: ختم G1.35 + تصفير WORKING_MEMORY + الأرشفة إلى _archive."
+  ],
+  "scope_boundary": "داخل: ocobot/ui/alerts.py (زر/آلية حذف مستلم) + ocobot/alerts/storage.py (إزالة من التخزين) + ocobot/alerts/notifier.py (قراءة القائمة المحدّثة). يُمنع لمس منطق الإرسال/التوقيع/التنسيق المختوم و hot_path.",
+  "evidence_path": "_archive/_g1_35_run.txt (SUITE_STATUS=GREEN; MODULES=78 TOTAL_TESTS=527 FAILED_MODULES=0 CRASHED_MODULES=0; incl test_g1_35_delete_recipient=4)",
+  "seal": {
+    "task": "G1.35",
+    "verified": true,
+    "evidence_path": "_archive/_g1_35_run.txt (SUITE_STATUS=GREEN; MODULES=78 TOTAL_TESTS=527 FAILED_MODULES=0 CRASHED_MODULES=0; incl test_g1_35_delete_recipient=4)",
+    "evidence_count": 527,
+    "docs_synced": true,
+    "ts": "2026-10-11T21:17:00Z"
+  },
+  "verification_status": "verified",
+  "next_action": "sealed"
+}

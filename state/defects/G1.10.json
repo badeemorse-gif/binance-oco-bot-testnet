@@ -1,0 +1,25 @@
+{
+  "id": "G1.10",
+  "label": "G-DYN-01",
+  "title": "ثبات 3 خانات في اللوحة الحية بقسم المراقبة الديناميكية بعد إعادة التموضع",
+  "description": "بعد كل إعادة تموضع ناجحة، البوت ينشئ OCO جديد في الحساب بنجاح (Testnet) وتم التأكد منه، لكن لا يتحدّث في اللوحة الحية بقسم المراقبة الديناميكية: (1) معرف قائمة الأوامر، (2) جني الأرباح الحالي، (3) وقف الخسارة الحالي — تظل الثلاثة على قيم البداية قبل التنفيذ رغم أن النتيجة تقول 'أعيد التموضع إلى OCO [رقم جديد]' والرقم الجديد موجود فعلًا في الحساب. الدقة والتنفيذ وإعادة التموضع تعمل 100%.",
+  "severity": "major",
+  "discovered_at": "2026-09-30T02:58:00Z",
+  "reported_by": "user_manual_testing",
+  "professional_proposal": "أولي (يُحدَّد نهائيًا بعد chunk_diag): بعد نجاح إنشاء OCO الجديد داخل monitoring_loop، تحديث المتغيرات الداخلية وUI labels للخانات الثلاث (معرف قائمة الأوامر/جني الأرباح الحالي/وقف الخسارة الحالي) فورًا من الـ response الجديد، ثم استدعاء update_live_panel(). قراءة/عرض للواجهة فقط — بلا مساس بمنطق إعادة التموضع أو التداول أو أي مسار Live/Withdrawals.",
+  "status": "sealed",
+  "environment": "Testnet",
+  "live_forbidden": true,
+  "evidence_path": "_g1_10_run.txt",
+  "seal": {
+    "task": "G1.10",
+    "verified": true,
+    "evidence_path": "_g1_10_run.txt",
+    "evidence_count": 266,
+    "docs_synced": true,
+    "ts": "2026-09-30T03:20:00Z"
+  },
+  "verification_status": "verified",
+  "next_action": "sealed",
+  "evidence_count": 266
+}

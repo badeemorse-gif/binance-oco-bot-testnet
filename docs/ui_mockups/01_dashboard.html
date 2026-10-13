@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OCOBot — لوحة التحكم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#031021; --sidebar:#020d1c; --card:#061529; --card-alt:#081d32;
+    --border:#0d2a43; --text:#f0f7fb; --text-soft:#dce9f2; --muted:#6f8ba2;
+    --blue:#0876e8; --teal:#073b42; --green:#19c58b; --red:#ff4b68; --amber:#f08f1b;
+    --radius:12px; --shadow:0 8px 24px rgba(0,0,0,.35);
+    --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Tajawal","Segoe UI",Tahoma,"Noto Sans Arabic",Arial,sans-serif;
+    background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+  .app{display:grid;grid-template-columns:1fr 250px;min-height:100vh}
+  /* Sidebar on RIGHT */
+  aside{background:var(--sidebar);border-inline-start:1px solid var(--border);padding:22px 16px;order:2}
+  .brand{display:flex;align-items:center;gap:12px;margin-bottom:26px;padding:0 6px}
+  .brand .logo{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,var(--blue),#0aa);
+    display:grid;place-items:center;font-weight:700;color:#fff}
+  .brand .nm{font-size:19px;font-weight:700}
+  .brand .sb{font-size:11px;color:var(--muted)}
+  nav a{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:10px;
+    color:var(--text-soft);text-decoration:none;font-size:14.5px;margin-bottom:5px;transition:.15s}
+  nav a .ic{width:20px;text-align:center;opacity:.85}
+  nav a:hover{background:var(--card-alt)}
+  nav a.active{background:linear-gradient(90deg,rgba(8,118,232,.18),transparent);
+    color:#fff;box-shadow:inset 3px 0 0 var(--blue) /* actually inset on right via border */}
+  nav a.active{position:relative}
+  nav a.active::after{content:"";position:absolute;inset-inline-end:0;top:8px;bottom:8px;width:3px;background:var(--blue);border-radius:3px}
+  main{order:1;display:flex;flex-direction:column;min-width:0}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 26px;
+    border-bottom:1px solid var(--border);background:linear-gradient(180deg,#061a30,transparent)}
+  .topbar h1{font-size:20px}
+  .topbar .right{display:flex;align-items:center;gap:10px}
+  .pill{display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:999px;
+    font-size:12.5px;font-weight:600;border:1px solid var(--border)}
+  .pill .dot{width:8px;height:8px;border-radius:50%}
+  .pill.env{background:rgba(240,143,27,.12);color:var(--amber);border-color:rgba(240,143,27,.4)}
+  .pill.conn{background:rgba(25,197,139,.12);color:var(--green);border-color:rgba(25,197,139,.4)}
+  .pill.conn .dot{background:var(--green);box-shadow:0 0 8px var(--green)}
+  .content{padding:26px;overflow:auto}
+  .section-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .section-h h2{font-size:17px}
+  .section-h .sub{color:var(--muted);font-size:13px}
+  .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+    padding:16px 18px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .card::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:3px;background:var(--border)}
+  .card.accent-green::before{background:var(--green)}
+  .card.accent-blue::before{background:var(--blue)}
+  .card.accent-red::before{background:var(--red)}
+  .card.accent-amber::before{background:var(--amber)}
+  .card.accent-teal::before{background:#12707f}
+  .card .lbl{color:var(--muted);font-size:12.5px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+  .card .val{font-family:var(--mono);font-size:24px;font-weight:700;letter-spacing:.5px}
+  .card .val.green{color:var(--green)} .card .val.red{color:var(--red)} .card .val.amber{color:var(--amber)}
+  .card .foot{color:var(--muted);font-size:11.5px;margin-top:8px}
+  .span2{grid-column:span 2}
+  .kv{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--border)}
+  .kv:last-child{border-bottom:0}
+  .kv .k{color:var(--muted)} .kv .v{font-family:var(--mono)}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:11.5px;font-weight:700}
+  .badge.green{background:rgba(25,197,139,.15);color:var(--green)}
+  @media(max-width:820px){.app{grid-template-columns:1fr}aside{order:0}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand"><div class="logo">OCO</div><div><div class="nm">OCOBot</div><div class="sb">إدارة أوامر OCO</div></div></div>
+    <nav>
+      <a class="active" href="01_dashboard.html"><span class="ic">▦</span> لوحة التحكم</a>
+      <a href="02_open_orders.html"><span class="ic">▤</span> الأوامر المفتوحة</a>
+      <a href="03_selected_and_edit.html"><span class="ic">✎</span> تفاصيل وتعديل</a>
+      <a href="04_dynamic_monitoring.html"><span class="ic">◎</span> المراقبة الديناميكية</a>
+      <a href="05_safe_execution.html"><span class="ic">⚡</span> التنفيذ الآمن</a>
+    </nav>
+  </aside>
+  <main>
+    <div class="topbar">
+      <h1>لوحة التحكم</h1>
+      <div class="right">
+        <span class="pill env"><span class="dot" style="background:var(--amber)"></span> Testnet</span>
+        <span class="pill conn"><span class="dot"></span> متصل</span>
+      </div>
+    </div>
+    <div class="content">
+      <div class="section-h"><h2>الأمر المُراقَب حاليًا</h2><span class="sub">آخر تحديث حي عبر WebSocket</span></div>
+      <div class="grid">
+        <div class="card accent-green span2">
+          <div class="lbl">الـ OCO المختار <span class="badge green"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span> محدد</span></div>
+          <div class="val">TUTUSDT</div>
+          <div class="kv" style="margin-top:10px"><span class="k">Order List ID</span><span class="v">7964</span></div>
+          <div class="kv"><span class="k">الحالة</span><span class="v" style="color:var(--green)">EXECUTING</span></div>
+        </div>
+        <div class="card accent-green">
+          <div class="lbl">السعر الحالي</div>
+          <div class="val green">0.05060</div>
+          <div class="foot">Current Price · Live</div>
+        </div>
+        <div class="card accent-blue">
+          <div class="lbl">TP الحالي</div>
+          <div class="val">0.05262</div>
+          <div class="foot">Take Profit (price)</div>
+        </div>
+        <div class="card accent-red">
+          <div class="lbl">SL Trigger الحالي</div>
+          <div class="val red">0.04959</div>
+          <div class="foot">Stop Trigger (stopPrice)</div>
+        </div>
+        <div class="card accent-red">
+          <div class="lbl">SL Limit</div>
+          <div class="val">0.04958</div>
+          <div class="foot">أسفل التريجر بـ tick · GTC</div>
+        </div>
+      </div>
+
+      <div class="section-h" style="margin-top:26px"><h2>سياق المراقبة والدورة</h2></div>
+      <div class="grid">
+        <div class="card accent-teal">
+          <div class="lbl">Reference Price</div>
+          <div class="val">0.05000</div>
+          <div class="foot">مرجع بدء المراقبة</div>
+        </div>
+        <div class="card accent-amber">
+          <div class="lbl">Next Trigger</div>
+          <div class="val amber">0.05050</div>
+          <div class="foot">تفعيل عند ارتفاع 1%</div>
+        </div>
+        <div class="card accent-green">
+          <div class="lbl">حالة المراقبة</div>
+          <div class="val green" style="font-size:20px">ACTIVE</div>
+          <div class="foot">Monitoring Engine يعمل</div>
+        </div>
+        <div class="card accent-blue">
+          <div class="lbl">الاتصال والبيئة</div>
+          <div class="val" style="font-size:18px">Testnet · متصل</div>
+          <div class="foot">HMAC SHA256 · موقّع بنجاح</div>
+        </div>
+        <div class="card accent-green span2">
+          <div class="lbl">آخر إعادة تموضع (Last Reposition)</div>
+          <div class="kv" style="margin-top:4px"><span class="k">النتيجة</span><span class="v" style="color:var(--green)">نجاح ✓</span></div>
+          <div class="kv"><span class="k">orderListId الجديد</span><span class="v">8001</span></div>
+          <div class="kv"><span class="k">زمن الدورة (Cancel→Create)</span><span class="v">2.1s</span></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,72 @@
+{
+  "id": "G1.49",
+  "status": "sealed",
+  "severity": "major",
+  "title": "سياسة تنفيذ خروج موحّدة مضادّة للتعليق ومحدِّدة للانزلاق عبر كل وسائل الخروج + إصلاح لمس القوس الكاذب",
+  "discovered_at": "2026-10-13T20:17:02Z",
+  "evidence_path": "docs/G1_49_unified_exit_report.md (split per-file: ran=717 OK, 0 fail/0 err)",
+  "seal": {
+    "verified": true,
+    "evidence_path": "docs/G1_49_unified_exit_report.md (split per-file: ran=717 OK, 0 fail/0 err)",
+    "evidence_count": 717,
+    "docs_synced": true,
+    "ts": "2026-10-13T23:05:00Z"
+  },
+  "description": "ملاحظة المستخدم أثناء التجربة اليدوية على Testnet: (1) قوس الخروج كتب «تم ملامسة الحد العلوي» والسعر الحيّ لسه ~0.8% تحت الحد؛ (2) أمر البيع الناتج كان ~1% فوق السعر الحيّ ⇒ خطر تعليق (الأمر يرقد فوق السوق بدل التنفيذ). السبب الجذري المرجّح من قراءة القرص: BracketMonitor.check يطلق عند price>=upper على سعر bookTicker bid (ocobot/ui/app.py:_bx_price يرجّع _screen._current_price)، ونفس p يُمرَّر reference_price إلى execute_market_exit؛ والخروج العلوي LIMIT بسعر p×(1−slip_pct/100) (slip افتراضي 0.1%). فلو الإطلاق على tick/wick لحظي عند الحد ثم ارتدّ السعر، يُوضع LIMIT قرب الحد العلوي (0.1% تحته) فيبقى أعلى من السوق المستقر ويعلّق. صفقة المستخدم انتهت قبل ~8 ساعات بلا أثر محفوظ، فالتشخيص الحاسم كود-level + اختبار انحدار يحاكي wick.",
+  "goal_user_approved": "الأهم: عدم التعليق في الصفقة، مع الخروج بأقرب نقطة سعرية ممكنة في الطوارئ وليس بنقطة بعيدة.",
+  "professional_proposal": "سياسة تنفيذ خروج موحّدة (unified exit-execution policy) تُستعمل من كل الوسائل (ui/manual_exit.py, domain/bracket.py+ui/bracket_wiring.py, domain/guardian_exec.py+domain/guardian_supervisor.py, domain/btc_follow*+ui/btc_follow_wiring.py) داخل الطبقة المعزولة فقط، بلا لمس hot_path: (1) ترسية سعر الخروج على أفضل BID حيّ لحظة الإطلاق (fresh re-read) لا على tick قديم ولا wick. (2) band عبور محكوم قابل للضبط بدل 0.1% الثابتة، افتراضي ~0.2% أو عدد tick (أقصى الاثنين). (3) أمر LIMIT بنوع IOC: ينفّذ فورًا داخل الband أو يُلغى — لا أمر راقد معلّق. (4) حارس إعادة تسعير chase: عند عدم التنفيذ يعيد الترسية على bid الجديد ويبعت IOC كل ~0.5–1s نازلًا لحد أرضية صارمة، أقصى مدة ~5s/محاولات محدودة ⇒ يملأ عند أقرب نقطة سعرية. (5) الملاذ الأخير عند الأرضية = الخيار (ب) المعتمد: تحويل إلى MARKET محمي بالأرضية لضمان عدم التعليق. (6) أرضية فلاش-كراش صارمة تبقى الحدّ الأسوأ (قابلة للضبط؛ الحالية 8%؛ تُراجَع لتحقيق «ليس بعيدًا»). (7) منع الإطلاق على wick: debounce صغير (~300–500ms أو تِكّتين متتاليتين) قبل تأكيد لمس حدّ القوس. (8) توسيع إزاحة STOP_LOSS_LIMIT تحت الزناد للحارس/القوس السفلي (~0.3–0.5% قابل للضبط) مع إبقاء الأرضية. (9) telemetry: تسجيل السعر المطلوب/المنفَّذ/الحيّ.",
+  "no_conflict_guarantees": "لا-تعارض مضمون بنيويًا: مسار خروج واحد مسلسل (execute_market_exit) + منع بيع مزدوج (reconcile + has_resting_protective_sell + eff_qty=min(target,free)) + latch/idempotent (_fired/_armed/_btc_armed) + تحكيم أولوية (يدوي فوق الكل ⇐ شبكة الأمان ⇐ should_btc_tighten يُكبح لو الحارس متدخّل ⇐ القوس/المراقبة بالأقرب-يفوز) + kill_switch يوقف المراقبة قبل الوضع. تُضاف اختبارات صريحة لا-تعارض.",
+  "scope_boundary": {
+    "in": "ocobot/domain/market_exit.py, ocobot/domain/guardian_exec.py, ocobot/domain/bracket.py, ocobot/ui/bracket_wiring.py, ocobot/ui/manual_exit.py, ocobot/ui/btc_follow_wiring.py, ocobot/domain/guardian_supervisor.py (ربط), ocobot/ui/monitoring.py (بارامترات UI فقط), ocobot/ui/i18n.py (مفاتيح جديدة)",
+    "out": "hot_path: on_price_tick / MonitoringEngine.start / SafeExecutor.execute / reposition / create_oco، وأي قيمة/سلوك مختوم خارج طبقة الخروج، وأي Live/T16"
+  },
+  "ordered_steps": [
+    {
+      "id": "chunk_1",
+      "description": "تشخيص جذري لمس القوس الكاذب + توثيقه + اختبار انحدار يحاكي wick",
+      "risk": "long",
+      "produces": "تقرير + اختبار انحدار"
+    },
+    {
+      "id": "chunk_2",
+      "description": "سياسة التنفيذ الموحّدة الخالصة في market_exit.py (band+IOC+chase+floor+telemetry) + اختبارات وحدة",
+      "risk": "long",
+      "produces": "منطق خالص + اختبارات"
+    },
+    {
+      "id": "chunk_3",
+      "description": "wick-debounce + ترسية على bid حيّ في bracket.py + اختبارات",
+      "risk": "long",
+      "produces": "إصلاح القوس + اختبارات"
+    },
+    {
+      "id": "chunk_4",
+      "description": "ربط السياسة في كل الوسائل + توسيع إزاحة STOP_LOSS_LIMIT + اختبارات تكامل لا-تعارض",
+      "risk": "long",
+      "produces": "ربط موحّد + اختبارات"
+    },
+    {
+      "id": "chunk_5",
+      "description": "بارامترات الواجهة + §1.5 ثنائية اللغة (i18n + retranslate)",
+      "risk": "long",
+      "produces": "UI + i18n + اختبارات"
+    },
+    {
+      "id": "chunk_6",
+      "description": "سويت خضراء كاملة + توثيق + ختم + أرشفة",
+      "risk": "long",
+      "produces": "سويت خضراء + ختم"
+    }
+  ],
+  "acceptance_checks": [
+    "كامل سويت الاختبارات أخضر (>= baseline، 0 fail/0 error)",
+    "اختبار انحدار wick يثبت عدم الإطلاق الكاذب لحدّ القوس بعد debounce",
+    "اختبار يثبت أن الخروج العلوي يُرسى على bid حيّ ضمن band ولا يَرقد فوق السوق",
+    "اختبار chase→floor→(ب) MARKET محمي بالأرضية",
+    "اختبارات لا-تعارض: الوسائل الأربع + اليدوي ⇒ بيع واحد فقط وأولوية صحيحة",
+    "§1.5 ثنائية اللغة لأي نص واجهة جديد (EN↔AR بلا تسرّب) + retranslate يغطّي الودجت",
+    "لا لمس hot_path المختوم؛ لا Live"
+  ],
+  "human_gate": false,
+  "protocol_version": "1.5"
+}

@@ -1,0 +1,34 @@
+{
+  "id": "G1.33",
+  "title": "إتاحة نِسب تسعير قوس الخروج للمستخدم من الواجهة (بدل ثوابت الكود) مع افتراضيات آمنة",
+  "kind": "feature",
+  "severity": "minor",
+  "status": "sealed",
+  "discovered_at": "2026-10-11T18:16:11Z",
+  "reported_by": "user_manual_testing",
+  "after": "G1.32",
+  "description": "ظهر أثناء التجربة اليدوية لـG1.32b (نقطة chunk_4): نِسب تسعير قوس الخروج مُثبَّتة كافتراضيات داخل plan_market_exit (slip_pct=0.1% للعلوي LIMIT؛ emergency_sl_pct=1% للزناد السفلي؛ price_floor_pct=8% أرضية الفلاش-كراش؛ gap_ticks=1). المطلوب إتاحتها كمدخلات قابلة للتعديل من بطاقة «قوس الخروج بالسعر» في الواجهة. قاعدة إلزامية: إذا تُرِكت الخانة فارغة تُستعمل القيمة الافتراضية القديمة نفسها (0.1% / 1% / 8% / gap=1) فلا ينكسر أي سلوك قائم (توافق خلفي كامل). ملاحظة بنيوية: plan_market_exit و execute_market_exit يقبلان هذه المعاملات أصلًا؛ الناقص فقط ربطها بالواجهة عبر BracketConfig و BracketExitWiring (لا تغيير في منطق التسعير الأساسي).",
+  "professional_proposal": "طبقة UI + domain فقط، بلا لمس hot_path أو المختوم. أمر خروج واحد كما هو (خروج-واحد/منع بيع مزدوج/latch محفوظة). أرضية الفلاش-كراش تبقى سقفًا صلبًا محارسًا (غير قابلة للإلغاء؛ قابلة للتعديل بحدّ أقصى مقنَّن فقط). خيار a: حقول نِسب مفردة قابلة للتعديل. خيار b: رينج (أفضل/أسوأ) لكل حدّ والأمر يُوضع عند الطرف الأسوأ (marketable مضمون + تحسين سعر تلقائي من محرّك المطابقة). القرار النهائي a/b عند «نفّذ».",
+  "plan": [
+    "G1.33_chunk_1: توسيع BracketConfig ليحمل نِسب التسعير الاختيارية (slip_pct/emergency_sl_pct/price_floor_pct/gap_ticks) مع None=افتراضي قديم + تحقّق منطقي (موجبة، best<worst إن رينج، الأسوأ ≤ الأرضية) — بلا شبكة + اختبارات.",
+    "G1.33_chunk_2: حقول إدخال قابلة للتعديل في بطاقة قوس الخروج (ocobot/ui/monitoring.py)؛ الفارغ = القيمة القديمة؛ تلميح تحقّق — بلا شبكة + اختبارات UI (offscreen).",
+    "G1.33_chunk_3: تمرير القيم عبر ocobot/ui/bracket_wiring.py:_exit إلى execute_market_exit/plan_market_exit؛ أرضية الفلاش-كراش سقف صلب محارس (clamp) + اختبارات wiring.",
+    "G1.33_chunk_4: الحزمة كاملة خضراء عبر _run_suite_isolated.py + دليل _g1_33_run.txt.",
+    "G1.33_chunk_5 (نقطة تفتيش بشرية): تحقّق على Testnet أن الخانات الفارغة = السلوك القديم تمامًا، وأن القيم المخصّصة تنعكس على سعر الخروج المعروض/المنفّذ.",
+    "G1.33_chunk_6: ختم G1.33 + تصفير WORKING_MEMORY + الأرشفة."
+  ],
+  "scope_boundary": "ocobot/ui/monitoring.py (حقول البطاقة) + ocobot/domain/bracket.py (BracketConfig + تحقّق) + ocobot/ui/bracket_wiring.py (تمرير النِسب). يُمنع لمس hot_path (on_price_tick/MonitoringEngine.start/SafeExecutor.execute/reposition/create_oco) وأي قيمة/سلوك مختوم. أرضية الفلاش-كراش لا تُلغى. الافتراضيات (0.1/1/8/gap=1) تحفظ السلوك عند ترك الخانات فارغة.",
+  "evidence_path": "_archive/_g1_33_run.txt (SUITE_STATUS=GREEN; MODULES=76 TOTAL_TESTS=518 FAILED_MODULES=0 CRASHED_MODULES=0; incl test_g1_33_pricing=9)",
+  "seal": {
+    "task": "G1.33",
+    "verified": true,
+    "evidence_path": "_archive/_g1_33_run.txt (SUITE_STATUS=GREEN; MODULES=76 TOTAL_TESTS=518 FAILED_MODULES=0 CRASHED_MODULES=0; incl test_g1_33_pricing=9)",
+    "evidence_count": 518,
+    "docs_synced": true,
+    "testnet_behavioral": "deferred_by_user_decision — بقرار المستخدم: الختم الآن ومراقبة السلوك على Testnet بعده؛ أي ظهور لاحق يُفتح له بند جديد. لا يرفع بوّابة G1 ولا Live. الافتراضيات تحفظ السلوك القديم.",
+    "ts": "2026-10-11T18:30:48Z",
+    "note": "نِسب تسعير قوس الخروج صارت قابلة للتعديل من بطاقة الواجهة (slip/sl/floor/gap) عبر BracketConfig.pricing_kwargs → BracketExitWiring._exit → execute_market_exit؛ الخانة الفارغة ⇒ الافتراضي القديم (0.1/1/8/1) فلا ينكسر شيء (توافق خلفي). أرضية الفلاش-كراش سقف محارَس (FLOOR_MAX_PCT=50). بلا لمس hot_path/المختوم."
+  },
+  "verification_status": "verified",
+  "next_action": "sealed"
+}

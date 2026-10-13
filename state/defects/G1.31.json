@@ -1,0 +1,31 @@
+{
+  "id": "G1.31",
+  "title": "مؤشّر الحارس في الواجهة + مفتاح الوضع Off/Observe/Live — تحكّم بشري ظاهر",
+  "kind": "hardening_feature",
+  "description": "جعل Position Guardian (G1.30) ظاهرًا وتحت تحكّم المستخدم من شاشة المراقبة الديناميكية: مؤشّر حالة (نائم/مُسلّح/تدخّل) + سطر آخر إجراء، ومفتاح وضع Off/Observe/Live يُفعَّل وقت التشغيل بدل متغيّر البيئة فقط. عند Off لا يتدخّل حتى لو ظهر مركز عاري. يبقى الحارس STOP_LOSS_LIMIT قابل للتنفيذ (marketable: emergency_sl_pct حوالي 1 بالمئة + gap كافٍ للعبور مع أرضية سعرية) — لا MARKET للحارس لأنه يشتعل على استنتاج حالة لا على سعر مؤكّد.",
+  "severity": "major",
+  "professional_proposal": "طبقة عرض/تحكّم إضافية فوق GuardianSupervisor الموجود (قراءة + إشارة حالة) بلا أي لمس للمسار الحار. مفتاح مطفأ افتراضيًّا Off. الوضع يُعرَّض كتحكّم واجهة يطابق أوضاع OCOBOT_GUARDIAN off/observe/live.",
+  "plan": [
+    "chunk_1: نموذج GuardianStatus خفيف (mode, state, last_action: ts/qty/price/reason) قابل للمراقبة + اختبارات وحدة.",
+    "chunk_2: عنصر واجهة في شاشة 04_dynamic_monitoring يعرض المؤشّر نائم/مُسلّح/تدخّل + سطر آخر إجراء — قراءة فقط بلا شبكة + اختبارات.",
+    "chunk_3: ربط tick المُشرِف لتحديث GuardianStatus + مُحدِّد الوضع Off/Observe/Live يتحكّم في التسليح/الإطفاء وقت التشغيل (dry_run للـObserve) + اختبارات. الافتراضي Off.",
+    "chunk_4: تشغيل الحزمة كاملة صفر انحدار + اختبارات G1.31 + حفظ الدليل في _g1_31_run.txt.",
+    "chunk_5 (نقطة تفتيش بشرية): فتح الواجهة والتأكد من ظهور المؤشّر وتبديل الأوضاع على Testnet.",
+    "chunk_6: ختم G1.31 + تصفير WORKING_MEMORY + الأرشفة."
+  ],
+  "scope_boundary": "إضافة عرض/تحكّم فقط فوق GuardianSupervisor. يُمنع لمس hot_path (on_price_tick/MonitoringEngine.start/SafeExecutor.execute/reposition/create_oco) وأي قيمة أو سلوك مختوم. لا MARKET هنا. الافتراضي Off.",
+  "status": "sealed",
+  "discovered_at": "2026-10-10T15:00:00Z",
+  "evidence_path": "_archive/_g1_31_run.txt (SUITE_STATUS=GREEN; MODULES=70 TOTAL_TESTS=469 FAILED_MODULES=0 CRASHED_MODULES=0) + human_visual_testnet_chunk_5",
+  "seal": {
+    "task": "G1.31",
+    "verified": true,
+    "evidence_path": "_archive/_g1_31_run.txt (SUITE_STATUS=GREEN; MODULES=70 TOTAL_TESTS=469 FAILED_MODULES=0 CRASHED_MODULES=0) + human_visual_testnet_chunk_5",
+    "evidence_count": 469,
+    "docs_synced": true,
+    "testnet_behavioral": "human_visual_verified — المستخدم أكّد على Testnet ظهور مؤشّر الحارس (نائم/مُسلّح/تدخّل + سطر آخر إجراء) وتبديل الوضع Off/Observe/Live وقت التشغيل بلا متغيّر بيئة؛ Off كبح صلب يمنع التدخّل. لا MARKET للحارس (STOP_LOSS_LIMIT marketable). صفر لمس hot_path.",
+    "ts": "2026-10-10T22:23:38Z"
+  },
+  "verification_status": "verified",
+  "next_action": "sealed"
+}

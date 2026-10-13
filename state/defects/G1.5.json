@@ -1,0 +1,22 @@
+{
+  "id": "G1.5",
+  "title": "ارتداد خانات القسمين 03/04 عند التكبير على 1360×768 @ 100% — التحويل إلى تحجيم نسبي بدل البكسل الثابت",
+  "description": "ارتداد (regression) لبند G1.4 المختوم. بعد ختم G1.4 عادت المشكلة على جهاز المستخدم (Display 1360×768 @ 100% scale, Single Monitor, HP ProDesk 600 G1 TWR, Intel Core i5-4590 @ 3.30GHz, 16GB DDR3, NVIDIA GTX 1050 Ti 4GB + Intel HD 4600, Windows 10/11 Pro 64-bit). خانات القيمة في القسمين 03 و04 تعود ضيّقة عند تكبير النافذة. الإصلاح السابق اعتمد حدودًا ثابتة بالبكسل (setMinimumWidth(120)، setColumnMinimumWidth(1,140)، خط 15px) لا تتناسب مع التكبير.",
+  "severity": "major",
+  "discovered_at": "2026-09-26",
+  "reported_by": "user_manual_testing",
+  "professional_proposal": "استبدال قيود العرض الثابتة بتوزيع نسبي: setColumnStretch بنِسَب للعنوان/القيمة + setSizePolicy(Expanding) مع stretch للخانات، بحيث تنمو خانات القيمة مع عرض النافذة (نسبي) بدل تثبيتها على حدّ أدنى ثابت.",
+  "resolution_summary": "أُصلح ارتداد خانات القيمة في القسم 03 (ocobot/ui/selected_oco.py) بتوحيد التحجيم النسبي: _live_current_price و_live_max_stop (أُضيف setMinimumWidth(90) مع Expanding+stretch) وحقلا _sl_pct_edit/_tp_pct_edit (أُضيف setSizePolicy(Expanding,Preferred)+setMinimumWidth(90))، مع بقاء old_value/new_value سليمة. فلا تفيض القيم للشمال عند التكبير على 1360x768 @125% في وضعي checked/unchecked. اختبار شامل جديد test_section03_all_value_widgets_min_width_readonly_and_checked + السويت الكاملة خضراء Ran 255 tests OK. تأكيد المستخدم اليدوي (AC3) على جهازه.",
+  "status": "sealed",
+  "verification_status": "verified",
+  "next_action": "sealed",
+  "evidence_path": "_g1_5_run.txt",
+  "seal": {
+    "task": "G1.5",
+    "verified": true,
+    "evidence_path": "_g1_5_run.txt",
+    "evidence_count": 255,
+    "docs_synced": true,
+    "ts": "2026-09-27T01:21:24Z"
+  }
+}

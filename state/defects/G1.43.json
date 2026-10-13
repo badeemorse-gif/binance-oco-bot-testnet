@@ -1,0 +1,18 @@
+{
+  "id": "G1.43",
+  "status": "sealed",
+  "title": "إغلاق ثغرات حارس ثنائية اللغة: windowTitle + رؤوس QTableWidget (أفقي/عمودي) + QMenu/QAction في الحارس وفي retranslate_widget_tree",
+  "severity": "minor",
+  "protocol_version": "1.5",
+  "description": "حارس G1.41 (tests/test_g1_41_i18n_no_leak.py) يمشي شجرة الودجت في وضع en لكن _collect_offenders لا يفحص: windowTitle، ورؤوس QTableWidget (أفقية/عمودية)، وQMenu/QAction. كما أن retranslate_widget_tree تغطّي الرؤوس الأفقية فقط وتفتقد الرؤوس العمودية وQMenu/QAction. لا يوجد تسرّب فعلي حاليًا (لا قوائم/QAction ولا رؤوس عمودية مستخدمة، وعنوان النافذة 'OCOBot' لاتيني، ونوافذ QMessageBox مُعرَّبة وقت الإنشاء عبر translate_for_current)، لكن الثغرة تسمح بتسرّب مستقبلي عند إضافة فروع/أنواع ودجت جديدة.",
+  "professional_proposal": "توسيع retranslate_widget_tree دفاعيًا: رؤوس QTableWidget العمودية + عنوان QMenu + نصوص QAction عبر actions(). وتوسيع الحارس _collect_offenders ليؤكّد خلو وضع en من أي عربي في: windowTitle، ورؤوس QTableWidget (أفقي+عمودي)، وQMenu/QAction عبر كل شاشات build_app. قيد أمان: لا تُترجَم ولا تُفحَص خلايا QTableWidget.item(row,col) لأنها داتا (BTCUSDT/أرقام/IDs) — الرؤوس فقط. النطاق محصور في ocobot/ui/i18n.py (دالة retranslate_widget_tree) والاختبار، بلا أي مساس بـ domain/core أو مسار Live أو ثوابت الأمان §1.",
+  "discovered_at": "2026-10-12T17:53:23Z",
+  "evidence_path": "docs/G1_43_i18n_guard_report.md",
+  "seal": {
+    "verified": true,
+    "evidence_path": "docs/G1_43_i18n_guard_report.md",
+    "evidence_count": 558,
+    "docs_synced": true,
+    "ts": "2026-10-12T18:17:10Z"
+  }
+}

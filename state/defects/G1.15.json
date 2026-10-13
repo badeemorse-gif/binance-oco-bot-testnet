@@ -1,0 +1,18 @@
+{
+  "id": "G1.15",
+  "title": "إنهاء توحيد الاتصال + انتشار حالة الاتصال من فرع الاتصال",
+  "description": "عطبان مترابطان: (1) قام تغيير سابق غير موثَّق بإزالة الاتصال التلقائي عبر المسار الثابت للمفاتيح (config.py/keys.py/connection.py) — صار resolve_credentials يتجاهل fallback_path ويرفع ValueError عند غياب مصدر صالح — وترك اختبارين قديمين في tests/test_g1_11_connection_layer.py يفشلان (test_empty_fields_fall_back_to_fixed_path و test_no_source_rejected) لأنهما ما زالا يتوقعان دلالة المسار الثابت القديمة. (2) عند الاتصال من داخل فرع الاتصال يُحدَّث فقط مؤشر اللمبة المحلي + مخزن مفاتيح الجلسة، دون تحديث مؤشر حالة الاتصال العلوي الأيسر (ConnectionStateNotifier) ودون تحديث فرع الأوامر المفتوحة؛ فيبقى المؤشر العلوي «غير متصل» ولا تظهر الصفقات المفتوحة.",
+  "severity": "major",
+  "professional_proposal": "مواءمة الاختبارين القديمين مع دلالة لا-مسار-ثابت (رفع ValueError بدل الرجوع لمسار ثابت/CredentialsError)، وتغليف معالج اتصال الفرع ليدفع حالة CONNECTED إلى connection_notifier (ConnectionStateNotifier العلوي) ويُحدِّث فرع الأوامر المفتوحة تلقائيًا بعد نجاح الاتصال — دون إعادة المسار الثابت ودون أي نداء شبكي جديد.",
+  "status": "sealed",
+  "discovered_at": "2026-10-04T19:26:08Z",
+  "evidence_path": "tests/_g1_15_run.txt",
+  "seal": {
+    "task": "G1.15",
+    "verified": true,
+    "evidence_path": "tests/_g1_15_run.txt",
+    "evidence_count": 350,
+    "docs_synced": true,
+    "ts": "2026-10-05T01:25:37.916287+03:00"
+  }
+}

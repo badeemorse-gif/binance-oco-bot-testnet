@@ -1,0 +1,18 @@
+{
+  "id": "G1.25",
+  "title": "قسم تنبيهات داخل الواجهة يُرسِل تفاصيل الصفقة عبر بوت Telegram عند بدء المراقبة الديناميكية ومع كل إعادة تموضع، مع إدارة حساب البوت والمستلمين وحفظ الحالة",
+  "description": "إضافة طبقة قناة تنبيه Telegram خارجية (read-only) + قسم تنبيهات في الواجهة + تخزين/استرجاع إعدادات التنبيه (حالة مُستديمة) + ربط التنبيه بأحداث audit الحالية (monitor_start, repositioned) للقراءة فقط. الإرسال حصريًا عبر Telegram Bot API الرسمي (sendMessage) بـtoken من @BotFather. بلا أي نداء شبكي متزامن على المسار الساخن (on_price_tick/SafeExecutor/مسار القرار): حدث audit ⇒ queue ⇒ Notifier worker مستقل (reuse runner.submit/QThread) ⇒ HTTP بمهلة قصيرة + retry محدود + ابتلاع الاستثناءات، مع حدٍّ أقصى لحجم الـqueue. رسالة منسّقة في كل بدء مراقبة وكل reposition تحوي تفاصيل الصفقة الكاملة مع رموز 🟢 الهدف/🔴 الوقف/🟡 السعر الحالي وتهريب MarkdownV2 عند الحاجة. القناة أحادية الاتجاه بلا أي قدرة تداول وبلا أوامر واردة.",
+  "severity": "major",
+  "professional_proposal": "طبقة Notifier منفصلة قائمة على queue وworker thread (نمط runner.submit/QThread الموجود) تستهلك أحداث audit الحالية للقراءة فقط وتُرسِل عبر Telegram Bot API الرسمي بمهلة قصيرة وretry محدود وابتلاع استثناءات وحدٍّ أقصى للطابور؛ قسم UI لإدارة بوت واحد (إضافة/حذف) ومستلمين متعددين (إضافة/حذف) ومفتاح تفعيل/تعطيل مع تحقّق (صيغة + إرسال اختباري ناجح)؛ حفظ الإعدادات في طبقة التخزين الحالية (.ocobot_state) والأسرار في طبقة التخزين الآمن، دون أي تسريب في git أو السجلات؛ تحقّق offline بمحاكاة الشبكة فقط بلا Live.",
+  "status": "sealed",
+  "discovered_at": "2026-10-08T03:25:02Z",
+  "evidence_path": "_archive/_g1_25_verify.txt",
+  "seal": {
+    "task": "G1.25",
+    "verified": true,
+    "evidence_path": "_archive/_g1_25_verify.txt",
+    "evidence_count": 10,
+    "docs_synced": true,
+    "ts": "2026-10-09T00:59:40Z"
+  }
+}

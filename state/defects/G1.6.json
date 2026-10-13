@@ -1,0 +1,22 @@
+{
+  "id": "G1.6",
+  "title": "النافذة تتجاوز حدود الشاشة وخانات سفلية غير مرئية بلا تمرير بعجلة الماوس (عام على كل الأقسام) — 1360x768 @125%",
+  "description": "عند تكبير نافذة البوت على 1360x768 @125% تتجاوز النافذة حدود الشاشة، وتنزل خانات أسفلها فلا تُرى، ولا يوجد تمرير بعجلة الماوس للوصول إليها. المطلوب حل عام لكل الأقسام والفروع: النافذة داخل الشاشة والوصول لكل الخانات بالتمرير في أي مكان.",
+  "severity": "major",
+  "discovered_at": "2026-09-27",
+  "reported_by": "user_manual_testing",
+  "professional_proposal": "يُحدَّد بعد chunk_diag. مبدئياً: تقييد حجم النافذة بـ availableGeometry للشاشة + لفّ المحتوى في QScrollArea مع تمرير عمودي بعجلة الماوس يشمل كل الأقسام.",
+  "resolution_summary": "حُلّ تجاوز النافذة للشاشة وغياب التمرير بحل عام لكل الأقسام: (1) ocobot/ui/_qt.py يعيد تصدير QScrollArea و QGuiApplication؛ (2) ocobot/ui/main_window.py يلفّ self.content (ContentRouter) في self._content_scroll=QScrollArea(setWidgetResizable=True, بلا إطار) المضاف إلى column_layout فيشمل التمرير العمودي كل الأقسام مع بقاء self.content=ContentRouter؛ (3) ocobot/ui/app.py دالة _clamp_window_to_screen(window) (setMaximumSize=availableGeometry + resize=min(sizeHint,avail) + توسيط) تُستدعى قبل window.show(). لا مساس بـ executor/engine/price/network. اختبار جديد tests/test_g1_6_window_scroll_and_size.py (AC2). السويت الكاملة خضراء Ran 257 OK (_g1_6_run.txt). تأكيد المستخدم اليدوي (AC3) على 1360x768 @125%: النافذة داخل الشاشة والوصول لكل الخانات بعجلة الماوس.",
+  "status": "sealed",
+  "verification_status": "verified",
+  "next_action": "sealed",
+  "evidence_path": "_g1_6_run.txt (AC1 Ran 257 OK) + tests/test_g1_6_window_scroll_and_size.py (AC2 Ran 2 OK) + AC3 تأكيد يدوي 1360x768 @125%",
+  "seal": {
+    "task": "G1.6",
+    "verified": true,
+    "evidence_path": "_g1_6_run.txt (AC1 Ran 257 OK) + tests/test_g1_6_window_scroll_and_size.py (AC2 Ran 2 OK) + AC3 تأكيد يدوي 1360x768 @125%",
+    "evidence_count": 257,
+    "docs_synced": true,
+    "ts": "2026-09-27T12:15:00Z"
+  }
+}

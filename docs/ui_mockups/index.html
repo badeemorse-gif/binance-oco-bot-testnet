@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OCOBot — نظرة عامة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#031021; --sidebar:#020d1c; --card:#061529; --card-alt:#081d32;
+    --border:#0d2a43; --text:#f0f7fb; --text-soft:#dce9f2; --muted:#6f8ba2;
+    --blue:#0876e8; --teal:#073b42; --green:#19c58b; --red:#ff4b68; --amber:#f08f1b;
+    --radius:12px; --shadow:0 8px 24px rgba(0,0,0,.35);
+    --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:"Tajawal","Segoe UI",Tahoma,"Noto Sans Arabic",Arial,sans-serif;
+    background:radial-gradient(1200px 600px at 80% -10%,#07203a 0%,var(--bg) 55%);
+    color:var(--text); min-height:100vh; padding:36px 28px; line-height:1.6;
+  }
+  .wrap{max-width:1120px;margin:0 auto}
+  header.hero{display:flex;align-items:center;gap:18px;margin-bottom:8px}
+  .logo{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,var(--blue),#0aa);
+    display:grid;place-items:center;font-weight:700;font-size:22px;color:#fff;box-shadow:var(--shadow)}
+  h1{font-size:34px;letter-spacing:.5px}
+  .tag{color:var(--muted);font-size:14px}
+  .lead{color:var(--text-soft);font-size:17px;margin:14px 0 30px;max-width:760px}
+  h2{font-size:20px;margin:34px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+  .grid{display:grid;gap:16px}
+  .screens{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+  .scard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+    padding:20px;text-decoration:none;color:var(--text);transition:.18s;box-shadow:var(--shadow);display:block}
+  .scard:hover{transform:translateY(-3px);border-color:var(--blue);background:var(--card-alt)}
+  .scard .n{font-family:var(--mono);color:var(--muted);font-size:13px}
+  .scard .t{font-size:18px;font-weight:700;margin:6px 0 4px}
+  .scard .d{color:var(--muted);font-size:13.5px}
+  .scard .go{margin-top:14px;display:inline-block;background:var(--blue);color:#fff;
+    padding:7px 14px;border-radius:8px;font-size:13px}
+  .palette{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .sw{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  .sw .chip{height:64px}
+  .sw .meta{padding:10px 12px}
+  .sw .name{font-size:13px;font-weight:700}
+  .sw .hex{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .principles{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+  .pr{background:var(--card-alt);border:1px solid var(--border);border-left:3px solid var(--green);
+    border-radius:var(--radius);padding:16px 18px}
+  .pr .k{font-weight:700;margin-bottom:4px}
+  .pr .v{color:var(--muted);font-size:13px}
+  footer{margin-top:40px;color:var(--muted);font-size:12.5px;text-align:center;
+    border-top:1px solid var(--border);padding-top:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="logo">OCO</div>
+    <div>
+      <h1>OCOBot</h1>
+      <div class="tag">Binance Spot OCO Management &amp; Dynamic Repositioning · Testnet-first</div>
+    </div>
+  </header>
+  <p class="lead">نظام احترافي لإدارة وإعادة تموضع أوامر Binance Spot OCO — رؤية الأوامر الحقيقية، اختيار OCO محدد بدقة، تعديل آمن دون المساس بالأمر الأصلي، ثم تنفيذ Replacement متحقق ومراقبة ديناميكية بقواعدك.</p>
+
+  <h2>الشاشات</h2>
+  <div class="grid screens">
+    <a class="scard" href="01_dashboard.html"><div class="n">01</div><div class="t">لوحة التحكم</div><div class="d">مركز التحكم — بطاقات الحالة ونظرة شاملة</div><span class="go">افتح الشاشة →</span></a>
+    <a class="scard" href="02_open_orders.html"><div class="n">02</div><div class="t">الأوامر المفتوحة</div><div class="d">جدول أوامر OCO الحقيقية واختيار أمر واحد</div><span class="go">افتح الشاشة →</span></a>
+    <a class="scard" href="03_selected_and_edit.html"><div class="n">03</div><div class="t">تفاصيل وتعديل</div><div class="d">الأمر المختار + التعديل اليدوي الآمن</div><span class="go">افتح الشاشة →</span></a>
+    <a class="scard" href="04_dynamic_monitoring.html"><div class="n">04</div><div class="t">المراقبة الديناميكية</div><div class="d">قواعد النسب والحالة الحية ودورة التموضع</div><span class="go">افتح الشاشة →</span></a>
+    <a class="scard" href="05_safe_execution.html"><div class="n">05</div><div class="t">التنفيذ الآمن</div><div class="d">خطوات التنفيذ والحالات ومعالجة الفشل</div><span class="go">افتح الشاشة →</span></a>
+  </div>
+
+  <h2>لوحة الألوان (Palette)</h2>
+  <div class="grid palette">
+    <div class="sw"><div class="chip" style="background:#031021"></div><div class="meta"><div class="name">BG</div><div class="hex">#031021</div></div></div>
+    <div class="sw"><div class="chip" style="background:#020d1c"></div><div class="meta"><div class="name">SIDEBAR</div><div class="hex">#020d1c</div></div></div>
+    <div class="sw"><div class="chip" style="background:#061529"></div><div class="meta"><div class="name">CARD</div><div class="hex">#061529</div></div></div>
+    <div class="sw"><div class="chip" style="background:#081d32"></div><div class="meta"><div class="name">CARD_ALT</div><div class="hex">#081d32</div></div></div>
+    <div class="sw"><div class="chip" style="background:#0d2a43"></div><div class="meta"><div class="name">BORDER</div><div class="hex">#0d2a43</div></div></div>
+    <div class="sw"><div class="chip" style="background:#f0f7fb"></div><div class="meta"><div class="name">TEXT</div><div class="hex">#f0f7fb</div></div></div>
+    <div class="sw"><div class="chip" style="background:#dce9f2"></div><div class="meta"><div class="name">TEXT_SOFT</div><div class="hex">#dce9f2</div></div></div>
+    <div class="sw"><div class="chip" style="background:#6f8ba2"></div><div class="meta"><div class="name">MUTED</div><div class="hex">#6f8ba2</div></div></div>
+    <div class="sw"><div class="chip" style="background:#0876e8"></div><div class="meta"><div class="name">BLUE</div><div class="hex">#0876e8</div></div></div>
+    <div class="sw"><div class="chip" style="background:#073b42"></div><div class="meta"><div class="name">TEAL</div><div class="hex">#073b42</div></div></div>
+    <div class="sw"><div class="chip" style="background:#19c58b"></div><div class="meta"><div class="name">GREEN</div><div class="hex">#19c58b</div></div></div>
+    <div class="sw"><div class="chip" style="background:#ff4b68"></div><div class="meta"><div class="name">RED</div><div class="hex">#ff4b68</div></div></div>
+    <div class="sw"><div class="chip" style="background:#f08f1b"></div><div class="meta"><div class="name">AMBER</div><div class="hex">#f08f1b</div></div></div>
+  </div>
+
+  <h2>مبادئ التصميم</h2>
+  <div class="grid principles">
+    <div class="pr"><div class="k">اختيار دقيق</div><div class="v">OCO واحد بهويته orderListId — كل العمليات على هذا الأمر فقط.</div></div>
+    <div class="pr"><div class="k">لا تغيير قبل Activate</div><div class="v">فتح شاشة التعديل لا يلغي شيئًا؛ الأمر الحقيقي يبقى فعّالًا حتى التفعيل.</div></div>
+    <div class="pr"><div class="k">لا لمس لغير المحدد</div><div class="v">لا يُمَس أي OCO آخر حتى لو لنفس العملة.</div></div>
+    <div class="pr"><div class="k">أتمتة بقواعد المستخدم</div><div class="v">النظام ينفّذ قواعدك ولا يخترع استراتيجية تداول من عنده.</div></div>
+  </div>
+
+  <footer>OCOBot — تصميم واجهات (Mockups) · ثيم داكن RTL · Testnet-first → Validated → Live · Fast, but not blind.</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,55 @@
+{
+  "id": "G1.32",
+  "title": "قوس خروج بالسعر (Price Exit Bracket): خانتا سعر علوي/سفلي تُوقف المراقبة وتخرج فورًا — مقسّم a/b",
+  "kind": "feature",
+  "description": "في شاشة المراقبة الديناميكية: خانتا سعر (علوي/سفلي، أسعار لا نِسب) مربوطتان بمفتاح يُفعَّل قبل البدء. عند لمس/تجاوز العلوي لأعلى أو لمس/هبوط تحت السفلي: يوقف التموضع عبر kill_switch ثم يُلغي الـOCO القائم لتحرير الرصيد ثم يخرج فورًا. التسعير المعتمد: الخروج السفلي STOP_LOSS_LIMIT قابل للتنفيذ (marketable بفجوة كافية + أرضية ضد الفلاش-كراش)؛ الخروج العلوي LIMIT قابل للتنفيذ (سعر معروف). MARKET العاري ليس الافتراضي (خيار متقدّم صريح فقط). الكمية floor_to_step(min(هدف, حرّ)) مع تحقّق minNotional/LOT_SIZE. منع بيع مزدوج بنيويًّا (reconcile + قفل الرصيد). تنسيق خروج-واحد مع الحارس.",
+  "severity": "major",
+  "professional_proposal": "تقسيم إلى a (منفّذ خروج معزول + تسلسل إيقاف-إلغاء-خروج + تحقّق فلاتر + اختبارات، بلا واجهة) و b (واجهة القوس + مُراقِب خفيف يقرأ السعر/الحالة ويستدعي المنفّذ). كل شيء إضافي بالتوازي خارج المسار الحار، مطفأ افتراضيًّا.",
+  "plan": [
+    "G1.32a_chunk_1: MarketExitExecutor بحقن تبعيات: reconcile أوامر البيع + الرصيد، eff_qty=floor_to_step(min(target,free))، تحقّق minNotional/LOT_SIZE — دالة تخطيط خالصة + اختبارات.",
+    "G1.32a_chunk_2: تسلسل الخروج الآمن: kill_switch ثم إلغاء OCO القائم عبر العميل الموجود (بلا تعديل reposition) ثم أمر الخروج (STOP_LOSS_LIMIT marketable للسفلي / LIMIT marketable للعلوي) ثم تأكيد + تنبيه + اختبارات بمحاكاة عميل (ترتيب/انزلاق/غبار/منع بيع مزدوج).",
+    "G1.32a_chunk_3: الحزمة خضراء + دليل _g1_32a_run.txt + ختم G1.32a.",
+    "G1.32b_chunk_1: خانتا سعر + مفتاح مشترك في شاشة 04_dynamic_monitoring + تحقّق منطقي (سفلي < الحالي < علوي، تحذير لو مقلوب) — بلا شبكة + اختبارات.",
+    "G1.32b_chunk_2: مُراقِب قوس خفيف يقرأ السعر/الحالة مثل المُشرِف ويفحص كل tick: سعر فوق العلوي أو تحت السفلي ثم يستدعي MarketExitExecutor؛ تنسيق خروج-واحد مع الحارس (بعد الخروج الرصيد صفر فالحارس NOOP) + اختبارات.",
+    "G1.32b_chunk_3: الحزمة خضراء + اختبارات + دليل _g1_32b_run.txt.",
+    "G1.32b_chunk_4 (نقطة تفتيش بشرية): تحقّق سلوكي على Testnet (لمس علوي/سفلي ثم خروج صحيح، لا بيع مزدوج).",
+    "G1.32b_chunk_5: ختم G1.32 + تصفير WORKING_MEMORY + الأرشفة."
+  ],
+  "scope_boundary": "منفّذ خروج + مُراقِب + واجهة إضافية بالتوازي. يُمنع تعديل hot_path (on_price_tick/MonitoringEngine.start/SafeExecutor.execute/reposition.py/create_oco)؛ الإلغاء عبر العميل الموجود دون تعديل reposition. مفتاح مطفأ افتراضيًّا. MARKET عارٍ غير افتراضي. لا Live قبل 10.5.",
+  "status": "sealed",
+  "discovered_at": "2026-10-10T15:00:00Z",
+  "evidence_path": "_archive/_g1_32b_run.txt (SUITE_STATUS=GREEN; MODULES=75 TOTAL_TESTS=509 FAILED_MODULES=0 CRASHED_MODULES=0; incl test_g1_32b_bracket=14 + test_g1_32b_ui=4 + test_g1_32b_wiring=6 + g1_32a=16)",
+  "seal": {
+    "task": "G1.32",
+    "verified": true,
+    "evidence_path": "_archive/_g1_32b_run.txt (SUITE_STATUS=GREEN; MODULES=75 TOTAL_TESTS=509 FAILED_MODULES=0 CRASHED_MODULES=0; incl test_g1_32b_bracket=14 + test_g1_32b_ui=4 + test_g1_32b_wiring=6 + g1_32a=16)",
+    "evidence_count": 509,
+    "docs_synced": true,
+    "testnet_behavioral": "deferred_by_user_decision — بقرار المستخدم الصريح: الختم الآن ومراقبة السلوك على Testnet بعده؛ أي ظهور لاحق يُفتح له بند جديد. لا يرفع بوّابة G1 ولا يفعّل Live؛ القوس مطفأ افتراضيًّا و dry_run ما لم OCOBOT_BRACKET=live. معيار الخروج 10.5 يبقى ساريًا.",
+    "ts": "2026-10-11T18:23:14Z",
+    "note": "قوس الخروج بالسعر مكتمل: a (MarketExitExecutor معزول + تسلسل إيقاف-إلغاء-خروج + منع بيع مزدوج) و b (واجهة القوس + المُراقِب الخفيف + الربط). خروج-واحد/latch/marketable/أرضية فلاش-كراش محفوظة."
+  },
+  "subseals": {
+    "G1.32a": {
+      "task": "G1.32a",
+      "verified": true,
+      "evidence_path": "_archive/_g1_32a_run.txt (SUITE_STATUS=GREEN; MODULES=72 TOTAL_TESTS=485 FAILED_MODULES=0 CRASHED_MODULES=0; incl test_g1_32a_market_exit_plan=8 OK + test_g1_32a_exit_sequence=8 OK)",
+      "evidence_count": 485,
+      "docs_synced": true,
+      "ts": "2026-10-10T22:36:26Z",
+      "note": "MarketExitExecutor معزول (ocobot/domain/market_exit.py): plan_market_exit خالصة (STOP_LOSS_LIMIT marketable سفلي + أرضية / LIMIT marketable علوي / MARKET متقدّم صريح) + execute_market_exit (kill_switch → cancel_oco → reconcile → وضع واحد) مع منع بيع مزدوج بنيوي + dry_run بلا أثر. بلا واجهة، بلا لمس hot_path/reposition/المختوم."
+    },
+    "G1.32b": {
+      "task": "G1.32b",
+      "verified": true,
+      "evidence_path": "_archive/_g1_32b_run.txt (SUITE_STATUS=GREEN; MODULES=75 TOTAL_TESTS=509 FAILED_MODULES=0 CRASHED_MODULES=0; incl test_g1_32b_bracket=14 + test_g1_32b_ui=4 + test_g1_32b_wiring=6 + g1_32a=16)",
+      "evidence_count": 509,
+      "docs_synced": true,
+      "testnet_behavioral": "deferred_by_user_decision — بقرار المستخدم الصريح: الختم الآن ومراقبة السلوك على Testnet بعده؛ أي ظهور لاحق يُفتح له بند جديد. لا يرفع بوّابة G1 ولا يفعّل Live؛ القوس مطفأ افتراضيًّا و dry_run ما لم OCOBOT_BRACKET=live. معيار الخروج 10.5 يبقى ساريًا.",
+      "ts": "2026-10-11T18:23:14Z",
+      "note": "واجهة قوس الخروج (خانتا سعر علوي/سفلي + مفتاح مطفأ افتراضيًّا + تحقّق منطقي) في ocobot/ui/monitoring.py + ocobot/domain/bracket.py (BracketConfig/validate_bracket/BracketMonitor خروج-واحد) + ocobot/core/market_exit_broker.py + ocobot/ui/bracket_wiring.py + ربط app.py مُحارَس (_combined_tick). بلا لمس hot_path/المختوم."
+    }
+  },
+  "verification_status": "verified",
+  "next_action": "sealed"
+}

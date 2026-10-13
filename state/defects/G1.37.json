@@ -1,0 +1,32 @@
+{
+  "id": "G1.37",
+  "title": "تفعيل تنبيهات «شبكة أمان المركز الحارس» و«قوس الخروج بالسعر» عند تدخّلهما في الصفقة",
+  "kind": "feature",
+  "severity": "major",
+  "status": "sealed",
+  "discovered_at": "2026-10-11T19:34:30Z",
+  "reported_by": "user_manual_testing",
+  "after": "G1.33",
+  "description": "أُضيفت شبكة أمان «المركز الحارس» و«قوس الخروج بالسعر». يُشتبه أن تدخّل أيٍّ منهما في الصفقة عند تفعيله لا يُرسِل رسالة تنبيه لأنهما غير مربوطَين/غير مُفعّلَين داخل قسم التنبيهات (موجودان في مسار الإرسال تقريبًا لكن غير مؤكّد تفعيلهما). المطلوب: ربطهما بقسم التنبيهات بحيث عند تدخّل أيٍّ منهما في الصفقة بتفعيل عملة تُرسَل رسالته الخاصة موضَّحة فيها كل الخانات والأسعار.",
+  "professional_proposal": "التحقّق أولًا من مسار الأحداث في ocobot/alerts/bridge.py، ثم ربط أحداث تدخّل الحارس (guardian_exec/guardian_supervisor) وقوس الخروج (market_exit/bracket_wiring) بالمُنبِّه، مع قوالب رسائل مخصّصة لكل حدث تحمل كل الخانات والأسعار — دون تغيير منطق تنفيذ الحارس/الخروج المختوم ولا hot_path.",
+  "plan": [
+    "G1.37_chunk_1: تدقيق ocobot/alerts/bridge.py لتحديد هل يُطلَق إشعار عند تدخّل الحارس/قوس الخروج، وتحديد نقاط الإطلاق في ocobot/domain/guardian_exec.py و ocobot/domain/guardian_supervisor.py و ocobot/domain/market_exit.py و ocobot/ui/bracket_wiring.py + اختبارات.",
+    "G1.37_chunk_2: قوالب رسائل جديدة للحدثين في ocobot/alerts/formatting.py موضَّحة بكل الخانات والأسعار + اختبارات تنسيق.",
+    "G1.37_chunk_3: إطلاق الإشعار عند تدخّل أيٍّ منهما دون تغيير منطق التنفيذ المختوم + اختبارات ربط.",
+    "G1.37_chunk_4: الحزمة كاملة خضراء عبر _run_suite_isolated.py + دليل _archive/_g1_37_run.txt.",
+    "G1.37_chunk_5 (نقطة تفتيش بشرية Testnet): تدخّل الحارس/قوس الخروج ⇒ وصول رسالته الخاصة بكل التفاصيل والأسعار.",
+    "G1.37_chunk_6: ختم G1.37 + تصفير WORKING_MEMORY + الأرشفة إلى _archive."
+  ],
+  "scope_boundary": "داخل: ocobot/alerts/bridge.py (ربط الأحداث بالمُنبِّه) + ocobot/alerts/formatting.py (قوالب الرسائل) + نقاط الإطلاق في ocobot/domain/guardian_exec.py / ocobot/domain/guardian_supervisor.py و ocobot/domain/market_exit.py / ocobot/ui/bracket_wiring.py (إطلاق إشعار فقط). يُمنع تغيير منطق تنفيذ الحارس/الخروج المختوم (G1.30/G1.32/G1.33) و hot_path.",
+  "evidence_path": "_archive/_g1_37_run.txt (SUITE_STATUS=GREEN; MODULES=80 TOTAL_TESTS=555 FAILED_MODULES=0 CRASHED_MODULES=0; incl test_g1_37_intervention_alerts=25)",
+  "seal": {
+    "task": "G1.37",
+    "verified": true,
+    "evidence_path": "_archive/_g1_37_run.txt (SUITE_STATUS=GREEN; MODULES=80 TOTAL_TESTS=555 FAILED_MODULES=0 CRASHED_MODULES=0; incl test_g1_37_intervention_alerts=25)",
+    "evidence_count": 555,
+    "docs_synced": true,
+    "ts": "2026-10-12T10:48:42Z"
+  },
+  "verification_status": "verified",
+  "next_action": "sealed"
+}

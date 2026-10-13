@@ -1,0 +1,23 @@
+{
+  "id": "G1.1",
+  "title": "فشل الاتصال الحقيقي بـ Binance Testnet عبر المفاتيح",
+  "description": "أثناء بدء التجربة اليدوية بعد ختم T15، لم يُنشئ البوت اتصالًا حقيقيًا بـ Testnet رغم صحّة المفاتيح.",
+  "severity": "critical",
+  "discovered_at": "2026-09-24",
+  "reported_by": "user_manual_testing",
+  "professional_proposal": "إصلاح تهيئة طبقة الاتصال/الـ Transport وتحميل المفاتيح لفتح اتصال شبكي حقيقي، مع Preflight ضد -1022.",
+  "resolution_summary": "قام منفّذ لاحق بإصلاح الاتصال فأصبح البوت يتصل بالمفاتيح بنجاح (مؤكَّد يدويًا من المستخدم).",
+  "status": "sealed",
+  "verification_status": "verified",
+  "next_action": "sealed",
+  "evidence_path": "_g1_1_preflight.txt (AC2 CONNECTED) + _g1_1_run.txt (AC1 244 OK)",
+  "seal": {
+    "task": "G1.1",
+    "verified": true,
+    "evidence_path": "_g1_1_preflight.txt (AC2 CONNECTED) + _g1_1_run.txt (AC1 244 OK)",
+    "evidence_count": 244,
+    "docs_synced": true,
+    "ts": "2026-09-26T01:25:00Z"
+  },
+  "regression_resolution": "انحدار AC1 كان اختبارًا قديمًا (test_topbar_has_two_static_pills يتوقّع 'متصل' ثابتًا)؛ حُدِّث ليتوقّع 'غير متصل' باعتماد المستخدم (§6.3). لا تعديل كود ocobot/."
+}

@@ -1,0 +1,27 @@
+{
+  "id": "G1.8",
+  "title": "كل حاجة مش واصلة في الواجهة على حساب Testnet",
+  "description": "زراير تفعيل/مراقبة بتتضغط ومش بتعمل حاجة + خانات حية بتفضل — + شاشة التنفيذ الآمن فاضية + EnvironmentPill هارد كوديد. السبب الجذري حسب التشخيص: app.py::main() بيبعت executor=None, engine=None, price_provider=None فكل مسارات التنفيذ بتعمل early-return؛ EnvironmentPill نصّه ثابت مش بيقرأ البيئة الفعلية؛ وشاشة 05_safe_execution مجرد PlaceholderScreen.",
+  "severity": "critical",
+  "professional_proposal": "حقن backend حقيقي للـ Testnet في app.py::main() (executor/engine/price_provider موجّهة لـ Testnet endpoints فقط) بدل None، وتوصيل EnvironmentPill بمصدر البيئة الفعلي، وتوصيل أزرار Activate/Start/Pause/Kill بالمنطق الحقيقي مع تحديث الأرقام الحيّة، وتعبئة شاشة 05_safe_execution، وتحديث الاختبارات/الموك وتشغيل السويت الكاملة. Testnet فقط — صفر Live/mainnet وصفر Withdrawals.",
+  "status": "sealed",
+  "verification_status": "verified",
+  "environment": "Testnet",
+  "live_forbidden": true,
+  "discovered_at": "2026-09-28T14:02:51Z",
+  "references": [
+    "docs/ui_full_report.md",
+    "docs/DIAGNOSIS_T15_wiring.md"
+  ],
+  "evidence_path": "_g1_8_run.txt",
+  "seal": {
+    "task": "G1.8",
+    "verified": true,
+    "evidence_path": "_g1_8_run.txt",
+    "evidence_count": 260,
+    "docs_synced": true,
+    "ts": "2026-09-29T00:55:00Z"
+  },
+  "next_action": "sealed",
+  "resolution_summary": "حُلّ توصيل الواجهة على Testnet: app.py::main() يحقن executor/engine/price_provider (Testnet-lock عبر os.environ) + select_fn بسعر حيّ + set_environment؛ EnvironmentPill موصول بالبيئة الفعلية (Testnet)؛ الداشبورد/تفاصيل الأمر/جدول الأوامر/التفعيل+النسب/أزرار المراقبة (بدء/إيقاف مؤقت/طارئ) تعمل فعليًا وتحدّث الأرقام الحيّة؛ شاشة 05_safe_execution أصبحت SafeExecutionScreen حقيقية؛ مسح step_9 أثبت أن الشاشات الست موصولة (PlaceholderScreen مجرد fallback). السويت الكاملة خضراء 260/260 (_g1_8_run.txt). Testnet فقط — صفر Live/mainnet وصفر Withdrawals."
+}

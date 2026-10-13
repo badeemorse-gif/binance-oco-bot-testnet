@@ -1,0 +1,19 @@
+{
+  "id": "G1.18",
+  "title": "توقف أزرار التحكم في فرعَي «المراقبة الديناميكية» و«التفاصيل والتعديل» بعد اختيار صفقة (regression)",
+  "description": "عند اختيار صفقة من الواجهة ثم الانتقال إلى فرع «المراقبة الديناميكية» توقفت الأزرار: «بدء»، «إيقاف مؤقت»، «إيقاف طارئ». وفي فرع «التفاصيل والتعديل» توقف زرّا «أقصى إيقاف متاح» و«تفعيل». الأزرار كانت تعمل أول أمس ⇐ regression مُرجَّح من إصلاحات G1.14/G1.15/G1.16/G1.17. «أُصلح: إعادة بناء وحقن الاعتماديات (engine/executor/execute_cb/price_provider/convert_cb) داخل make_connect_wrapper للشاشتين 03 (selected_oco) و04 (dynamic_monitoring) بعد نجاح الاتصال، على قالب G1.17 لشاشة 02؛ عادت الأزرار الخمسة (بدء/إيقاف مؤقت/إيقاف طارئ + أقصى إيقاف متاح/تفعيل) للعمل، دون المساس بطريقة الاتصال/resolve_credentials ولا بالمناطق العاملة. تحقّق يدوي على Testnet 2026-10-05»",
+  "severity": "major",
+  "professional_proposal": "عزل السبب الجذري بمقارنة آخر التغييرات على ملفات الواجهة ومعالجات الأحداث لهذه الأزرار (diff + مراجعة _archive)، تحديد الربط/المعالج المكسور (handler/callback_data/selector)، إصلاحه داخل scope_boundary فقط دون المساس بالمناطق العاملة، ثم تحقّق لكل زر مع التقاط evidence.",
+  "status": "sealed",
+  "discovered_at": "2026-10-05T20:33:08+03:00",
+  "evidence_path": "_archive/_g1_18_run.txt",
+  "seal": {
+    "task": "G1.18",
+    "verified": true,
+    "evidence_path": "_archive/_g1_18_run.txt",
+    "evidence_count": 5,
+    "docs_synced": true,
+    "ts": "2026-10-06T01:27:00+03:00"
+  },
+  "evidence_count": 5
+}

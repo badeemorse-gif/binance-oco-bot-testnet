@@ -1,0 +1,484 @@
+[
+  {
+    "id": "T0",
+    "effort_estimate": "M (مكتمل)",
+    "title": "المستند التصميمي الشامل + PROJECT_STATE (Design Deliverables 1-13)",
+    "status": "done",
+    "definition_of_done": "docs/OCOBot_Design_AR.md يغطّي الـ13 deliverable + PROJECT_STATE.json موجود ومتسق.",
+    "acceptance_checks": [
+      "كل قرار معه سبب/trade-off",
+      "لا كود تطبيقي",
+      "لا شيء مخترع خارج النطاق"
+    ],
+    "depends_on": []
+  },
+  {
+    "id": "T1",
+    "effort_estimate": "M",
+    "title": "M0 — Foundation: Connectivity الموقّع + تحميل المفاتيح + اختيار البيئة + preflight",
+    "status": "done",
+    "definition_of_done": "REST client موقّع HMAC يعمل على Testnet؛ تحميل المفاتيح من المسار؛ preflight يمنع -1022؛ حالة اتصال مرئية.",
+    "acceptance_checks": [
+      "نداء موقّع خفيف ينجح على Testnet",
+      "لا تسجيل للمفاتيح في أي log",
+      "تبديل البيئة يغيّر base URL+المفتاح فقط",
+      "معالجة -1021 عبر مزامنة serverTime/clock offset"
+    ],
+    "depends_on": [
+      "T0"
+    ]
+  },
+  {
+    "id": "T2",
+    "effort_estimate": "M",
+    "title": "M1 — Read & Select (Testnet): exchangeInfo cache + openOrderList + جدول Orders + Selected OCO + Dashboard قراءة",
+    "status": "done",
+    "definition_of_done": "جلب الأوامر الحقيقية وعرضها؛ اختيار OCO واحد يؤسّس Live context؛ Selected OCO يعرض الهوية الكاملة والكمية المقفولة.",
+    "acceptance_checks": [
+      "الأعمدة المطلوبة كاملة",
+      "الكمية معروضة كـ Read-only",
+      "Filters مقروءة من exchangeInfo"
+    ],
+    "depends_on": [
+      "T1"
+    ]
+  },
+  {
+    "id": "T3",
+    "effort_estimate": "L",
+    "title": "M2 — Manual Edit + Safe Execution: Draft بالنِّسب + حساب الأسعار الثلاثة + Live/Max Stop + Activate (safe cancel/create + Idempotency)",
+    "status": "done",
+    "definition_of_done": "إدخال TP%/SL% يملأ 3 أسعار وفق الترتيب الصارم والفلاتر؛ Activate ينفّذ الدورة الذرّية ويؤكّد orderListId الجديد؛ لا لمس قبل Activate.",
+    "acceptance_checks": [
+      "الترتيب Stop Limit < Trigger < Last < TP مضمون",
+      "الكمية المتبقية تُستخدم",
+      "clientOrderId فريد",
+      "فشل Create بعد Cancel ⇒ FAILED_NEEDS_ATTENTION",
+      "Pre-Cancel Validation Gate يمنع الإلغاء إذا تعذّر البديل",
+      "remainingQty<minNotional/minQty ⇒ Abort مبكّر قبل Cancel",
+      "Naked Window مُبرَزة في UI أثناء التنفيذ"
+    ],
+    "depends_on": [
+      "T2"
+    ]
+  },
+  {
+    "id": "T4",
+    "effort_estimate": "L",
+    "title": "M3 — Dynamic Monitoring: Market WS + reference/trigger/latch + Latest Price + Tolerance/Guard + Rollover + Pause/Resume + Kill Switch",
+    "status": "done",
+    "definition_of_done": "المراقبة تعمل بـ3 نِسب؛ Trigger Latching وLatest Price وOne-Replacement-In-Flight وRollover؛ Pause/Resume وKill Switch يعملان كما هو موصوف.",
+    "acceptance_checks": [
+      "قفز فوق عدة triggers ⇒ reposition واحد فقط",
+      "Pause يُبقي OCO الحقيقي كما هو",
+      "Kill Switch لا يلغي أي أمر"
+    ],
+    "depends_on": [
+      "T3"
+    ]
+  },
+  {
+    "id": "T5",
+    "effort_estimate": "M",
+    "title": "M4a — أساس التخزين (Persistence): state store ذرّي + سكيمة حالة المراقبة وسياق OCO المختار (حسم JSON مقابل SQLite)",
+    "status": "done",
+    "definition_of_done": "طبقة تخزين واحدة (state store) بكتابة ذرّية (temp→rename) وقراءة آمنة؛ سكيمة موثّقة لِـ: checkpoint حالة المراقبة (MonitoringState) + سياق OCO المختار + موقع ملفات السجل. الافتراضي المقترح: JSON للـ checkpoint + JSONL للـ audit (مكتبة قياسية فقط، بلا اعتماد خارجي)؛ SQLite بديل موثّق. يحسم open_question الخاص بصيغة التخزين.",
+    "acceptance_checks": [
+      "كتابة/قراءة ذرّية بلا فساد عند التعطّل في منتصف الكتابة",
+      "السكيمة تغطّي كل حقول MonitoringState اللازمة للاستئناف",
+      "لا اعتماد خارجي جديد (stdlib فقط)",
+      "لا تسجيل لأي مفتاح/سر في ملفات الحالة"
+    ],
+    "depends_on": [
+      "T4"
+    ]
+  },
+  {
+    "id": "T6",
+    "effort_estimate": "S",
+    "title": "M4b — توصيل Audit Log: ربط core/audit_log.py الموجود بمسارات التنفيذ والمراقبة والـ CLI",
+    "status": "done",
+    "definition_of_done": "كل عملية (build_draft/cancel/create/reposition/pause/resume/kill/abort) تُسجَّل عبر AuditLog.record في سجل append-only مُنقّى (redacted). ملاحظة: الموديول core/audit_log.py موجود بالفعل ومُختبَر (بقايا محاولة T5 القديمة)؛ المطلوب توصيله لا إعادة كتابته.",
+    "acceptance_checks": [
+      "كل reposition/execution له سطر audit",
+      "لا مفاتيح/تواقيع في السجل (redaction فعّال)",
+      "السجل append-only (وضع الإلحاق فقط)",
+      "AuditLog.record مُستدعى فعليًا من SafeExecutor وMonitoringEngine وCLI"
+    ],
+    "depends_on": [
+      "T3",
+      "T4",
+      "T5"
+    ]
+  },
+  {
+    "id": "T7",
+    "effort_estimate": "S",
+    "title": "M4c — توصيل Failure Matrix: تمرير كل الأخطاء عبر humanize() وضمان صفر Exception خام",
+    "status": "done",
+    "definition_of_done": "كل سطح أخطاء في CLI (وأي واجهة لاحقًا) يمرّ عبر core/failure_matrix.humanize()؛ لا رسائل Exception خام للمستخدم. ملاحظة: الموديول core/failure_matrix.py موجود ومُختبَر (بقايا T5 القديمة)؛ المطلوب توصيله.",
+    "acceptance_checks": [
+      "لا str(exc) خام في أي مخرج للمستخدم",
+      "الأكواد -1021/-1022/429/418 + FAILED_NEEDS_ATTENTION لها رسائل بشرية",
+      "حالة غير معروفة ⇒ رسالة آمنة لا استثناء خام",
+      "CLI يمرّر أخطاءه عبر humanize الموحّدة"
+    ],
+    "depends_on": [
+      "T1",
+      "T3",
+      "T4"
+    ]
+  },
+  {
+    "id": "T8",
+    "effort_estimate": "L",
+    "title": "M4d — Runtime Recovery: حفظ حالة المراقبة عبر state store + استئناف بعد التعطّل + مطابقة الحالة الفعلية",
+    "status": "done",
+    "definition_of_done": "حالة المراقبة تُحفَظ عبر T5 عند كل تغيّر حالة؛ عند الإقلاع يُكتشَف آخر checkpoint ويُطابَق مع حالة الأمر الفعلية عبر REST (query orderList عبر T2) قبل الاستئناف؛ OCO أُغلق خارجيًا ⇒ إيقاف + تنبيه بدل الاستئناف الأعمى.",
+    "acceptance_checks": [
+      "إعادة التشغيل تستأنف المراقبة من آخر وضع محفوظ",
+      "checkpoint يُحدَّث عند كل انتقال حالة",
+      "OCO مُغلق أثناء التعطّل ⇒ لا استئناف + تنبيه واضح",
+      "لا كتابة عمياء عند الاستئناف (مطابقة أولًا)"
+    ],
+    "depends_on": [
+      "T2",
+      "T5"
+    ]
+  },
+  {
+    "id": "T9",
+    "effort_estimate": "L",
+    "title": "M4e — User Data Stream: دورة listenKey (create/keepalive~30m/close) + executionReport لحالة الأمر اللحظية",
+    "status": "done",
+    "split_into": [
+      "T9a",
+      "T9b",
+      "T9c"
+    ],
+    "definition_of_done": "إدارة listenKey كاملة (إنشاء عبر POST، keepalive كل ~30 دقيقة عبر PUT، إغلاق عبر DELETE) + استهلاك أحداث executionReport/listStatus لتحديث حالة الأمر لحظيًا وتغذية كشف 'الإغلاق الخارجي' في المراقبة/الاسترداد + إعادة اتصال آمنة.",
+    "acceptance_checks": [
+      "listenKey يُجدَّد تلقائيًا قبل انتهائه (~30م)",
+      "تغيّر حالة الأمر على Binance ينعكس لحظيًا",
+      "إغلاق OCO خارجيًا يُكتشَف عبر التدفّق ويوقف المراقبة",
+      "إعادة الاتصال بعد انقطاع WS بلا فقد حالة"
+    ],
+    "depends_on": [
+      "T9a",
+      "T9b",
+      "T9c"
+    ]
+  },
+  {
+    "id": "T9a",
+    "effort_estimate": "M",
+    "title": "M4e/1 — دورة listenKey: POST/PUT/DELETE /api/v3/userDataStream (مصادقة مفتاح فقط) + تجديد تلقائي (keepalive) قبل ~30م",
+    "status": "done",
+    "definition_of_done": "مدير listenKey كامل: create (POST) يُرجع listenKey، keepalive (PUT) يُجدَّد تلقائيًا قبل ~30م عبر ساعة قابلة للحقن، close (DELETE) يحرّر المفتاح؛ نداءات بمفتاح فقط (X-MBX-APIKEY) دون توقيع HMAC؛ stdlib فقط؛ لا تسريب للمفتاح أو الـ listenKey في السجلّات.",
+    "acceptance_checks": [
+      "create عبر POST يُرجع listenKey",
+      "keepalive (PUT) يُطلَق تلقائيًا قبل ~30م عبر ساعة محقونة",
+      "close عبر DELETE يحرّر المفتاح",
+      "مصادقة بمفتاح فقط دون توقيع/سر في الطلب أو السجلّ — يغطّي فحص T9 رقم 1"
+    ],
+    "depends_on": [
+      "T1",
+      "T4",
+      "T8"
+    ]
+  },
+  {
+    "id": "T9b",
+    "effort_estimate": "M",
+    "title": "M4e/2 — مستهلك User Data Stream: WS + تحليل executionReport/listStatus لتحديث حالة الأمر لحظيًا + كشف الإغلاق الخارجي يوقف المراقبة",
+    "status": "done",
+    "definition_of_done": "مستهلك WS يعيد استخدام نمط MarketWebSocketSource بـ connect_fn محقون، يتّصل بـ ws_base + '/' + listenKey، يحلّل executionReport وlistStatus، يحدّث حالة الأمر لحظيًا، ويغذّي كشف الإغلاق الخارجي لإيقاف المراقبة عبر MonitoringEngine (مسار CLOSED) دون إعادة تموضع.",
+    "acceptance_checks": [
+      "تغيّر حالة الأمر على Binance ينعكس لحظيًا عبر التدفّق — يغطّي فحص T9 رقم 2",
+      "إغلاق OCO خارجيًا يُكتشَف عبر التدفّق ويوقف المراقبة بلا إعادة تموضع — يغطّي فحص T9 رقم 3",
+      "تحليل الأحداث بلا شبكة عبر FakeSocket وإطارات معلّبة"
+    ],
+    "depends_on": [
+      "T9a"
+    ]
+  },
+  {
+    "id": "T9c",
+    "effort_estimate": "S",
+    "title": "M4e/3 — إعادة اتصال آمنة بعد انقطاع WS بلا فقد حالة",
+    "status": "done",
+    "definition_of_done": "عند انقطاع/إغلاق WS يُعاد الاتصال بنفس listenKey مع استمرارية keepalive دون فقد حالة المراقبة (checkpoint سليم واستئناف الاستهلاك)؛ وبعد اكتمال T9c تُوسم مظلّة T9 done.",
+    "acceptance_checks": [
+      "إعادة الاتصال بعد انقطاع WS بلا فقد حالة — يغطّي فحص T9 رقم 4",
+      "لا إعادة تهيئة تفقد MonitoringState",
+      "اختبار الانقطاع عبر FakeSocket يعيد b'' ثم socket جديد عبر connect_fn"
+    ],
+    "depends_on": [
+      "T9b"
+    ]
+  },
+  {
+    "id": "T10",
+    "effort_estimate": "L",
+    "title": "M-UI/0 — هيكل الواجهة PySide6/PyQt6: نافذة رئيسية + RTL + الثيم الداكن (Palette D15) + تنقّل + مؤشر اتصال + IO غير متزامن خارج UI thread",
+    "status": "done",
+    "definition_of_done": "هيكل تطبيق سطح مكتب PySide6/PyQt6 يعمل: RTL كامل، Palette المعتمدة، شريط جانبي + توجيه بين الشاشات، مؤشر حالة الاتصال حيّ، وكل IO خارج خيط الواجهة (لا تجميد). يلتزم بموك-أب docs/ui_mockups بأقل تغيير.",
+    "acceptance_checks": [
+      "الواجهة RTL بالكامل + Palette مطابقة (WCAG AA)",
+      "لا تجميد للواجهة أثناء نداءات الشبكة (IO async)",
+      "التنقّل بين الشاشات يعمل",
+      "مؤشر الاتصال يعكس ConnectionState الحقيقي"
+    ],
+    "depends_on": [
+      "T10a",
+      "T10b",
+      "T10c"
+    ],
+    "split_into": [
+      "T10a",
+      "T10b",
+      "T10c"
+    ]
+  },
+  {
+    "id": "T10a",
+    "effort_estimate": "M",
+    "title": "M-UI/0a — أساس تطبيق PySide6/PyQt6: النافذة الرئيسية + RTL كامل + الثيم الداكن (Palette D15) + خط Tajawal",
+    "status": "done",
+    "definition_of_done": "تطبيق PySide6/PyQt6 يُقلِع بنافذة رئيسية، اتجاه RTL كامل، وثيم داكن موحّد بألوان Palette D15 وخط Tajawal، مطابقًا لموك‑أب docs/ui_mockups بأقل تغيير.",
+    "acceptance_checks": [
+      "النافذة تُقلِع باتجاه RTL كامل — يغطّي فحص T10 رقم 1 (جزء RTL)",
+      "رموز Palette D15 مطبَّقة عبر ثيم موحّد بتباين WCAG AA — يغطّي فحص T10 رقم 1 (جزء Palette)",
+      "لا خلط فاتح/داكن (هوية بصرية واحدة D15)"
+    ],
+    "depends_on": [
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ]
+  },
+  {
+    "id": "T10b",
+    "effort_estimate": "S",
+    "title": "M-UI/0b — قوقعة التنقّل: Sidebar يمين + Topbar (Pills: Environment/Connection) + Content + توجيه بين شاشات هيكلية",
+    "status": "done",
+    "definition_of_done": "قوقعة تنقّل مطابقة للموك‑أب: Sidebar يمين + Topbar (عنوان + Pills Environment/Connection) + منطقة Content، مع توجيه يبدّل بين شاشات هيكلية (placeholders) دون منطق أعمال.",
+    "acceptance_checks": [
+      "التنقّل بين الشاشات الهيكلية يعمل (تبديل المحتوى) — يغطّي فحص T10 رقم 3",
+      "التخطيط مطابق للموك‑أب (Sidebar يمين + Topbar + Content)"
+    ],
+    "depends_on": [
+      "T10a"
+    ]
+  },
+  {
+    "id": "T10c",
+    "effort_estimate": "M",
+    "title": "M-UI/0c — IO غير متزامن خارج UI thread + مؤشر اتصال حيّ يعكس ConnectionState",
+    "status": "done",
+    "definition_of_done": "طبقة تنفيذ غير متزامن (عمّال/إشارات) تُخرِج كل IO عن خيط الواجهة فلا تتجمّد أبدًا، ومؤشر اتصال في الـTopbar يعكس ConnectionState الحقيقي؛ طبقة UI لا تُجري نداءات شبكة مباشرة (تمرّ عبر الخدمات — D11/Deliverable 2). وبعد اكتمال T10c تُوسم مظلّة T10 done.",
+    "acceptance_checks": [
+      "لا تجميد للواجهة أثناء عملية غير متزامنة (تُختبَر عبر عامل/إشارة بلا شبكة) — يغطّي فحص T10 رقم 2",
+      "مؤشر الاتصال يعكس ConnectionState (مُزيّف في الاختبار) — يغطّي فحص T10 رقم 4",
+      "طبقة UI لا تنادي الشبكة مباشرة"
+    ],
+    "depends_on": [
+      "T10b"
+    ]
+  },
+  {
+    "id": "T11",
+    "effort_estimate": "L",
+    "title": "M-UI/1 — شاشات القراءة: Dashboard + جدول Open OCO Orders + Selected OCO (مظلّة T11a/T11b/T11c)",
+    "status": "done",
+    "definition_of_done": "الشاشات الثلاث تعرض بيانات حقيقية عبر domain services الموجودة (oco_reader/selection/build_dashboard)؛ الأعمدة كاملة كما في مواصفة UI؛ الكمية Read-only؛ الفلاتر من exchangeInfo.",
+    "acceptance_checks": [
+      "Dashboard يعرض كل حقول شاشة التحكم",
+      "جدول الأوامر يعرض الأعمدة المطلوبة كاملة",
+      "اختيار OCO يؤسّس السياق الحيّ ويعرض الهوية الكاملة",
+      "الكمية معروضة Read-only"
+    ],
+    "depends_on": [
+      "T11a",
+      "T11b",
+      "T11c"
+    ]
+  },
+  {
+    "id": "T11a",
+    "effort_estimate": "M",
+    "title": "M-UI/1a — شاشة Dashboard (ربط build_dashboard)",
+    "status": "done",
+    "definition_of_done": "شاشة Dashboard تعرض بيانات حقيقية عبر build_dashboard؛ كل حقول شاشة التحكم كما في docs/ui_mockups/01_dashboard؛ RTL + ثيم داكن (D15)؛ القيم symbol-agnostic من exchangeInfo (D8)؛ لا Preview ثابت (D14).",
+    "acceptance_checks": [
+      "Dashboard يعرض كل حقول شاشة التحكم"
+    ],
+    "depends_on": [
+      "T10",
+      "T2"
+    ]
+  },
+  {
+    "id": "T11b",
+    "effort_estimate": "M",
+    "title": "M-UI/1b — جدول Open OCO Orders (ربط oco_reader)",
+    "status": "done",
+    "definition_of_done": "جدول Open OCO Orders يعرض بيانات حقيقية عبر oco_reader بكامل الأعمدة كما في docs/ui_mockups/02_open_orders؛ الكمية Read-only؛ الفلاتر/الدقّة من exchangeInfo (D8).",
+    "acceptance_checks": [
+      "جدول الأوامر يعرض الأعمدة المطلوبة كاملة",
+      "الكمية معروضة Read-only"
+    ],
+    "depends_on": [
+      "T11a"
+    ]
+  },
+  {
+    "id": "T11c",
+    "effort_estimate": "S",
+    "title": "M-UI/1c — Selected OCO (ربط selection + سياق حيّ)",
+    "status": "done",
+    "definition_of_done": "اختيار OCO من الجدول يؤسّس السياق الحيّ ويعرض الهوية الكاملة عبر selection؛ وفق docs/ui_mockups/03_selected_and_edit (جزء القراءة).",
+    "acceptance_checks": [
+      "اختيار OCO يؤسّس السياق الحيّ ويعرض الهوية الكاملة"
+    ],
+    "depends_on": [
+      "T11b"
+    ]
+  },
+  {
+    "id": "T12",
+    "effort_estimate": "L",
+    "title": "M-UI/2 — شاشة التعديل اليدوي + التنفيذ الآمن: نِسب → 3 أسعار → Activate خلف تأكيد + Max Stop + شريط Naked Window (مظلّة T12a/T12b)",
+    "status": "done",
+    "definition_of_done": "إدخال TP%/SL% يعرض الأسعار الثلاثة فورًا (ربط بـ pricing)؛ Activate ينفّذ عبر SafeExecutor خلف تأكيد صريح؛ زر Max Available Stop؛ لا لمس قبل Activate؛ إبراز Naked Window أثناء التنفيذ.",
+    "acceptance_checks": [
+      "الترتيب الصارم مضمون ومعروض قبل التنفيذ",
+      "لا تغيير على الأمر قبل ضغط Activate",
+      "Naked Window مُبرَزة في الواجهة أثناء Cancel→Create",
+      "القيم القديمة معروضة للمرجع"
+    ],
+    "depends_on": [
+      "T12a",
+      "T12b"
+    ]
+  },
+  {
+    "id": "T12a",
+    "effort_estimate": "M",
+    "title": "M-UI/2a — الواجهة + معاينة الأسعار الثلاث (نِسب TP/SL → 3 أسعار حيّة) + زر Max Available Stop + عرض القيم القديمة",
+    "status": "done",
+    "definition_of_done": "شاشة التعديل اليدوي تعرض القيم القديمة للمرجع؛ إدخال TP%/SL% يحسب ويعرض الأسعار الثلاثة فورًا وفق الترتيب الصارم (Stop Limit < Trigger < Last < TP) والفلاتر (tickSize) عبر ربط pricing؛ زر Max Available Stop يحسب أقصى Stop قابل للاستخدام؛ RTL + ثيم Palette D15؛ لا Preview ثابت (D14). لا تنفيذ فعلي في هذه المهمة (Draft فقط).",
+    "acceptance_checks": [
+      "الترتيب الصارم مضمون ومعروض قبل التنفيذ",
+      "القيم القديمة معروضة للمرجع"
+    ],
+    "depends_on": [
+      "T10",
+      "T3"
+    ]
+  },
+  {
+    "id": "T12b",
+    "effort_estimate": "M",
+    "title": "M-UI/2b — التنفيذ الآمن: Activate عبر SafeExecutor خلف تأكيد + إبراز Naked Window + اختبارات القبول",
+    "status": "done",
+    "definition_of_done": "زر Activate ينفّذ الدورة الذرّية عبر SafeExecutor (Cancel→Create) خلف تأكيد صريح ويؤكّد orderListId الجديد؛ لا لمس للأمر قبل ضغط Activate؛ إبراز Naked Window في الواجهة أثناء Cancel→Create؛ سويت اختبارات القبول خضراء بالعدد المتوقَّع.",
+    "acceptance_checks": [
+      "لا تغيير على الأمر قبل ضغط Activate",
+      "Naked Window مُبرَزة في الواجهة أثناء Cancel→Create"
+    ],
+    "depends_on": [
+      "T12a"
+    ]
+  },
+  {
+    "id": "T13",
+    "effort_estimate": "L",
+    "title": "M-UI/3 — شاشة المراقبة الديناميكية + التحكم: سعر حي + reference/trigger/latch + Pause/Resume + Kill Switch + tolerance/guard",
+    "status": "done",
+    "definition_of_done": "الشاشة تعرض السعر الحيّ والمستويات الحيّة وحالة المراقبة، وتتحكّم في MonitoringEngine (بدء/Pause/Resume/Kill Switch)؛ المعلومات التي لا تختفي أثناء المراقبة ظاهرة دائمًا.",
+    "acceptance_checks": [
+      "Kill Switch يوقف كل المراقبة دون إلغاء أي أمر على Binance",
+      "Pause يُبقي OCO الحقيقي كما هو",
+      "كل حقول 'لا تختفي أثناء المراقبة' ظاهرة",
+      "السعر الحيّ حقيقي (WS مع سقوط REST) لا Preview ثابت"
+    ],
+    "depends_on": [
+      "T10",
+      "T4",
+      "T9"
+    ]
+  },
+  {
+    "id": "T14",
+    "effort_estimate": "M",
+    "title": "M-UI/4 — Demo Mode داخل الواجهة: عرض الدورة كاملة مع فصل صريح عن Live (D14 + الممنوعات)",
+    "status": "done",
+    "definition_of_done": "وضع Demo داخل الواجهة يعرض الدورة End-to-End كاملة بفصل بصري صريح عن Live، دون أي كتابة حقيقية على Binance ودون إيهام بأن السعر Live ثابت.",
+    "acceptance_checks": [
+      "Demo لا يكتب أي أمر حقيقي",
+      "فصل بصري صريح بين Demo وLive",
+      "الدورة كاملة قابلة للعرض في Demo",
+      "لا خلط مع dry-run الخلفي (مفهومان منفصلان)"
+    ],
+    "depends_on": [
+      "T11",
+      "T12",
+      "T13"
+    ]
+  },
+  {
+    "id": "T15",
+    "effort_estimate": "M",
+    "title": "M5 — Validated: تشغيل شامل على Testnet + مراجعة أمان/حواف + معايير القبول",
+    "status": "done",
+    "definition_of_done": "اجتياز مصفوفة الحواف كاملة على Testnet عبر الواجهة + قائمة أمان مُراجَعة.",
+    "acceptance_checks": [
+      "كل حالات مصفوفة الفشل مُختبَرة عبر الواجهة",
+      "لا صلاحيات سحب على المفتاح",
+      "IP whitelist موصى/مفعّل",
+      "الاسترداد وUser Data Stream مُختبَران تحت التعطّل"
+    ],
+    "depends_on": [
+      "T9",
+      "T13",
+      "T14"
+    ]
+  },
+  {
+    "id": "G1",
+    "type": "human_gate",
+    "human_gate": true,
+    "effort_estimate": "—",
+    "title": "بوابة اعتماد بشري: اكتمال البوت التجريبي (Testnet) — تجربة يدوية من المستخدم + موافقة صريحة قبل أي عمل Live",
+    "status": "next",
+    "definition_of_done": "بعد اكتمال T15 (Validated): أعلن للمستخدم صراحةً أن البوت التجريبي اكتمل واجتاز Validated، واطلب منه تجربته يدويًا وإبداء رأيه. لا تُعلَّم مجتازة إلا عندما يكتب المستخدم عبارة الاعتماد الصريحة.",
+    "approval_phrase": "اعتمدت البوت التجريبي — ابدأ التحويل إلى Live",
+    "acceptance_checks": [
+      "أُعلن للمستخدم اكتمال البوت التجريبي وطُلبت التجربة اليدوية",
+      "المستخدم كتب عبارة الاعتماد الصريحة",
+      "لم تبدأ أي مهمة Live قبل الاعتماد"
+    ],
+    "depends_on": [
+      "T15"
+    ]
+  },
+  {
+    "id": "T16",
+    "effort_estimate": "S",
+    "title": "M6 — Live (بوابة): تبديل إعداد فقط + بوابة تحقق + مراقبة Rate limit",
+    "status": "blocked",
+    "definition_of_done": "التحويل إلى Live عبر تبديل base URL+المفتاح خلف بوابة تحقق، دون أي تغيير منطقي.",
+    "acceptance_checks": [
+      "لا فرع كود خاص بـ Live",
+      "بوابة تحقق قبل التفعيل",
+      "رؤوس Rate limit مُراقَبة",
+      "اجتياز بوابة الاعتماد البشري G1 قبل البدء"
+    ],
+    "depends_on": [
+      "G1"
+    ]
+  }
+]

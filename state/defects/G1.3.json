@@ -1,0 +1,22 @@
+{
+  "id": "G1.3",
+  "title": "الأمر المختار في قسم الأوامر المفتوحة لا ينتشر إلى الأقسام (تفاصيل/تعديل، المراقبة الديناميكية، لوحة القيادة)",
+  "description": "في الواجهة الحقيقية، الضغط على أمر في قسم الأوامر المفتوحة ثم الانتقال إلى تفاصيل وتعديل أو المراقبة الديناميكية أو لوحة القيادة لا يُظهر الأمر المختار في أيٍّ منها. السبب الجذري على القرص: (1) ocobot/ui/app.py::main() يبني MainWindow() بلا select_fn ⇒ handle_oco_selection يعود مبكرًا ولا يؤسّس Live context؛ (2) MainWindow._show_selected يغذّي 03_selected_and_edit فقط ولا يُمرّر SelectedOCO إلى 04_dynamic_monitoring ولا 01_dashboard؛ (3) OpenOrdersScreen.set_orders لا يعيد تظليل الصف المختار عند إعادة التعبئة. ملاحظة: 06_demo (وضع العرض) معزول بالتصميم ولا يعكس التحديد الحقيقي (سلوك مقصود، ليس خللًا).",
+  "severity": "major",
+  "discovered_at": "2026-09-26",
+  "reported_by": "user_manual_testing",
+  "professional_proposal": "حقن select_fn=Selector(OcoReader(client), ExchangeInfoService(client)).select في MainWindow عبر app.py (قراءة فقط، P2/P3)؛ وتوسيع _show_selected لتغذية 04_dynamic_monitoring (set_selected) و01_dashboard (update_snapshot(build_dashboard(selected)))؛ وتذكّر آخر orderListId مختار وإعادة تظليل صفه في set_orders دون إعادة إطلاق الاختيار. لا مساس بأي orderListId آخر (P3)، ولا حقن executor/engine/price (خارج النطاق، وLive ممنوع قبل G1).",
+  "resolution_summary": "أُصلح انتشار التحديد في الواجهة الحقيقية: ocobot/ui/app.py يحقن select_fn=Selector(...).select عبر build_app→MainWindow؛ ocobot/ui/main_window.py::_show_selected يغذّي 04 (set_selected) و01 (update_snapshot(build_dashboard(selected)))؛ ocobot/ui/open_orders.py يتذكّر _selected_order_id ويعيد تظليل الصف في set_orders (blockSignals). 06_demo يبقى معزولًا بالتصميم ولم يُمس أي orderListId آخر (P3) (مؤكَّد يدويًا من المستخدم).",
+  "status": "sealed",
+  "verification_status": "verified",
+  "next_action": "sealed",
+  "evidence_path": "_g1_3_run.txt",
+  "seal": {
+    "task": "G1.3",
+    "verified": true,
+    "evidence_path": "_g1_3_run.txt (AC1 Ran 247 OK = 244 baseline + 3 موجَّهة؛ AC2 اختبارات موجَّهة خضراء test_ui_app/test_ui_selected/test_ui_open_orders: اختيار صف يغذّي 03/04/01 بنفس orderListId + set_orders يعيد التظليل؛ AC3 تأكيد يدوي من المستخدم على Testnet 2026-09-26: الانتشار إلى 03/04/01 بنفس orderListId وإعادة تظليل الصف عند العودة و06_demo معزول)",
+    "evidence_count": 247,
+    "docs_synced": true,
+    "ts": "2026-09-26T12:01:00Z"
+  }
+}

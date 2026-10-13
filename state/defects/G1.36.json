@@ -1,0 +1,31 @@
+{
+  "id": "G1.36",
+  "title": "تعبئة بيانات رسائل التموضع (🔁 Repositioned) في تيليجرام — إزالة الخانات الفارغة «—»",
+  "kind": "bug",
+  "severity": "minor",
+  "status": "sealed",
+  "discovered_at": "2026-10-11T19:34:30Z",
+  "reported_by": "user_manual_testing",
+  "after": "G1.33",
+  "description": "رسالة «🚀 Monitor Started» الأولى كاملة ومنسّقة (Session/Symbol/Order list/Reference price/Last price/Activation (next)/TP/SL/Time). لكن رسائل «🔁 Repositioned» تصل بخانات سعرية فارغة: Session: — ، Symbol: — ، Reference price: — ، Activation (next): — ، TP: 🟢 — ، SL: 🔴 — ؛ ولا تُظهر السعر ولا رقم العملية ولا اسم العملة (تظهر فقط Order list current/previous و Current price و Cursor و Time). المطلوب: تعبئة خانات رسالة التموضع بنفس بيانات الرسالة الأولى (Session, Symbol, Reference price, Activation, TP, SL، السعر، رقم العملية/ListId، اسم العملة) حتى تكون واضحة ومباشرة.",
+  "professional_proposal": "تمرير حالة المحرّك الكاملة عند حدث التموضع من ocobot/alerts/bridge.py إلى باني رسالة Repositioned في ocobot/alerts/formatting.py وتعبئة كل الخانات كما في Monitor Started، دون تغيير قرار/منطق التموضع نفسه (hot_path المختوم).",
+  "plan": [
+    "G1.36_chunk_1: تحديد مصدر الحقول الغائبة (Session/Symbol/Reference price/Activation/TP/SL/السعر/ListId/العملة) من حالة المحرّك عند حدث التموضع وتمريرها في ocobot/alerts/bridge.py + اختبارات.",
+    "G1.36_chunk_2: تعبئة باني رسالة Repositioned في ocobot/alerts/formatting.py بكل الخانات بنفس تنسيق Monitor Started + اختبارات تنسيق (نمط tests/test_g1_25_alerts.py).",
+    "G1.36_chunk_3: الحزمة كاملة خضراء عبر _run_suite_isolated.py + دليل _archive/_g1_36_run.txt.",
+    "G1.36_chunk_4 (نقطة تفتيش بشرية Testnet): حدوث تموضع ⇒ رسالة Repositioned تظهر كل الخانات معبّأة لا «—».",
+    "G1.36_chunk_5: ختم G1.36 + تصفير WORKING_MEMORY + الأرشفة إلى _archive."
+  ],
+  "scope_boundary": "داخل: ocobot/alerts/formatting.py (باني رسالة Repositioned) + ocobot/alerts/bridge.py (تمرير الحقول من حالة المحرّك عند الحدث). يُمنع تغيير قرار/منطق التموضع و hot_path المختوم؛ التعديل في محتوى الرسالة فقط.",
+  "evidence_path": "_archive/_g1_36_run.txt (SUITE_STATUS=GREEN; MODULES=79 TOTAL_TESTS=530 FAILED_MODULES=0 CRASHED_MODULES=0; incl test_g1_36_reposition_fields=3)",
+  "seal": {
+    "task": "G1.36",
+    "verified": true,
+    "evidence_path": "_archive/_g1_36_run.txt (SUITE_STATUS=GREEN; MODULES=79 TOTAL_TESTS=530 FAILED_MODULES=0 CRASHED_MODULES=0; incl test_g1_36_reposition_fields=3)",
+    "evidence_count": 530,
+    "docs_synced": true,
+    "ts": "2026-10-11T21:29:00Z"
+  },
+  "verification_status": "verified",
+  "next_action": "sealed"
+}

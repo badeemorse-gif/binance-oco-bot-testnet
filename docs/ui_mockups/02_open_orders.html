@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OCOBot — الأوامر المفتوحة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#031021; --sidebar:#020d1c; --card:#061529; --card-alt:#081d32;
+    --border:#0d2a43; --text:#f0f7fb; --text-soft:#dce9f2; --muted:#6f8ba2;
+    --blue:#0876e8; --teal:#073b42; --green:#19c58b; --red:#ff4b68; --amber:#f08f1b;
+    --radius:12px; --shadow:0 8px 24px rgba(0,0,0,.35);
+    --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Tajawal","Segoe UI",Tahoma,"Noto Sans Arabic",Arial,sans-serif;
+    background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+  .app{display:grid;grid-template-columns:1fr 250px;min-height:100vh}
+  aside{background:var(--sidebar);border-inline-start:1px solid var(--border);padding:22px 16px;order:2}
+  .brand{display:flex;align-items:center;gap:12px;margin-bottom:26px;padding:0 6px}
+  .brand .logo{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,var(--blue),#0aa);
+    display:grid;place-items:center;font-weight:700;color:#fff}
+  .brand .nm{font-size:19px;font-weight:700}.brand .sb{font-size:11px;color:var(--muted)}
+  nav a{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:10px;
+    color:var(--text-soft);text-decoration:none;font-size:14.5px;margin-bottom:5px;transition:.15s;position:relative}
+  nav a .ic{width:20px;text-align:center;opacity:.85}
+  nav a:hover{background:var(--card-alt)}
+  nav a.active{background:linear-gradient(90deg,rgba(8,118,232,.18),transparent);color:#fff}
+  nav a.active::after{content:"";position:absolute;inset-inline-end:0;top:8px;bottom:8px;width:3px;background:var(--blue);border-radius:3px}
+  main{order:1;display:flex;flex-direction:column;min-width:0}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 26px;
+    border-bottom:1px solid var(--border);background:linear-gradient(180deg,#061a30,transparent)}
+  .topbar h1{font-size:20px}.topbar .right{display:flex;align-items:center;gap:10px}
+  .pill{display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:999px;font-size:12.5px;font-weight:600;border:1px solid var(--border)}
+  .pill .dot{width:8px;height:8px;border-radius:50%}
+  .pill.env{background:rgba(240,143,27,.12);color:var(--amber);border-color:rgba(240,143,27,.4)}
+  .pill.conn{background:rgba(25,197,139,.12);color:var(--green);border-color:rgba(25,197,139,.4)}
+  .pill.conn .dot{background:var(--green);box-shadow:0 0 8px var(--green)}
+  .content{padding:26px;overflow:auto}
+  .section-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .section-h h2{font-size:17px}
+  .btn{background:var(--blue);color:#fff;border:0;padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+  .btn:hover{filter:brightness(1.1)}
+  .note{background:var(--card-alt);border:1px solid var(--border);border-inline-start:3px solid var(--amber);
+    border-radius:10px;padding:12px 16px;font-size:13px;color:var(--text-soft);margin-bottom:18px;display:flex;gap:10px}
+  .note b{color:var(--amber)}
+  .tablewrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  thead th{background:var(--sidebar);color:var(--muted);font-weight:600;text-align:right;padding:14px 16px;font-size:12.5px;border-bottom:1px solid var(--border);white-space:nowrap}
+  tbody td{padding:14px 16px;border-bottom:1px solid var(--border);text-align:right}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover{background:var(--card-alt)}
+  .mono{font-family:var(--mono)}
+  .sym{font-weight:700}
+  .status{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;font-size:11.5px;font-weight:700;background:rgba(8,118,232,.15);color:#5db0ff}
+  .status .dot{width:6px;height:6px;border-radius:50%;background:#5db0ff}
+  tr.selected{background:linear-gradient(90deg,rgba(25,197,139,.14),rgba(7,59,66,.35))!important}
+  tr.selected td:first-child{box-shadow:inset 3px 0 0 var(--green)}
+  .selbadge{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;font-size:10.5px;font-weight:700;background:rgba(25,197,139,.18);color:var(--green);margin-inline-start:8px}
+  .num{color:var(--green)} .stop{color:var(--red)}
+  @media(max-width:820px){.app{grid-template-columns:1fr}aside{order:0}.content{overflow-x:auto}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand"><div class="logo">OCO</div><div><div class="nm">OCOBot</div><div class="sb">إدارة أوامر OCO</div></div></div>
+    <nav>
+      <a href="01_dashboard.html"><span class="ic">▦</span> لوحة التحكم</a>
+      <a class="active" href="02_open_orders.html"><span class="ic">▤</span> الأوامر المفتوحة</a>
+      <a href="03_selected_and_edit.html"><span class="ic">✎</span> تفاصيل وتعديل</a>
+      <a href="04_dynamic_monitoring.html"><span class="ic">◎</span> المراقبة الديناميكية</a>
+      <a href="05_safe_execution.html"><span class="ic">⚡</span> التنفيذ الآمن</a>
+    </nav>
+  </aside>
+  <main>
+    <div class="topbar">
+      <h1>الأوامر المفتوحة</h1>
+      <div class="right">
+        <span class="pill env"><span class="dot" style="background:var(--amber)"></span> Testnet</span>
+        <span class="pill conn"><span class="dot"></span> متصل</span>
+      </div>
+    </div>
+    <div class="content">
+      <div class="section-h">
+        <h2>أوامر OCO المفتوحة على Binance</h2>
+        <button class="btn">↻ تحديث الأوامر</button>
+      </div>
+      <div class="note"><span>ℹ️</span><div>الاختيار يعمل <b>فقط على الـ orderListId</b> المحدد — لا يُمَس أي أمر آخر حتى لو لنفس العملة.</div></div>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Order List ID</th><th>Symbol</th><th>Status</th>
+              <th>Qty</th><th>سعر البيع / TP</th><th>Stop Trigger</th><th>Limit بعد التفعيل</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono">1</td><td class="mono">7964</td>
+              <td class="sym">TUTUSDT</td>
+              <td><span class="status"><span class="dot"></span>EXECUTING</span></td>
+              <td class="mono">1,200</td><td class="mono num">0.05262</td>
+              <td class="mono stop">0.04959</td><td class="mono">0.04958</td>
+            </tr>
+            <tr class="selected">
+              <td class="mono">2</td>
+              <td class="mono">8001 <span class="selbadge">✓ محدد</span></td>
+              <td class="sym">TUTUSDT</td>
+              <td><span class="status"><span class="dot"></span>EXECUTING</span></td>
+              <td class="mono">1,200</td><td class="mono num">0.05300</td>
+              <td class="mono stop">0.04980</td><td class="mono">0.04979</td>
+            </tr>
+            <tr>
+              <td class="mono">3</td><td class="mono">9000</td>
+              <td class="sym">TUTUSDT</td>
+              <td><span class="status"><span class="dot"></span>EXECUTING</span></td>
+              <td class="mono">2,500</td><td class="mono num">0.05410</td>
+              <td class="mono stop">0.04910</td><td class="mono">0.04911</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

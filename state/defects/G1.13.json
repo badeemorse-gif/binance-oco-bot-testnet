@@ -1,0 +1,82 @@
+{
+  "id": "G1.13",
+  "severity": "major",
+  "status": "sealed",
+  "phase": "G1_MANUAL_TESTING",
+  "title_ar": "شاشة الأوامر تقرأ OCO فقط — لا تظهر أوامر البيع الأخرى (LIMIT/STOP/TRAILING) ولا يمكن تحويلها إلى OCO",
+  "problem_ar": "قسم الأوامر يقرأ قوائم OCO فقط عبر GET /api/v3/openOrderList، فلا تظهر أوامر البيع المفردة (LIMIT_SELL، STOP_LOSS، STOP_LOSS_LIMIT، TAKE_PROFIT، TAKE_PROFIT_LIMIT، وصيغ Trailing عبر trailingDelta). المطلوب بدقة: قراءة كل أوامر البيع في نفس الشاشة؛ وإتاحة اختيار أي نوع (حتى لو LIMIT) بحيث يُلغيه البوت ويحوّله إلى OCO جديد (TP+SL) ثم يدخل المراقبة الديناميكية بنفس منهجنا الحالي؛ دون كسر بنية المشروع.",
+  "environment": "Tornado 24\" 1360x768 @125% — تغيير الدقة ممنوع",
+  "binance_reference": {
+    "read_all_open_orders": "GET /api/v3/openOrders — يعيد كل الأوامر المفتوحة بما فيها سيقان OCO؛ orderListId=-1 يعني أمرًا مستقلًا، وأي قيمة موجبة تعني ساق OCO",
+    "sell_order_types": [
+      "LIMIT",
+      "MARKET",
+      "LIMIT_MAKER",
+      "STOP_LOSS",
+      "STOP_LOSS_LIMIT",
+      "TAKE_PROFIT",
+      "TAKE_PROFIT_LIMIT"
+    ],
+    "trailing": "لا يوجد نوع TRAILING_STOP مستقل على Spot؛ التتبّع عبر معامل trailingDelta (بوحدات BIPs، 100 = %1) على أوامر STOP/TAKE_PROFIT",
+    "cancel_standalone": "DELETE /api/v3/order (symbol + orderId | origClientOrderId)",
+    "cancel_oco": "DELETE /api/v3/orderList (symbol + orderListId | listClientOrderId)",
+    "create_oco": "POST /api/v3/orderList/oco (SELL: above=TP, below=SL)"
+  },
+  "plan_ar": [
+    "1) طبقة القراءة: إضافة دالة قراءة كل أوامر البيع عبر GET /api/v3/openOrders في domain/oco_reader.py (أو reader جديد)، ونمذجتها في نموذج موحّد يحمل {symbol, orderId, orderListId, type, side, price, stopPrice, trailingDelta, origQty, executedQty, status, time}. تُجمَّع سيقان OCO حسب orderListId، والأوامر المستقلة (orderListId=-1) كل منها صف مفرد. يبقى قارئ openOrderList القائم سليمًا دون انحدار.",
+    "2) الواجهة (ui/open_orders.py): توسعة الشاشة لعرض كل أوامر البيع مع شارة نوع (OCO/LIMIT/STOP_LOSS_LIMIT/TAKE_PROFIT_LIMIT/TRAILING) ضمن QScrollArea القائم على 1360x768 @125% دون كسر التخطيط (سوابق G1.6/G1.9). الاختيار ينتشر إلى 03/04/01 بآلية select_fn القائمة (G1.3).",
+    "3) الاختيار/التطبيع: أمر غير-OCO مختار يُنتج سياقًا مكافئًا لـ SelectedOcoContext بكمية موروثة للقراءة فقط (D7) ورمز symbol؛ قاعدة ربط TP/SL: المستخدم يُدخل %TP/%SL (D6) محسوبة من سعر مرجعي (سعر الأمر/السعر الحي D14) — تُوثّق كقرار.",
+    "4) مسار التحويل (domain/reposition.py + ui/safe_execution.py): بوّابة تحقّق قبل الإلغاء (D16) ← إلغاء الأمر المختار (DELETE /api/v3/order للمستقل، DELETE /api/v3/orderList لـOCO) ← إنشاء OCO جديد (POST /api/v3/orderList/oco) بترتيب SELL صارم (D4) وفجوة 1–2 tick (D5)، مع partial-fill abort (D17)، No Blind Retry (D9)، أمر واحد في المرة (D11)، idempotency (D10)، والحفاظ على معالجة Naked Window (D19) و FAILED_NEEDS_ATTENTION.",
+    "5) المراقبة: تمرير orderListId الجديد إلى المراقبة الديناميكية القائمة (T4/T13) دون تغيير المنهج.",
+    "6) Testnet فقط (Testnet-lock، G1.8)؛ صفر مسارات Live/سحب؛ لا مساس بـ T16.",
+    "7) الاختبارات: إضافة اختبارات وحدة (قارئ openOrders، تجميع النموذج الموحّد، شارات النوع، مسار التحويل من LIMIT، اختيار نقطة الإلغاء الصحيحة) بـ fakes بلا شبكة؛ إبقاء كل الاختبارات الـ294 خضراء وإضافة اختبارات انحدار للشاشة الجديدة."
+  ],
+  "acceptance_checks_ar": [
+    "AC1: تحليل GET /api/v3/openOrders ⇐ عرض كل أنواع البيع في شاشة واحدة بشارات نوع صحيحة (إثبات Testnet).",
+    "AC2: اختيار LIMIT SELL مفرد ينتشر إلى 03/04/01 ويُفعّل التحويل.",
+    "AC3: التحويل يُلغي الأمر المختار ثم يُنشئ OCO صالحًا (TP+SL) على Testnet، وتبدأ المراقبة على orderListId الجديد.",
+    "AC4: مسارات التعبئة الجزئية/الأخطاء تُجهَض بأمان (لا بقايا عارية؛ يظهر FAILED_NEEDS_ATTENTION).",
+    "AC5: الحزمة كاملة خضراء (>= 294) + اختبارات جديدة؛ التخطيط سليم على 1360x768 @125%."
+  ],
+  "risks_ar": [
+    "R1 النافذة العارية (Naked Window) بين الإلغاء والإنشاء — قيد صرفي (D19)؛ يُخفَّف ببوّابة التحقّق + الإجهاض إلى FAILED_NEEDS_ATTENTION + No Blind Retry (D9).",
+    "R2 غموض ربط TP/SL لأمر غير-OCO — يلزم قاعدة صريحة (D6/D7/D14).",
+    "R3 أمر trailingDelta: تحويله إلى OCO ثابت يُفقده التتبّع — يجب تنبيه المستخدم.",
+    "R4 يلزم إضافة نقطة DELETE /api/v3/order (موقّعة) إلى core/rest_client.py — توسعة سطح جديدة.",
+    "R5 تعبئة جزئية قبل الإلغاء (D17: إجهاض).",
+    "R6 فلاتر exchangeInfo/OCO (PERCENT_PRICE وعلاقات الأسعار) قد ترفض التحويل — إعادة استخدام pricing/exchange_info وإظهار خطأ واضح.",
+    "R7 خطر ارتداد التخطيط على 1360x768 @125% (سوابق G1.4/5/6/9) — الإضافة داخل QScrollArea القائم دون كسره.",
+    "R8 خطر انحدار مسار قراءة OCO المختوم — نُضيف مسارًا موازيًا ولا نستبدل القائم."
+  ],
+  "resume_point": "sealed",
+  "next_action": "بانتظار أمر «استأنف» لمتابعة مسار التحويل عبر الواجهة (convert_cb → ConvertExecutor.convert بسعر LIVE D14 → safe_execution D16/D17/D9/D19) من resume_point=selection_done",
+  "recorded_at": "2026-09-30T21:57:00Z",
+  "mapping_rule_ar": "TP = live*(1 + tp%/100) ، SL = live*(1 - sl%/100) للبيع؛ ثم snap للـtickSize واحترام فلاتر OCO؛ الكمية = origQty-executedQty للقراءة فقط.",
+  "progress": {
+    "updated_at": "2026-10-02T22:50:00Z",
+    "tests": "Ran 322 OK",
+    "done": [
+      "rest_client.get_open_orders (GET /api/v3/openOrders, signed)",
+      "rest_client.cancel_order (DELETE /api/v3/order, signed)",
+      "models.OpenSellOrder + classify_badge (trailingDelta>0 -> TRAILING)",
+      "domain/open_orders_reader.read_all_open_sell_orders (OCO grouped by orderListId)",
+      "tests/test_open_orders_reader_g1_13.py",
+      "domain/convert.ConvertExecutor.convert (cancel any order -> create OCO from live price; reuses reposition gate/pricing; standalone DELETE /api/v3/order, OCO DELETE /api/v3/orderList; D9/D10/D17/D19)",
+      "tests/test_convert_g1_13.py (7 tests)",
+      "selection.select_from_row -> SelectedOCO (non-OCO -> convert-candidate؛ qty موروثة read-only D7؛ بلا TP/SL محسوب؛ dispatcher select_from_row)",
+      "app_wiring.build_convert_executor + make_convert_cb/convert_cb (جلب السعر الحيّ D14 ثم ConvertExecutor.convert) + test_convert_cb_g1_13.py(5)"
+    ],
+    "next_steps": [
+      "monitoring: feed new orderListId into existing dynamic monitoring (T4/T13)",
+      "UI: open_orders shows all types with badges + selection propagation + convert button (layout intact 1360x768 @125%)"
+    ]
+  },
+  "seal": {
+    "task": "G1.13",
+    "verified": true,
+    "evidence_path": "_g1_13_ui_run.txt",
+    "evidence_count": 322,
+    "docs_synced": true,
+    "ts": "2026-10-02T22:50:00Z"
+  }
+}

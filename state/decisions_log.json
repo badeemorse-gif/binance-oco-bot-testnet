@@ -1,0 +1,392 @@
+[
+  {
+    "id": "D-G1.31-32-approved",
+    "decision": "اعتمد المستخدم ترشيحات الوكيل وأمر بتسجيل عقود كل المهام أولًا على القرص ثم البدء، لضمان استئناف أي نموذج تالٍ دون إعادة استشارة. القرارات المعتمدة: (1) الحارس يبقى STOP_LOSS_LIMIT قابل للتنفيذ marketable لا MARKET لأنه يشتعل على استنتاج حالة. (2) قوس G1.32: الخروج السفلي STOP_LOSS_LIMIT marketable بأرضية، والعلوي LIMIT marketable؛ MARKET العاري خيار متقدّم صريح فقط لا افتراضي. (3) كل الميزات مطفأة افتراضيًّا + معزولة عن المسار الحار + عقد + اختبارات + Testnet + لا Live قبل 10.5. (4) الترتيب: G1.31 ثم G1.32 (a ثم b). عقدا G1.31 و G1.32 مسجّلان في defect_log مع plan كامل لكل مهمة."
+  },
+  {
+    "id": "D-G1.30-seal",
+    "decision": "ختم G1.30 (Position Guardian). قرار المستخدم الصريح: استكمال G1.30 حتى الختم والارشفة قبل تجربة Testnet، مع نسخة احتياطية كاملة للمشروع كشبكة امان (استرجاع عند اكتشاف عيب). اثناء اعادة التحقق الحي قبل الختم ظهر انحدار test_ui_no_direct_network بسبب نداء شبكة مباشر في ocobot/ui/guardian_arm.py؛ اصلح داخل النطاق بنقل العميل الكسول الى ocobot/core/guardian_lazy_client.py بلا مس المسار الحار. الحزمة بعده خضراء 435 (status=OK). التحقق السلوكي على Testnet مؤجل كبوابة ثقة بشرية؛ هذا الختم لا يفتح T16/Live ومعيار الخروج 10.5 يبقى ساريا."
+  },
+  {
+    "id": "D1",
+    "decision": "OCO = رِجلان لكن 3 أسعار (TP price / stopPrice trigger / stopLimitPrice). ممنوع نمذجتها بسعرين."
+  },
+  {
+    "id": "D2",
+    "decision": "Endpoint الإنشاء المعتمد POST /api/v3/orderList/oco ببنية above/below. القديم POST /api/v3/order/oco deprecated ولا يُستخدم."
+  },
+  {
+    "id": "D3",
+    "decision": "قراءة الأوامر المفتوحة عبر GET /api/v3/openOrderList والإلغاء عبر DELETE /api/v3/orderList (symbol + orderListId)."
+  },
+  {
+    "id": "D4",
+    "decision": "ترتيب SELL صارم: Stop Limit < Stop Trigger < Last Price < TP. Stop Limit = Stop Trigger − gap (ممنوع فوق التريجر)."
+  },
+  {
+    "id": "D5",
+    "decision": "gap افتراضي 1–2 tick ويُوسَّع للعملات المتقلبة؛ لا يدخله المستخدم."
+  },
+  {
+    "id": "D6",
+    "decision": "المستخدم يدخل النِّسب فقط (يدوي: TP% وSL%؛ ديناميكي: Trigger% وTP% وSL%)؛ النظام يملأ الأسعار الثلاثة."
+  },
+  {
+    "id": "D7",
+    "decision": "الكمية موروثة ومقفولة (Read-only)؛ إعادة التموضع تستخدم الكمية المتبقية الفعلية بعد Partial Fill."
+  },
+  {
+    "id": "D8",
+    "decision": "symbol-agnostic: كل قيم العملة (tickSize/stepSize/minQty/minNotional/precision) تُقرأ ديناميكيًا من exchangeInfo؛ لا hardcode."
+  },
+  {
+    "id": "D9",
+    "decision": "No Blind Retry: Cancel نجح & Create فشل ⇒ FAILED_NEEDS_ATTENTION (تدخّل يدوي)."
+  },
+  {
+    "id": "D10",
+    "decision": "Idempotency عبر newClientOrderId/listClientOrderId فريد + تحقّق-قبل-إعادة عند ضياع الرد."
+  },
+  {
+    "id": "D11",
+    "decision": "أمر واحد في كل مرة الآن؛ المعمارية async معزولة تسمح بالتوسّع لاحقًا دون تفعيله الآن."
+  },
+  {
+    "id": "D12",
+    "decision": "Testnet-first ثم Validated ثم Live. Live = تبديل إعداد فقط (base URL + المفتاح) خلف بوابة تحقق."
+  },
+  {
+    "id": "D13",
+    "decision": "توقيع HMAC SHA256 + timestamp + recvWindow + preflight عند الإقلاع لمنع -1022."
+  },
+  {
+    "id": "D14",
+    "decision": "السعر الحي حقيقي دائمًا (Market WS)؛ ممنوع Preview ثابت يوهم أنه Live."
+  },
+  {
+    "id": "D15",
+    "decision": "هوية بصرية واحدة: RTL عربي + ثيم داكن معتمد (Palette) + التزام بموك-أب docs/ui_mockups بأقل تغيير."
+  },
+  {
+    "id": "D16",
+    "decision": "Pre-Cancel Validation Gate: يُحسب البديل ويُتحقَّق (ترتيب صارم + tickSize/stepSize/minQty/minNotional + رصيد) قبل أي Cancel؛ أي إخفاق ⇒ Abort مبكّر بلا إلغاء."
+  },
+  {
+    "id": "D17",
+    "decision": "حافة Partial Fill: إذا remainingQty×price < minNotional أو remainingQty < minQty ⇒ Abort مبكّر قبل Cancel + تنبيه (لا مركز عارٍ)."
+  },
+  {
+    "id": "D18",
+    "decision": "معالجة -1021 (Timestamp خارج recvWindow): مزامنة serverTime + clock offset عند التوقيع؛ عند -1021 إعادة مزامنة وتوقيع واحد فقط (لا تكرار كتابة أعمى)."
+  },
+  {
+    "id": "D19",
+    "decision": "Naked Window قيد بورصة: لا يوجد cancelReplace ذرّي لقوائم OCO؛ يُقلَّص بـ Pre-Cancel Gate + ≤3s + No Blind Retry + إبراز صريح في UI, ولا يُلغى نهائيًا."
+  },
+  {
+    "id": "D20",
+    "decision": "تقسيم T9 (User Data Stream) لكبر حجمها (L) وتعذّر إتمامها ذرّيًا في رسالة واحدة (قاعدة 13) إلى: T9a (دورة listenKey + تجديد تلقائي)، T9b (استهلاك executionReport/listStatus + كشف الإغلاق الخارجي يوقف المراقبة)، T9c (إعادة اتصال آمنة بلا فقد حالة). الثلاث مجتمعةً تغطّي كامل definition_of_done وكل acceptance_checks الأربعة لـ T9 دون إسقاط أي فحص. T9 يبقى مظلّة depends_on=[T9a,T9b,T9c] وتُوسم done بعد اكتمالها؛ تبعيات المصب (T10/T13/T15 على T9) تبقى صالحة. listenKey يستخدم مصادقة مفتاح فقط (X-MBX-APIKEY) بلا توقيع HMAC."
+  },
+  {
+    "ts": "2026-09-20T17:31:01Z",
+    "decision": "bootstrap_complete",
+    "note": "البروتوكول محفوظ في system_prompt — لا حاجة لإرساله في الجلسات اللاحقة. قيد بيئي: أداة الكتابة الذرّية temp→rename غير متاحة؛ اعتُمدت كتابة بعملية واحدة مع إعادة تحقّق بتحليل JSON كأقرب مكافئ."
+  },
+  {
+    "ts": "2026-09-20T17:31:01Z",
+    "decision": "completion_seal_container",
+    "note": "أُنشئ حقل جذري completion_seals[] لتخزين أختام المهام المنجَزة وفق القسم 7 (بدءًا من T9b)؛ الأختام التاريخية (T0..T9a) غائبة كإرث للبروتوكول القديم ولا تُلغي done الثابت."
+  },
+  {
+    "ts": "2026-09-20T19:46:02Z",
+    "note": "تقسيم T10 (M-UI/0) لكبر حجمها (L) وتعذّر إتمامها ذرّيًا في ميزانية واحدة (قاعدة 13) إلى: T10a (أساس التطبيق + RTL + ثيم Palette D15 + Tajawal)، T10b (قوقعة التنقّل: Sidebar/Topbar/Content + توجيه)، T10c (IO غير متزامن خارج UI thread + مؤشر اتصال يعكس ConnectionState). الثلاث مجتمعةً تغطّي كامل definition_of_done وكل acceptance_checks الأربعة لـT10 دون إسقاط أي فحص (#1→T10a، #3→T10b، #2 و#4→T10c). T10 يبقى مظلّة depends_on=[T10a,T10b,T10c] وتُوسم done بعد اكتمالها؛ تبعيات المصب (T11/T12/T13 على T10) تبقى صالحة. القرار باعتماد صريح من المستخدم.",
+    "decision": ""
+  },
+  {
+    "ts": "2026-09-20T23:17:08Z",
+    "decision": "T10c_verified_and_reconciled",
+    "note": "وُجدت مخرجات T10c منفّذة على القرص بينما الذاكرة العاملة pending؛ تُحقّق بالدليل (pytest أخضر 191 في _t10c_run.txt) وطوبِقت الحالة بدل إعادة التنفيذ؛ ثم خُتمت T10c ومظلّة T10"
+  },
+  {
+    "ts": "2026-09-21T12:03:35Z",
+    "decision": "split_T11",
+    "note": "تقسيم T11 (M-UI/1) إلى T11a/T11b/T11c باعتماد صريح من المستخدم"
+  },
+  {
+    "ts": "2026-09-21T19:01:35Z",
+    "decision": "T11c_recover_fix",
+    "note": "عند استئناف T11c وُجدت السويت حمراء (5 إخفاقات في tests/test_ui_selected). الإصلاح ضمن scope_boundary: (1) open_orders.py: select_row يستخدم setCurrentCell(row,0) بدل selectRow لأن selectRow لا يسجّل اختيارًا على QTableWidget غير مُظهَر تحت QT_QPA_PLATFORM=offscreen، و_handle_selection_changed يقرأ selectedRows() مع fallback إلى currentRow(). (2) إضافة screen.show() في 3 اختبارات رؤية دون تغيير التوكيدات. النتيجة: 214 أخضر rc=0."
+  },
+  {
+    "ts": "2026-09-21T19:27:42Z",
+    "decision": "split_T12",
+    "note": "تقسيم T12 (M-UI/2) إلى T12a/T12b باعتماد صريح من المستخدم. T12a (M): الواجهة + معاينة الأسعار الثلاث + Max Available Stop + عرض القيم القديمة (يغطّي الفحصين #1 الترتيب الصارم المعروض و#4 القيم القديمة)، depends_on=[T10,T3]. T12b (M): Activate عبر SafeExecutor خلف تأكيد + إبراز Naked Window + اختبارات القبول (يغطّي الفحصين #2 لا تغيير قبل Activate و#3 إبراز Naked Window)، depends_on=[T12a]. الاثنان معًا يغطّيان كامل definition_of_done وكل acceptance_checks الأربعة لـT12 دون إسقاط أي فحص. T12 يبقى مظلّة depends_on=[T12a,T12b] status=in_progress وتُوسم done وتُختم بعد اكتمال الابنين؛ تبعيات المصب (T13/T14/T15) على T12 تبقى صالحة. T12a=next، T12b=pending."
+  },
+  {
+    "ts": "2026-09-21T21:18:00Z",
+    "decision": "execute_in_small_batches",
+    "note": "بأمر المستخدم: يُنفَّذ T12a دفعةً واحدةً لكل خطوة (s1 ثم s2 …) مع كتابة الشيفرة فعليًّا على القرص وتحديث WORKING_MEMORY.json ذرّيًّا بعد كل خطوة. السبب: محاولات تنفيذ الدفعة الكبيرة الواحدة توقّفت قبل نزول الشيفرة. النموذج التالي عند RECOVER يلتزم هذا التقسيم ويكمل من resume_point."
+  },
+  {
+    "ts": "2026-09-21T23:05:00Z",
+    "decision": "protocol_updated",
+    "note": "تحديث يدوي بأمر صريح — إضافة القسم 9 (انضباط التنفيذ الفرعي) وتعديل القسم 6/البند 5 والقسم 8(أ)؛ رفع protocol_version إلى 1.1"
+  },
+  {
+    "ts": "2026-09-22T11:29:35Z",
+    "decision": "protocol_update_noop",
+    "note": "المستخدم أصدر أمر «حدّث البروتوكول» وأكّد رغبته بإزالة أثر اللصق الشارد. أثبتت المقارنة أن البروتوكول الملصق مطابق حرفًا بحرف لِ system_prompt المخزّن (نسخة 1.1). أثر اللصق (علامتا اقتباس خلفية شاردتان) وسطر محفّز الدور (ابدأ الآن بمهمة واحدة) موجودان فقط في نص اللصق المؤقّت وغير موجودَين في system_prompt المخزّن. لا حاجة لأي حذف أو إعادة كتابة؛ أُبقِيَ النص وprotocol_version=1.1 دون تغيير، والملف نظيف وصالح."
+  },
+  {
+    "ts": "2026-09-22T20:17:15Z",
+    "decision": "T12b_done",
+    "note": "حقن executor/execute_cb + confirm_cb في SelectedOcoScreen عبر ContentRouter/MainWindow؛ app.py تبقى executor=None (بناء executor فعلي من عميل testnet خارج نطاق T12b)؛ FakeSafeExecutor.execute كلمة-مفتاحية فقط فحُقِن عبر execute_cb غلاف موضعي في الاختبارات دون تعديل selected_oco.py"
+  },
+  {
+    "ts": "2026-09-24T00:35:05Z",
+    "decision": "T14_done",
+    "note": "Demo Mode UI مكتمل ومختوم؛ 244 اختبارًا خضراء. تسوية القسم 9.4 لبقايا القرص، وإصلاح داخل النطاق (إزالة SafeExecutor الحرفي من تعليقات demo_mode.py)."
+  },
+  {
+    "ts": "2026-09-24T20:25:12Z",
+    "decision": "T15_sealed",
+    "note": "خُتمت T15 (M5 Validated) بعد تحقّق مستقل من القرص وفق §9.2/§9.4. الفحصان #2 و#3 (صلاحيات المفتاح/IP whitelist) مؤجَّلان صراحةً لبوابة G1 البشرية قبل أي Live. استُخدمت الصيغة القياسية للختم (6 مفاتيح) دون المفتاح غير القياسي security_doc الوارد في مسودة _apply_t15_seal.py؛ مرجع مراجعة الأمان مُثبَت في run_log."
+  },
+  {
+    "ts": "2026-09-25T22:32:00Z",
+    "decision": "protocol_1.2_G1_stabilization",
+    "note": "رُفع protocol_version إلى 1.2 ومُزامن system_prompt مع docs/EXECUTOR_PROMPT_AR.md ليشمل القسم 10 (طور الاستقرار على Testnet / دورة الخطأ في بوّابة G1)، والذي كان موجودًا في ملف البروتوكول لكنه غير مُزامن في الحالة (إغلاق انجراف §9.4). أُدخل phase=G1_MANUAL_TESTING وdefect_log. سُجّل خطأا التجربة اليدوية G1.1 (فشل الاتصال الحقيقي) وG1.2 (عدم ظهور الأوامر المفتوحة) بحالة implemented/pending_seal بانتظار verify+توثيق+ختم. لم يُكرَّر أو يُعدَّل القسم 10 الموجود."
+  },
+  {
+    "ts": "2026-09-26T01:25:00Z",
+    "decision": "G1.1_sealed",
+    "note": "خُتم G1.1 بدليلين: AC2 CONNECTED (preflight حقيقي) + AC1 سويت خضراء 244 OK بعد تحديث الاختبار القديم test_topbar_has_two_static_pills إلى 'غير متصل'. cursor دون تغيير (بنود G1 منفصلة عن task_ledger، §10.6)."
+  },
+  {
+    "ts": "2026-09-26T01:40:00Z",
+    "decision": "G1.2_sealed",
+    "note": "AC1 244 OK + AC2 جلب حقيقي أظهر أمرًا مفتوحًا (LSKUSDT). defect_log صفر بنود مفتوحة. cursor دون تغيير - G1 لم يُرقَّ إلى done (تبقّت بنود §10.5-ب/ج/د)."
+  },
+  {
+    "ts": "2026-09-26T21:18:00Z",
+    "decision": "G1.4_sealed",
+    "note": "AC3 مؤكَّد يدويًا على Testnet بعد إصلاح selected_oco.py::_build_old_new_row وmonitoring.py::_build_live_panel؛ AC1 (Ran 251 tests OK، 247+4) وAC2 (tests/test_g1_4_layout_geometry.py = 4) مستوفيان."
+  },
+  {
+    "ts": "2026-09-29T00:55:00Z",
+    "decision": "G1.8_sealed",
+    "note": "خُتم G1.8 بعد تحقّق من القرص (§9.2/§9.4): _g1_8_run.txt Ran 260 OK. لم تلزم تعديلات اختبارات؛ الحارسان test_ui_no_direct_network و test_topbar_has_two_static_pills أخضران. docs_synced عبر إلحاق خلاصة الحل في docs/DIAGNOSIS_T15_wiring.md."
+  },
+  {
+    "ts": "2026-09-29T01:05:00Z",
+    "decision": "G1_10.5b_apikey_check_recorded",
+    "note": "تسجيل نتيجة §10.5(ب): canWithdraw=True على Testnet أثري (مستوى حساب لا مفتاح)؛ الضمان = صفر مسارات سحب في الكود (findstr=0 على ocobot/*.py)؛ التحقّق القاطع (enableWithdrawals عبر /sapi/v1/account/apiRestrictions على mainnet) مؤجَّل لمفتاح Live عند T16 أو تأكيد بوّابة Testnet يدويًا. لا ترقية للبوّابة."
+  },
+  {
+    "ts": "2026-09-30T11:41:00Z",
+    "decision": "G1.11_contracted",
+    "note": "فتح بند G1.11 عبر §10.2 (كتابة أولاً): طبقة اتصال معزولة تغيّر مصدر المفاتيح فقط (حقول/ملف/مسار ثابت fallback) مع لمبة حالة واختبار /api/v3/account قراءة فقط على Testnet. verdict: عزل كامل عن منطق التداول/إعادة التموضع؛ لا Live/Withdrawals؛ resolve وقت الطلب."
+  },
+  {
+    "ts": "2026-09-30T17:06:41Z",
+    "decision": "G1.11_sealed",
+    "note": "ختم G1.11 عبر §10.3: contracted ثم sealed. طبقة الاتصال معزولة (مصدر المفاتيح فقط: حقول>ملف>مسار ثابت fallback)، لمبة حالة، اختبار /api/v3/account قراءة فقط على Testnet، الإقلاع آمن ضد غياب المسار الثابت. لا مساس بمنطق التداول/إعادة التموضع/OCO/Live. الدليل _g1_11_run.txt (285 OK). صُفّرت WORKING_MEMORY."
+  },
+  {
+    "decision": "G1.12_contracted",
+    "note": "فتح بند G1.12 عبر §10.2 (كتابة أولاً): طبقة قطع اتصال معزولة — تبديل حالة + مسح مصدر مفاتيح الجلسة فقط، بزرّين (Topbar بجوار بادج «متصل» + ConnectionScreen بجوار زر «اتصال») يستدعيان نفس المنطق. عند الفصل لمبة حمراء + «غير متصل»، إعادة اتصال دون إعادة تشغيل، إقلاع آمن. verdict: عزل كامل عن signed_request/monitoring_loop/create_oco_only/buy_and_oco/Live/Withdrawals؛ لا تغيير phase/cursor/G1/T16."
+  },
+  {
+    "decision": "G1.12_sealed",
+    "note": "ختم G1.12 عبر §10.3: contracted→sealed. طبقة قطع اتصال معزولة (تبديل حالة + مسح مصدر المفاتيح فقط) بزرّين Topbar (TopbarDisconnect) + ConnectionScreen (ConnectionDisconnect) يستدعيان نفس المنطق (_do_disconnect). لمبة حمراء + «غير متصل» عبر واسِم USER_DISCONNECT دون كسر تعيين DISCONNECTED (MUTED). إعادة اتصال دون إعادة تشغيل، إقلاع آمن. لا مساس بـ signed_request/monitoring_loop/create_oco_only/buy_and_oco/Live/Withdrawals. الدليل _g1_12_run.txt (294 OK). صُفّرت WORKING_MEMORY."
+  },
+  {
+    "id": "D-G1.13-refprice",
+    "ts": "2026-09-30T23:25:27Z",
+    "decision_ar": "عند تحويل أمر بيع مفرد (غير-OCO) إلى OCO: السعر المرجعي لحساب %TP و%SL هو السعر الحي الحالي (market_feed مع REST fallback، D14). الكمية موروثة للقراءة فقط (D7)، والمستخدم يُدخل %TP/%SL فقط (D6)."
+  },
+  {
+    "id": "D-SYNC-G1.13",
+    "ts": "2026-10-02T01:12:40Z",
+    "decision_ar": "مزامنة اتساق (§9.4): حُدِّث defect_log[G1.13] ليطابق الحقيقة على القرص — progress.tests من 304 إلى 311 (مُتحقَّق: python -m unittest discover -s tests => Ran 311 OK)، resume_point من null إلى selection_done، وحُذِف بند الاختيار من next_steps بعد اكتماله. تأكيد وجود المصنوعات: selection.select_from_row، ConvertExecutor.convert، open_orders_reader.read_all_open_sell_orders، models.OpenSellOrder+classify_badge، test_convert_g1_13.py=7. status بقي contracted. WORKING_MEMORY.json لم يُعدَّل. لم تُنفَّذ أي خطوة جديدة من المهمة."
+  },
+  {
+    "id": "D-G1.13-convert-on-start",
+    "ts": "2026-10-02T22:50:00Z",
+    "decision_ar": "القرار النهائي: التحويل من شاشة المراقبة 04 عند Start (لا زر على 02)؛ 02 عرض+اختيار فقط. يلغي D-G1.13-ui-screen02 (الخيار أ)."
+  },
+  {
+    "id": "D-SYNC-G1.13-final",
+    "ts": "2026-10-02T22:50:00Z",
+    "decision_ar": "§9.4 عند الختم: tests 316->322 OK؛ resume_point->sealed؛ status->sealed؛ دليل _g1_13_ui_run.txt؛ عُدِل tests/_fakes_monitoring.py إضافيًا."
+  },
+  {
+    "id": "G1.14_contracted",
+    "ts": "2026-10-03T03:18:00Z",
+    "decision_ar": "فرع الصفقات المنتهية — إضافة معزولة قراءة-فقط من سجلّ التدقيق + التقاط سعر بيع إضافي append-only عبر on_order_event + الحذف=إخفاء dismiss لا حذف من التدقيق؛ human_gate=false؛ لا مساس بـT16/Live ولا بمنطق MonitoringEngine."
+  },
+  {
+    "ts": "2026-10-04T02:21:50Z",
+    "decision": "G1.14_sealed",
+    "note": "G1.14 (شاشة 08_completed_trades لعرض الصفقات المنتهية) مختوم بعد اجتياز السويت 347 OK؛ الدليل tests/_g1_14_run.txt."
+  },
+  {
+    "id": "D-G1.14-dismiss",
+    "ts": "2026-10-04T02:21:50Z",
+    "decision_ar": "حذف الصفقة = إخفاء عبر فهرس dismiss منفصل، لا حذف من سجلّ التدقيق append-only ولا من أي حالة حيّة"
+  },
+  {
+    "id": "D-G1.14-fill-capture",
+    "ts": "2026-10-04T02:21:50Z",
+    "decision_ar": "التقاط سعر البيع عبر on_order_event القائم عند التجميع ككتابة تدقيق إضافية trade_closed_fill (append-only) بلا تغيير control-flow؛ الصفقات القديمة تُظهر «غير متاح»"
+  },
+  {
+    "id": "D-G1.14-profit",
+    "ts": "2026-10-04T02:21:50Z",
+    "decision_ar": "ربح $/% دالة نقية: pct=(exit-reference)/reference*100 ، usd=(exit-reference)*quantity ؛ reference=monitor_start.reference_price"
+  },
+  {
+    "id": "D-G1.14-no-consumer",
+    "ts": "2026-10-04T02:21:50Z",
+    "decision_ar": "لا توجد نقطة تجميع إنتاجية تُنشئ UserDataStreamConsumer بعد (الإنشاء في الاختبارات فقط). build_fill_recorder سُلِّم مستقلًا وجاهزًا للحقن عبر معامل on_order_event القائم؛ يُفعَّل عند تجميع التيار (T16/مسار الاتصال). حتى ذلك الحين تعرض طبقة العرض «غير متاح» (التزامًا بـD14)."
+  },
+  {
+    "ts": "2026-10-04T03:05:00Z",
+    "decision": "protocol_1.3_mandatory_archiving_rule",
+    "note": "أُضيفت «قاعدة الأرشفة الإلزامية بعد الختم» حرفيًا إلى system_prompt (نهاية القسم 7) وdocs/EXECUTOR_PROMPT_AR.md وprompt.md؛ وترقية protocol_version من 1.2 إلى 1.3 مع إبقاء bootstrapped_at. وتمّ تثبيت الأرشيف باسم _archive (عبر git mv للمتتبَّع ونقل نظام ملفات لغير المتتبَّع) وإضافة _archive/ إلى .gitignore؛ الأرشفة قابلة للاسترجاع وبلا git commit."
+  },
+  {
+    "ts": "2026-10-05T03:07:23+03:00",
+    "decision": "G1.16_registered",
+    "note": "تسجيل G1.16 (G-LAUNCH-01): الحل اختصار Windows .lnk هدفه pythonw.exe -m ocobot.ui.app و Start in=جذر المشروع (بلا console)، مع مولّد اختصار وبديل .vbs، + اختبار تحقّق + تحديث README، دون أي تغيير في كود/شكل الواجهة. اعتُمد تفويض دائم بالتنفيذ دون انتظار «نفّذ»."
+  },
+  {
+    "ts": "2026-10-05T03:28:53+03:00",
+    "decision": "G1.16_sealed",
+    "note": "G1.16 (G-LAUNCH-01) مختومة: حلّ no-console عبر pythonw باختصار .lnk أصلي + مولّد لإعادة التوليد + بديل .vbs، دون تغيير كود/شكل الواجهة؛ 354/354 أخضر؛ docs_synced (README). AC1/AC2 تحقّق بصري لدى المستخدم."
+  },
+  {
+    "ts": "2026-10-09T22:15:00Z",
+    "decision": "g1_28_sealed_ui_scope",
+    "note": "G1.28 sealed for UI-layer residual Arabic only; ~34 domain/core-origin strings deferred to proposed follow-up defect G1.29 (outside scope_boundary; touches hot-path logic)."
+  },
+  {
+    "ts": "2026-10-09T22:30:00Z",
+    "decision": "g1_29_wont_fix_by_design",
+    "note": "إغلاق G1.29 كقيد مقبول بالتصميم (minor, wont_fix_by_design): ≈34 نصًّا عربيًّا من domain/core تظهر في اللوحات الحيّة تبقى بالعربية canonical عمدًا. توضيح نطاق DoD لـ G1.28: المقصود بـ(كل نصوص الواجهة بالإنجليزية) هو طبقة عرض الواجهة؛ رسائل المحرّك/الدومين مستثناة عمدًا. لا تغيير كود. بوّابة G1 غير محجوبة (لا بنود critical/major غير مختومة)."
+  },
+  {
+    "ts": "2026-10-10T22:23:38Z",
+    "decision": "g1_31_sealed",
+    "note": "G1.31 مختومة: completion_seal + docs_synced=true. الدليل: _archive/_g1_31_run.txt (GREEN 469) + تحقّق بشري بصري Testnet مؤكّد من المستخدم. WORKING_MEMORY صُفّرت. يليها G1.32 عبر 10.2."
+  },
+  {
+    "ts": "2026-10-10T22:26:16Z",
+    "decision": "g1_32a_contract_opened",
+    "note": "G1.32 دخل التنفيذ عبر الوحدة a (write-first). الترتيب a ثم b. G1.32a: MarketExitExecutor معزول + تسلسل إيقاف-إلغاء-خروج، بلا واجهة، بلا لمس hot_path/reposition/المختوم."
+  },
+  {
+    "ts": "2026-10-10T22:36:26Z",
+    "decision": "g1_32a_sealed",
+    "note": "G1.32a مختومة كوحدة فرعية (subseal داخل defect_log G1.32 + completion_seals). G1.32 يبقى in_progress حتى ختم G1.32b. الدليل _archive/_g1_32a_run.txt (GREEN 485)."
+  },
+  {
+    "ts": "2026-10-11T18:16:11Z",
+    "decision": "g1_33_contract_recorded_first",
+    "note": "بأمر المستخدم: سُجّل G1.33 كبند مُتعاقَد (contracted) في defect_log مع plan كامل قبل أي تنفيذ، ليُعالَج بعد ختم G1.32، ودون المساس بالمهمة النشطة G1.32b (التي ما زالت عند chunk_4 تحقّق بشري). خلاصة الاستشارة المحفوظة كي لا تُعاد: (1) النِسب الحالية افتراضيات لا ثوابت محبوسة؛ plan_market_exit/execute_market_exit يقبلانها أصلًا. (2) المطلوب جعلها مدخلات UI؛ الخانة الفارغة ⇒ القيمة القديمة (0.1%/1%/8%/gap=1) فلا ينكسر شيء (توافق خلفي). (3) التصميم الآمن = أمر واحد عند الطرف الأسوأ من الرينج (marketable مضمون + تحسين سعر تلقائي)؛ تجنّب حلقة «أمر ثم تعديل» (خطر بيع مزدوج/تعقيد). (4) أرضية الفلاش-كراش تبقى سقفًا صلبًا محارسًا. (5) تكيّف الزناد مع سرعة الهبوط مؤجّل (يُدخل حالة زمنية؛ الأرضية تكفي). (6) UI+domain فقط، بلا hot_path. severity=minor لأن الافتراضيات تحفظ السلوك (قابل للرفع بطلب المستخدم)."
+  },
+  {
+    "ts": "2026-10-11T18:23:14Z",
+    "decision": "g1_32_sealed_human_deferred",
+    "note": "G1.32 مختوم كليًّا (a+b) بقرار المستخدم الصريح بتأجيل نقطة التفتيش البشرية السلوكية ومراقبة السلوك بعد الختم؛ أي ظهور لاحق يُفتح له بند جديد. الدليل _archive/_g1_32b_run.txt (GREEN 509). لا يرفع بوّابة G1 ولا Live. يلي ذلك تنفيذ G1.33 كاملًا."
+  },
+  {
+    "ts": "2026-10-11T18:24:44Z",
+    "decision": "g1_33_option_a_editable_fields",
+    "note": "بدء تنفيذ G1.33. اعتُمد الخيار (أ): حقول نِسب مفردة قابلة للتعديل في بطاقة قوس الخروج (slip العلوي، sl زناد السفلي، floor الأرضية بحدّ أقصى محارَس، gap)، والخانة الفارغة = القيمة الافتراضية القديمة (0.1/1/8/gap=1) فلا ينكسر شيء. تمرير القيم عبر BracketConfig.pricing_kwargs → BracketExitWiring._exit → execute_market_exit (الذي يقبلها أصلًا). التحقّق البشري (chunk_5) مؤجّل بقرار المستخدم (مراقبة بعد الختم). لا لمس hot_path/المختوم."
+  },
+  {
+    "ts": "2026-10-11T18:30:48Z",
+    "decision": "g1_33_sealed_human_deferred",
+    "note": "G1.33 مختوم. الدليل _archive/_g1_33_run.txt (GREEN 518). option a (حقول نِسب مفردة). التحقّق البشري السلوكي مؤجّل بقرار المستخدم (مراقبة بعد الختم؛ أي ظهور لاحق بند جديد)."
+  },
+  {
+    "ts": "2026-10-11T19:34:30Z",
+    "decision": "batch_register_defects_G1.34_G1.37",
+    "note": "تسجيل Write-First (10.2أ) لأربعة بنود دفعة واحدة بأمر صريح من المستخدم لحفظها قبل نفاد الليمت؛ WORKING_MEMORY يبقى active:false (لا عقد نشط). الحالة الأولية logged (مُسجَّل + خطة، ما قبل contracted) وتتحول إلى contracted عند «نفّذ» لكل بند عبر 10.2ب. لا كود ولا Live في هذا الدور."
+  },
+  {
+    "ts": "2026-10-11T19:52:00Z",
+    "decision": "g1_34_contract_opened",
+    "note": "فتح عقد G1.34 (10.2ب) ضمن أمر تنفيذ متواصل بالترتيب major->minor؛ scope عرض/حالة فقط بلا hot_path/مختوم."
+  },
+  {
+    "id": "DEC-1.4-STATE-SPLIT",
+    "decision": "اعتماد فصل الحالة الحارّة/الباردة لـ PROJECT_STATE.json (بنود 1.4: 11.1 فصل وتدوير، 11.2 كفاءة بلا توقف، 11.3 إلزام بند التنظيف). المفاتيح تبقى مُلخّصة مع ref+hash والتفاصيل في state/، وcompletion_seals يبقى حارًا."
+  },
+  {
+    "id": "DEC-1.4-ROTATE-TOOL",
+    "decision": "protocol_updated: أُضيف البندان 11.4 (أداة rotate_state.py ضمن روتين الختم) و11.5 (قابلية الاستنساخ، بنود حاكمة عامة project-agnostic) إلى system_prompt مع بقاء protocol_version=1.4، وبُنيت الأداة الدائمة، وحُدِّثت مراجع 1.4 في prompt.md و docs/EXECUTOR_PROMPT_AR.md، وتولّد docs/PORTABLE_PROTOCOL_CLAUSES.md المتزامن مع القسم 11."
+  },
+  {
+    "id": "DEC-1.4-ARCHIVE-MANIFEST",
+    "decision": "protocol_updated: أُضيف البند 11.6 (فهرس الأرشيف _archive/manifest.json) ودُعِم آليًا في tools/rotate_state.py ضمن apply/archive والنسخ الاحتياطية بتسجيل {file, origin_path, task, reason, ts}، وتزامن docs/PORTABLE_PROTOCOL_CLAUSES.md مع القسم 11."
+  },
+  {
+    "ts": "2026-10-12T18:15:07Z",
+    "decision": "G1.43 sealed",
+    "note": "توسيع retranslate_widget_tree والحارس _collect_offenders لتغطية windowTitle/رؤوس QTableWidget (أفقي+عمودي)/QMenu/QAction. دفاعي (0 offenders حاليًا) لمنع تسرّب مستقبلي. كامل السويت أخضر Ran 558/OK عبر tools/_run_suite.py. قيد أمان: خلايا الجداول لا تُترجَم (رؤوس فقط). صفر مساس بـ domain/core أو Live. العطب الأصلي تحت pytest سباق GC لـ Qt وليس فشلًا منطقيًا."
+  },
+  {
+    "ts": "2026-10-12T21:36:50Z",
+    "decision": "contract_g1_45_46_47_batch",
+    "note": "طلب المستخدم بتفويض صريح للقرار: فتح باك-لوج ثلاثة بنود لتحسينات قسم المراقبة الديناميكية (عرض نِسب لحظية + بطاقة نتيجة بإسناد الوسيلة + خروج يدوي بأولوية عُليا). قُسّمت لثلاثة بنود للعزل والاختبار المستقل. لا تعارض جوهري؛ معظم البيانات محسوبة سلفًا (reference_price/profit_pct في completed_trades، وتغذية BTC المعزولة من G1.44)."
+  },
+  {
+    "ts": "2026-10-12T21:36:50Z",
+    "decision": "g1_45_47_execution_order",
+    "note": "ترتيب التنفيذ: G1.45 ثم G1.46 ثم G1.47. الثلاثة severity=major؛ وبما أنّها متساوية اعتُمد ترتيب تصاعدي بالمخاطرة (عرض فقط أولًا، ثم إسناد النتائج، ثم الخروج اليدوي عالي الأثر أخيرًا) ليتمكّن المستخدم من رؤية النِّسب والنتائج قبل تفعيل تجاوز الأولوية — قرار رجعيّ منخفض الخطر ضمن صلاحية المنفّذ (§6-3)."
+  },
+  {
+    "ts": "2026-10-12T21:36:50Z",
+    "decision": "g1_47_manual_exit_safety",
+    "note": "الخروج اليدوي G1.47 يُعاد استخدام مسار execute_market_exit المُختبَر حصريًّا، ببوّابة safe_execution وقيد منع البيع المزدوج، وأولويته بنيوية (إغلاق المركز يُعطّل الوسائل الأربع idempotently) لا بسباق منفّذات. يبقى no-cancel-invariant لمنفّذ الستوب الواقي، ويبقى الافتراضي بلا Live قبل G1 (§10.5)."
+  },
+  {
+    "ts": "2026-10-12T23:12:09Z",
+    "task": "G1.45",
+    "decision": "feed_model=(a) live BTCUSDT independent of guardian mode",
+    "note": "اعتماد المستخدم: «قرّر أنت وامضِ» + الخيار (أ)؛ قراءة فقط Testnet، لا Live."
+  },
+  {
+    "ts": "2026-10-12T23:12:09Z",
+    "task": "G1.45",
+    "decision": "scope_extended(§6.3): app_wiring.py + app.py + btc_follow_supervisor.price_snapshot",
+    "note": "إضافة دُنيا رجعية منخفضة الخطر لتحقيق قرار (أ)."
+  },
+  {
+    "ts": "2026-10-13T11:19:31Z",
+    "decision": "G1.46.1_contract_written",
+    "note": "فتح عقد متابعة G1.46 (الاستدعاء التلقائي لتعبئة DealResultCard عند التنقّل/دوريًا) كـ patch عرض-فقط ضمن طور G1_MANUAL_TESTING؛ severity=minor، human_gate=false، لا Live."
+  },
+  {
+    "ts": "2026-10-13T11:43:00Z",
+    "decision": "G1.46.1_verify_interrupted_external",
+    "note": "التنفيذ مكتمل ومتماسك على القرص والاختبار الموجَّه 5/5 أخضر، لكن تشغيل كامل السويت أُقطِع (انتهت عملية python دون ملخّص؛ g1_46_1_full.txt مجمَّد 83749B). السبب الخارجي: المستخدم يشغّل PyInstaller build (OCO-Bot-V19) بالتوازي. لم يُختَم البند (لا verified/sealed بلا دليل أخضر — §4/§1.5). resume_point=step_4_verify_suite. لا أرشفة قبل الختم."
+  },
+  {
+    "ts": "2026-10-13T12:25:02Z",
+    "decision": "G1.46.1_sealed",
+    "note": "متابعة G1.46 (الاستدعاء التلقائي لتعبئة DealResultCard عند التنقّل/دوريًا) نُفّذت عرض-فقط وخُتمت بدليل كامل السويت 651 OK. القطع السابق كان بيئيًّا متقطّعًا (offscreen Qt + تزامن بناء PyInstaller للمستخدم)؛ عولج بتشغيل غير مُخزَّن على جهاز هادئ + تنظيف صارم في tearDown. لا Live، الطور G1_MANUAL_TESTING كما هو."
+  },
+  {
+    "ts": "2026-10-13T14:05:00Z",
+    "decision": "g1_48_tracker_semantics",
+    "note": "G1.48: «نسبة التغيّر» في متتبّعَي العملة المراقَبة وBTC تُحسب عن السعر السابق لكل انتقال لحظي (rolling)، و«نسبة التتبّع» عن سعر بدء المراقبة المُجمّد (العملة: reference_price الثابت؛ BTC: أول window_start صالح كـ _btc_anchor). عرض فقط داخل monitoring.py بلا شبكة. scope_extended(§6.3): تحديث اختبارات العملة المراقَبة الثلاثة في tests/test_g1_45_trackers.py لتعكس الدلالة المصحَّحة (اختبارات BTC بقيت خضراء دون تعديل). لا Live قبل G1."
+  },
+  {
+    "ts": "2026-10-13T20:17:02Z",
+    "decision": "approve_G1.49_G1.50_exit_hardening_and_btc_slip_tracker",
+    "note": "استشارة معتمدة من المستخدم بتفويض صريح («ابدأ التنفيذ … تفضل القيادة»). بندان: G1.49 (major) سياسة تنفيذ خروج موحّدة لكل الوسائل (band + LIMIT IOC + chase على bid حيّ + أرضية + wick-debounce + توسيع إزاحة STOP_LOSS_LIMIT) هدفها المعتمد حرفيًا «عدم التعليق في الصفقة مع الخروج بأقرب نقطة سعرية في الطوارئ وليس بنقطة بعيدة»؛ الملاذ الأخير عند الأرضية = الخيار (ب) MARKET محمي بالأرضية؛ تشمل إصلاح لمس القوس الكاذب. G1.50 (major) لوحة انزلاق BTC بنافذة متحرّكة عرض-فقط (افتراضي 3s متوافق مع الحارس). الترتيب G1.49 ثم G1.50. كلاهما Testnet، لا Live قبل بوّابة G1 §10.5. سُجّل كل التفصيل على القرص (state/defects/G1.49.json وG1.50.json) منعًا لفقد أي فكرة عند تبدّل النموذج (§7/§10.2)."
+  }
+]

@@ -1,0 +1,79 @@
+{
+  "id": "G1.20",
+  "title": "إضافة إمكانية تبديل لغة الواجهة بين العربية والإنجليزية عبر زر تبديل، مع إبقاء العربية افتراضية و RTL ودون أي انحدار",
+  "severity": "major",
+  "category": "enhancement",
+  "status": "sealed",
+  "opened_ts": "2026-10-06T17:10:00Z",
+  "constraint": "صفر انحدار — كل الاختبارات الخضراء (≥364) تبقى خضراء، ولا خسارة لأي نقطة نجاح وصلنا لها.",
+  "contract": {
+    "task_id": "G1.20",
+    "definition_of_done": "زر في Topbar يبدّل كامل نصوص الواجهة بين العربية والإنجليزية (كل الشاشات/العناوين/الأزرار/رؤوس الجداول/الـPills)، مع تبديل اتجاه التخطيط RTL↔LTR، والعربية هي الافتراضي عند الإقلاع، وكل الاختبارات تبقى خضراء (Ran ≥ 364 + اختبارات G1.20 الجديدة، OK، صفر FAILED).",
+    "acceptance_checks": {
+      "AC1": "run_tests.cmd يُظهر 'Ran N' حيث N ≥ 364 + اختبارات G1.20 الجديدة، وسطر OK، وصفر FAILED (صفر انحدار).",
+      "AC2": "حارس test_g1_7_ui_arabic.py يبقى أخضر: لا تظهر أي كلمة من FORBIDDEN مقتبسة داخل SCAN_FILES؛ كل الإنجليزية حصرياً في ocobot/ui/i18n.py (غير مُدرج في SCAN_FILES).",
+      "AC3": "حارس test_ui_no_direct_network.py يبقى أخضر: i18n.py لا يحوي أي علامة من _FORBIDDEN.",
+      "AC4": "اختبار جديد test_g1_20_language_toggle.py: الافتراضي عربي + RightToLeft؛ بعد التبديل إنجليزي + LeftToRight؛ وبعد التبديل مجدداً عربي + RightToLeft.",
+      "AC5": "زر LanguageToggle موجود في Topbar؛ التبديل لا يكسر أي سلوك اتصال/تنقّل/تكبير قائم.",
+      "AC6_manual": "فحص بصري يدوي على Testnet أن كل الشاشات تتبدّل فعلياً (اختياري بعد الختم الفني)."
+    },
+    "ordered_steps": {
+      "step_0_contract": "done",
+      "step_1_i18n_module": "pending",
+      "step_2_topbar_toggle": "pending",
+      "step_3_wire": "pending",
+      "step_4_dynamic_setters": "pending",
+      "step_5_tests": "done",
+      "step_6_run": "done",
+      "step_7_doc_seal": "done",
+      "step_8_archive": "done"
+    },
+    "scope_boundary": {
+      "inside": [
+        "ocobot/ui/i18n.py (جديد)",
+        "ocobot/ui/topbar.py",
+        "ocobot/ui/main_window.py",
+        "ocobot/ui/app.py",
+        "تغليف setText العربي القائم بـ translate_for_current عند الحاجة في ocobot/ui/{monitoring.py,connection_screen.py,open_orders.py,dashboard.py,selected_oco.py,demo_mode.py,safe_execution.py,completed_trades.py,sidebar.py,content.py,screens.py}",
+        "tests/test_g1_20_language_toggle.py (جديد)"
+      ],
+      "outside": [
+        "منطق OCO/التنفيذ",
+        "طبقة core",
+        "رسائل نتائج الاتصال في core (res.message)",
+        "طريقة الاتصال (رفع/لصق المفاتيح — تبقى كما G1.11/G1.15)",
+        "قيم البيانات التي تثبّتها الاختبارات مثل testnet/OK/IDLE",
+        "تغيير أي ثابت عربي قائم (COLUMN_HEADERS/DASHBOARD_FIELDS/SCREENS/_CONNECTION_DISPLAY/_STATE_DISPLAY/NO_SELECTION_NOTE/LOCK_BADGE/DEMO_BADGE_TEXT)",
+        "Live/T16"
+      ]
+    },
+    "expected_evidence": {
+      "command": "run_tests.cmd",
+      "expected_count": ">=364 + اختبارات G1.20 الجديدة",
+      "evidence_path": "_g1_20_run.txt"
+    },
+    "checkpoint_plan": "chunk A (steps 1-3) ثم تشغيل الاختبارات؛ chunk B (step 4) ثم تشغيل؛ chunk C (step 5) ثم تشغيل — صفر FAILED عند كل نقطة.",
+    "dependencies_check": "G1.19 مختوم ومؤرشف (archive_status=done)؛ لا بنود critical/major غير مختومة.",
+    "sizing_verdict": "كبير/قابل للتجزئة §9.5 — ثلاث دفعات مع تشغيل اختبارات بينها.",
+    "human_gate": false,
+    "risks": {
+      "R1": "إدخال كلمة FORBIDDEN مقتبسة في SCAN_FILES ⇒ سقوط test_g1_7. تخفيف: الإنجليزية حصرياً في i18n.py.",
+      "R2": "i18n.py يخالف حارس لا-شبكة. تخفيف: بلا أي علامة شبكة.",
+      "R3": "تغيير نص عربي افتراضي ⇒ سقوط اختبارات. تخفيف: ar افتراضي؛ الثوابت العربية تبقى حرفياً؛ tr يعيد العربي حين ar.",
+      "R4": "نصف ترجمة (نص ديناميكي يعود عربياً بعد التبديل). تخفيف: تغليف الـsetters الديناميكية + retranslate عند التنقّل/التحديث.",
+      "R5": "اتجاه التخطيط لا يُطبّق على كل الودجِت. تخفيف: apply_direction على app + walk للنافذة.",
+      "R6": "كسر اختبارات RTL الافتراضية. تخفيف: الافتراضي يبقى RTL (ar)."
+    }
+  },
+  "evidence_path": "_g1_20_run.txt",
+  "evidence_count": 367,
+  "seal": {
+    "task": "G1.20",
+    "verified": true,
+    "evidence_path": "_archive/_g1_20_run.txt",
+    "evidence_count": 367,
+    "docs_synced": true,
+    "ts": "2026-10-06T17:10:00Z",
+    "archive_status": "done"
+  }
+}

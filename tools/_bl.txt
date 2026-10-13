@@ -1,0 +1,3 @@
+EXIT=1
+Ran 672 tests in 336.281s
+OK

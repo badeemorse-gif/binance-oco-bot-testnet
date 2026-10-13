@@ -1,0 +1,71 @@
+{
+  "id": "G1.21",
+  "title": "إعادة ترتيب خانات اللوحة الحيّة في المراقبة الديناميكية لعرض جني الأرباح/وقف الخسارة (الحالي والتالي) جنبًا إلى جنب دون تغيير الستايل أو المنطق أو انحدار",
+  "severity": "minor",
+  "category": "enhancement",
+  "status": "sealed",
+  "opened_ts": "2026-10-06T23:55:41Z",
+  "description": "خانات اللوحة الحيّة (جني الأرباح الحالي، وقف الخسارة الحالي، جني الأرباح التالي، وقف الخسارة التالي) معروضة عموديًا تحت بعضها مما يسبب لخبطة بصرية. المطلوب نقلها جنبًا إلى جنب: صف أول (جني الأرباح الحالي | جني الأرباح التالي) وصف ثانٍ (وقف الخسارة الحالي | وقف الخسارة التالي)، مع بقاء باقي الحقول أسفلها كما هي، ونفس الستايل، ونفس كفاءة البوت.",
+  "professional_proposal": "توسيع QGridLayout للّوحة الحيّة إلى 4 أعمدة (عنوان|قيمة|عنوان|قيمة): وضع current_tp و next_tp في صف واحد، و current_sl و next_sl في الصف التالي؛ وإبقاء بقية الحقول صفوفًا مفردة تمتدّ عبر العرض أسفلهما. الحفاظ على نفس objectNames والمفاتيح self._live والأحجام الدنيا (قيمة ≥120) وسياسة Expanding والعناوين QLabel عربية. لا تغيير في _refresh_live_panel ولا في منطق المراقبة/التسعير.",
+  "constraint": "صفر انحدار — كل الاختبارات الخضراء (≥367) تبقى خضراء؛ لا كسر لحرّاس test_ui_monitoring (حضور/ظهور الـ15 مفتاحًا) ولا test_g1_4_layout_geometry (لا تداخل عنوان/قيمة عند 420 و1920 + القيم minWidth≥120) ولا test_g1_5 (نمو القيمة) ولا test_g1_7_ui_arabic (لا إنجليزية في monitoring.py) ولا test_g1_20_language_toggle.",
+  "contract": {
+    "task_id": "G1.21",
+    "definition_of_done": "في ocobot/ui/monitoring._build_live_panel تُعرض الحقول الأربعة في صفّين: الصف الأول current_tp | next_tp، والصف الثاني current_sl | next_sl؛ وتبقى باقي الحقول (sl_limit, tick_size, monitoring_state, last_operation, connection, environment) أسفلها بنفس الترتيب؛ ونفس QGridLayout/الألوان/الأحجام الدنيا؛ وكل الـ15 مفتاحًا تبقى في self._live وظاهرة دائمًا؛ وبلا أي سلسلة إنجليزية في monitoring.py؛ وبلا تغيير في منطق المراقبة/التسعير/التحويل؛ وكل الاختبارات خضراء (Ran ≥ 368، OK، صفر FAILED).",
+    "acceptance_checks": {
+      "AC1": "run_tests.cmd يُظهر Ran ≥ 368 (367 + اختبار G1.21 الجديد)، وسطر OK، وصفر FAILED (صفر انحدار).",
+      "AC2": "اختبار جديد tests/test_g1_21_live_panel_side_by_side.py: في شبكة اللوحة الحيّة، current_tp و next_tp في نفس الصف وعمودين مختلفين؛ current_sl و next_sl في نفس الصف؛ صف TP مباشرةً فوق صف SL؛ وبقية الحقول (sl_limit..environment) في صفوف أسفلهما.",
+      "AC3": "حارس test_ui_monitoring (كل الـ15 مفتاحًا حاضرة وظاهرة) أخضر؛ وحارس test_g1_4_layout_geometry (لا تداخل caption/value عند 420 و1920 + القيم minWidth≥120) أخضر؛ وحارس test_g1_5 (نمو قيمة symbol) أخضر.",
+      "AC4": "حارس test_g1_7_ui_arabic (لا إنجليزية مقتبسة في monitoring.py) و test_g1_20_language_toggle يبقيان أخضرين؛ العناوين تبقى QLabel بنصوص عربية.",
+      "AC5_manual": "فحص بصري يدوي على Testnet (اختياري بعد الختم الفني)."
+    },
+    "ordered_steps": {
+      "step_0_contract": "done",
+      "step_1_reflow_monitoring": "done",
+      "step_2_test": "done",
+      "step_3_run": "done",
+      "step_4_doc_seal": "done",
+      "step_5_archive": "done"
+    },
+    "scope_boundary": {
+      "inside": [
+        "ocobot/ui/monitoring.py (منطقة _build_live_panel وبنية الشبكة/ترتيب الصفوف فقط)",
+        "tests/test_g1_21_live_panel_side_by_side.py (جديد)"
+      ],
+      "outside": [
+        "منطق المراقبة/النبض/التسعير/التحويل",
+        "_refresh_live_panel (القيم والمنطق)",
+        "طبقة core",
+        "ocobot/ui/demo_mode.py وبقية الشاشات",
+        "الثوابت العربية ونصوص الحقول (تبقى حرفيًا)",
+        "ocobot/ui/i18n.py AR_TO_EN",
+        "Live/T16"
+      ]
+    },
+    "expected_evidence": {
+      "command": "run_tests.cmd",
+      "expected_count": ">=368",
+      "evidence_path": "_g1_21_run.txt"
+    },
+    "checkpoint_plan": "chunk A: إعادة بناء شبكة اللوحة الحيّة في monitoring.py ثم تحقق من القرص؛ chunk B: إضافة test_g1_21 ثم تشغيل run_tests.cmd — صفر FAILED عند كل نقطة.",
+    "dependencies_check": "G1.20 مختوم ومؤرشف (archive_status=done)؛ لا بنود critical/major غير مختومة.",
+    "sizing_verdict": "صغير/متوسط §9.5 — ملف تنفيذ واحد + اختبار؛ تجزئة خفيفة (chunk A ثم B) مع تشغيل اختبارات.",
+    "human_gate": false,
+    "risks": {
+      "R1": "تداخل عنوان/قيمة عند التضييق (420px). تخفيف: إبقاء minWidth≥120 للقيم وأعمدة شبكة بأدنى عرض؛ QGridLayout لا يُراكِب الخلايا.",
+      "R2": "كسر حرّاس الهندسة. تخفيف: إبقاء objectNames (MonitoringLiveCaption_<key>/MonitoringLiveValue_<key>) وسياسة Expanding والأحجام الدنيا.",
+      "R3": "كسر تبديل اللغة. تخفيف: العناوين تبقى QLabel بنصوص عربية موجودة في AR_TO_EN؛ لا تغيير للنصوص.",
+      "R4": "إدخال سلسلة إنجليزية في monitoring.py. تخفيف: لا literals جديدة؛ العناوين من LIVE_FIELDS الحالية."
+    }
+  },
+  "evidence_path": "_g1_21_run.txt",
+  "seal": {
+    "task": "G1.21",
+    "verified": true,
+    "evidence_path": "_g1_21_run.txt",
+    "evidence_count": 369,
+    "docs_synced": true,
+    "ts": "2026-10-07T00:19:55Z"
+  },
+  "archive_status": "done",
+  "evidence_count": 369
+}

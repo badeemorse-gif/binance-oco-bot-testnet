@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OCOBot — تفاصيل وتعديل</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#031021; --sidebar:#020d1c; --card:#061529; --card-alt:#081d32;
+    --border:#0d2a43; --text:#f0f7fb; --text-soft:#dce9f2; --muted:#6f8ba2;
+    --blue:#0876e8; --teal:#073b42; --green:#19c58b; --red:#ff4b68; --amber:#f08f1b;
+    --radius:12px; --shadow:0 8px 24px rgba(0,0,0,.35);
+    --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Tajawal","Segoe UI",Tahoma,"Noto Sans Arabic",Arial,sans-serif;
+    background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+  .app{display:grid;grid-template-columns:1fr 250px;min-height:100vh}
+  aside{background:var(--sidebar);border-inline-start:1px solid var(--border);padding:22px 16px;order:2}
+  .brand{display:flex;align-items:center;gap:12px;margin-bottom:26px;padding:0 6px}
+  .brand .logo{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,var(--blue),#0aa);display:grid;place-items:center;font-weight:700;color:#fff}
+  .brand .nm{font-size:19px;font-weight:700}.brand .sb{font-size:11px;color:var(--muted)}
+  nav a{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:10px;color:var(--text-soft);text-decoration:none;font-size:14.5px;margin-bottom:5px;transition:.15s;position:relative}
+  nav a .ic{width:20px;text-align:center;opacity:.85}
+  nav a:hover{background:var(--card-alt)}
+  nav a.active{background:linear-gradient(90deg,rgba(8,118,232,.18),transparent);color:#fff}
+  nav a.active::after{content:"";position:absolute;inset-inline-end:0;top:8px;bottom:8px;width:3px;background:var(--blue);border-radius:3px}
+  main{order:1;display:flex;flex-direction:column;min-width:0}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 26px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#061a30,transparent)}
+  .topbar h1{font-size:20px}.topbar .right{display:flex;align-items:center;gap:10px}
+  .pill{display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:999px;font-size:12.5px;font-weight:600;border:1px solid var(--border)}
+  .pill .dot{width:8px;height:8px;border-radius:50%}
+  .pill.env{background:rgba(240,143,27,.12);color:var(--amber);border-color:rgba(240,143,27,.4)}
+  .pill.conn{background:rgba(25,197,139,.12);color:var(--green);border-color:rgba(25,197,139,.4)}
+  .pill.conn .dot{background:var(--green);box-shadow:0 0 8px var(--green)}
+  .content{padding:26px;overflow:auto}
+  .layout{display:grid;grid-template-columns:1fr 1fr 300px;gap:16px;align-items:start}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+  .card h3{font-size:15px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+  .kv{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;padding:9px 0;border-bottom:1px dashed var(--border)}
+  .kv:last-child{border-bottom:0}
+  .kv .k{color:var(--muted)} .kv .v{font-family:var(--mono);font-weight:600}
+  .v.green{color:var(--green)} .v.red{color:var(--red)}
+  .lock{display:inline-flex;align-items:center;gap:5px;color:var(--amber);font-size:11px;background:rgba(240,143,27,.12);padding:2px 8px;border-radius:999px}
+  .field{margin-bottom:15px}
+  .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+  .field input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:11px 13px;color:var(--text);font-family:var(--mono);font-size:15px}
+  .field input:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px rgba(8,118,232,.2)}
+  .field input.readonly{background:var(--card-alt);color:var(--muted);cursor:not-allowed}
+  .field .hint{font-size:11px;color:var(--muted);margin-top:5px}
+  .btn{width:100%;background:var(--blue);color:#fff;border:0;padding:14px;border-radius:11px;font-size:15.5px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px}
+  .btn:hover{filter:brightness(1.1)}
+  .btn.ghost{background:var(--card-alt);border:1px solid var(--border);color:var(--text);font-size:13px;padding:10px}
+  .note{background:var(--card-alt);border:1px solid var(--border);border-inline-start:3px solid var(--green);border-radius:10px;padding:12px 14px;font-size:12.5px;color:var(--text-soft);margin-top:14px;display:flex;gap:9px}
+  .note b{color:var(--green)}
+  .live .big{font-family:var(--mono);font-size:30px;font-weight:700;color:var(--green);margin:4px 0 2px}
+  .live .lbl{color:var(--muted);font-size:12px}
+  .maxstop{background:var(--teal);border:1px solid #12707f;color:var(--text);font-weight:600}
+  .status{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(8,118,232,.15);color:#5db0ff}
+  @media(max-width:980px){.layout{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand"><div class="logo">OCO</div><div><div class="nm">OCOBot</div><div class="sb">إدارة أوامر OCO</div></div></div>
+    <nav>
+      <a href="01_dashboard.html"><span class="ic">▦</span> لوحة التحكم</a>
+      <a href="02_open_orders.html"><span class="ic">▤</span> الأوامر المفتوحة</a>
+      <a class="active" href="03_selected_and_edit.html"><span class="ic">✎</span> تفاصيل وتعديل</a>
+      <a href="04_dynamic_monitoring.html"><span class="ic">◎</span> المراقبة الديناميكية</a>
+      <a href="05_safe_execution.html"><span class="ic">⚡</span> التنفيذ الآمن</a>
+    </nav>
+  </aside>
+  <main>
+    <div class="topbar">
+      <h1>تفاصيل الأمر والتعديل اليدوي</h1>
+      <div class="right">
+        <span class="pill env"><span class="dot" style="background:var(--amber)"></span> Testnet</span>
+        <span class="pill conn"><span class="dot"></span> متصل</span>
+      </div>
+    </div>
+    <div class="content">
+      <div class="layout">
+        <!-- A: Selected order details -->
+        <div class="card">
+          <h3>🎯 الأمر المختار</h3>
+          <div class="kv"><span class="k">Order List ID</span><span class="v">8001</span></div>
+          <div class="kv"><span class="k">Symbol</span><span class="v">TUTUSDT</span></div>
+          <div class="kv"><span class="k">الكمية (Quantity)</span><span class="v">1,200 <span class="lock">🔒 مقفولة</span></span></div>
+          <div class="kv"><span class="k">TP</span><span class="v green">0.05300</span></div>
+          <div class="kv"><span class="k">Stop Trigger</span><span class="v red">0.04980</span></div>
+          <div class="kv"><span class="k">Stop Limit</span><span class="v">0.04979</span></div>
+          <div class="kv"><span class="k">Leg IDs</span><span class="v">28841 / 28842</span></div>
+          <div class="kv"><span class="k">Status</span><span class="v"><span class="status">EXECUTING</span></span></div>
+        </div>
+
+        <!-- B: Manual edit -->
+        <div class="card">
+          <h3>✎ تعديل يدوي</h3>
+          <div class="field">
+            <label>TP — سعر الليمِت (price)</label>
+            <input type="text" value="0.05300">
+          </div>
+          <div class="field">
+            <label>Stop Trigger — سعر التفعيل (stopPrice)</label>
+            <input type="text" value="0.04980">
+          </div>
+          <div class="field">
+            <label>Stop Limit — محسوب (أسفل التريجر بـ tick) 🔒</label>
+            <input type="text" class="readonly" value="0.04979" readonly>
+            <div class="hint">قاعدة داخلية ثابتة: Stop Limit = Stop Trigger − tickSize (أسفل التريجر) · GTC</div>
+          </div>
+          <div class="field">
+            <label>الكمية (Quantity) — للقراءة فقط 🔒</label>
+            <input type="text" class="readonly" value="1,200" readonly>
+            <div class="hint">البوت يحرّك الأسعار فقط على نفس الكمية.</div>
+          </div>
+          <button class="btn">تفعيل / Activate</button>
+          <div class="note"><span>🛈</span><div><b>ملاحظة:</b> الأمر الأصلي يبقى فعّالًا حتى تضغط تفعيل.</div></div>
+        </div>
+
+        <!-- Live side panel -->
+        <div class="card live">
+          <h3>◎ Live</h3>
+          <div class="lbl">السعر الحالي</div>
+          <div class="big">0.05060</div>
+          <div class="kv" style="margin-top:8px"><span class="k">أعلى Stop متاح</span><span class="v red">0.05055</span></div>
+          <div class="hint" style="font-size:11px;color:var(--muted);margin:8px 0 12px">وفق فلاتر Binance (PRICE_FILTER / tickSize)</div>
+          <button class="btn maxstop">Max Available Stop</button>
+          <div class="kv" style="margin-top:14px"><span class="k">Tick Size</span><span class="v">0.00001</span></div>
+          <div class="kv"><span class="k">Symbol</span><span class="v">TUTUSDT</span></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

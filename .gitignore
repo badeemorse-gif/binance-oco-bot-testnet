@@ -1,0 +1,19 @@
+﻿# OCOBot .gitignore (recreated during G1.30 seal; no prior .gitignore existed in working copy)
+
+# Archive (mandatory per protocol 1.3 - archived, recoverable, never committed)
+_archive/
+
+# Secrets (never commit)
+.ocobot_telegram_token
+key.txt
+*.key
+*.secret
+
+# Local backups / state snapshots
+*.bak
+*.bak_*
+
+# Python noise
+__pycache__/
+*.py[cod]
+.pytest_cache/

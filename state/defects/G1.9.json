@@ -1,0 +1,25 @@
+{
+  "id": "G1.9",
+  "title": "نافذة لوحة التحكم: أزرار التصغير/التكبير غير ظاهرة (X فقط) + عدم عمل تكبير المحتوى بـ Ctrl+عجلة الماوس",
+  "description": "بيئة ثابتة: Tornado 24 بوصة HD، 1360x768 @125%، HDMI، شاشة واحدة، ويندوز 10، NVIDIA GPU Scaling: Aspect ratio + Underscan، ممنوع تغيير الدقة. (1) شريط عنوان النافذة يُظهر زر الإغلاق X فقط؛ زرّا التصغير والتكبير غير ظاهرين. (2) Ctrl + بكرة الماوس داخل لوحة التحكم لا يُكبّر/يُصغّر المحتوى الداخلي بينما تعمل الخاصية في المتصفح وبقية النوافذ.",
+  "severity": "major",
+  "discovered_at": "2026-09-29T01:10:00Z",
+  "reported_by": "user_manual_testing",
+  "professional_proposal": "يُحدَّد بعد chunk_diag. مبدئيًا: (1) استعادة أزرار التصغير/التكبير عبر ضبط WindowFlags (WindowMinimizeButtonHint|WindowMaximizeButtonHint|WindowCloseButtonHint) ومراجعة أثر _clamp_window_to_screen (setMaximumSize=availableGeometry في G1.6 الذي قد يُعطّل زر التكبير) وإبقاء النافذة قابلة للتكبير داخل حدود الشاشة دون كسر قيد G1.6؛ (2) إضافة تكبير محتوى داخلي عبر التقاط Ctrl+wheel (ControlModifier) في طبقة الواجهة وتطبيق عامل تحجيم على المحتوى داخل QScrollArea القائم مع حدود دنيا/عليا وإعادة ضبط. ocobot/ui فقط — بلا مساس بأي منطق تداول أو مسار Live/Withdrawals.",
+  "status": "sealed",
+  "verification_status": "verified",
+  "environment": "Testnet",
+  "live_forbidden": true,
+  "references": [
+    "docs/DIAGNOSIS_T15_wiring.md"
+  ],
+  "evidence_path": "_g1_9_run.txt",
+  "seal": {
+    "task": "G1.9",
+    "verified": true,
+    "evidence_path": "_g1_9_run.txt",
+    "evidence_count": 265,
+    "docs_synced": true,
+    "ts": "2026-09-29T19:18:00Z"
+  }
+}

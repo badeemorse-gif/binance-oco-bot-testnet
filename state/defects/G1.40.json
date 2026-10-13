@@ -1,0 +1,21 @@
+{
+  "id": "G1.40",
+  "title": "فهرس الأرشيف _archive/manifest.json (البند 11.6) + دعمه في rotate_state.py",
+  "kind": "infra_protocol",
+  "severity": "minor",
+  "status": "sealed",
+  "gate_impact": "none",
+  "discovered_at": "2026-10-12T11:59:13Z",
+  "reported_by": "user_consultation",
+  "description": "الأرشيف _archive كان بلا فهرس يوجّه لاسترجاع الملفات المؤرشفة. الحل: البند 11.6 + ملف _archive/manifest.json يُحدَّث آليًا عبر الأداة.",
+  "professional_proposal": "إضافة 11.6 للبروتوكول ودعم manifest في tools/rotate_state.py (archive_file + ربطه في apply والنسخ الاحتياطية + أمر archive)، بتسجيل {file, origin_path, task, reason, ts}.",
+  "resolution_summary": "أُضيف 11.6 إلى system_prompt، ووُسِّعت الأداة (load/save manifest + archive_file + apply/backup + أمر archive)، وتزامن docs/PORTABLE_PROTOCOL_CLAUSES.md، وخُتم البند عبر الأداة مع أرشفة المؤقتات وتسجيلها في المانيفست.",
+  "verification_status": "passed",
+  "next_action": "none",
+  "evidence_path": "docs/G1_40_archive_manifest_report.md",
+  "seal": {
+    "sealed_at": "2026-10-12T11:59:13Z",
+    "by": "executor",
+    "protocol_version": "1.4"
+  }
+}

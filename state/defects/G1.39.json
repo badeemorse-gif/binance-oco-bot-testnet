@@ -1,0 +1,21 @@
+{
+  "id": "G1.39",
+  "title": "بناء أداة التدوير الدائمة tools/rotate_state.py + بندا البروتوكول 11.4/11.5 (قابلية الاستنساخ)",
+  "kind": "infra_protocol",
+  "severity": "major",
+  "status": "sealed",
+  "gate_impact": "none",
+  "discovered_at": "2026-10-12T11:45:59Z",
+  "reported_by": "user_consultation",
+  "description": "أتمتة تدوير hot/cold بشكل دائم بدل سكربتات لمرة واحدة، وجعل بنود إدارة الحالة قابلة للاستنساخ لأي مشروع آخر.",
+  "professional_proposal": "إضافة 11.4 (أداة rotate_state.py ضمن روتين الختم) و11.5 (بنود حاكمة عامة project-agnostic + ملف اقتطاف متزامن)، وبناء الأداة بواجهة apply/verify، وتحديث مراجع 1.4 في الملفات الحاملة للبروتوكول.",
+  "resolution_summary": "أُضيف 11.4/11.5 إلى system_prompt، وبُنيت tools/rotate_state.py (apply/verify) وتحقّقت بنجاح، وتولّد docs/PORTABLE_PROTOCOL_CLAUSES.md المتزامن، وحُدِّثت prompt.md و docs/EXECUTOR_PROMPT_AR.md.",
+  "verification_status": "passed",
+  "next_action": "none",
+  "evidence_path": "docs/G1_39_rotate_tool_report.md",
+  "seal": {
+    "sealed_at": "2026-10-12T11:45:59Z",
+    "by": "executor",
+    "protocol_version": "1.4"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "id": "G1.27",
+  "title": "دالة الإنتاج test_connection في ocobot/core/connection.py تُجمَّع كاختبار بواسطة pytest فينتج ERROR (fixture 'cfg' not found)",
+  "description": "pytest يجمّع الدالة الإنتاجية test_connection (اسمها يبدأ بـ test_) عند استيرادها على مستوى الوحدة في tests/test_g1_11_connection_layer.py، فيحاول حقن fixture باسم cfg غير موجودة فيقع ERROR عند الإعداد. عطب سابق مُثبّت على HEAD ومستقل عن G1.25، وهو أثر تجميع لا عيب منتج.",
+  "severity": "minor",
+  "professional_proposal": "وسم الدالة الإنتاجية بأنها ليست اختبارًا عبر test_connection.__test__ = False مباشرة بعد تعريفها في connection.py. سطر واحد بلا إعادة تسمية وبلا تغيير سلوك؛ السمة تُرافق الكائن المستورد فيتجاهله pytest في كل مكان؛ واختبارات G1.11 التي تستدعي test_connection(cfg,...) تظل تعمل.",
+  "status": "sealed",
+  "discovered_at": "2026-10-09T01:09:53Z",
+  "evidence_path": "_archive/_g1_27_verify.txt",
+  "seal": {
+    "task": "G1.27",
+    "verified": true,
+    "evidence_path": "_archive/_g1_27_verify.txt",
+    "evidence_count": 19,
+    "docs_synced": true,
+    "ts": "2026-10-09T01:24:14Z"
+  }
+}

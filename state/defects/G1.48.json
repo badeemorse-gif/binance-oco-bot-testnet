@@ -1,0 +1,18 @@
+{
+  "id": "G1.48",
+  "status": "sealed",
+  "severity": "major",
+  "protocol_version": "1.5",
+  "title": "تصحيح دلالة «نسبة التغيّر» و«نسبة التتبّع» في متتبّعَي العملة المراقَبة وBTC: نسبة التغيّر عن كل انتقال سعري لحظي (مقابل السعر السابق)، ونسبة التتبّع مقابل سعر بدء المراقبة المُجمّد طوال الجلسة (Testnet، عرض فقط، لا Live قبل G1)",
+  "description": "ملاحظة المستخدم أثناء التجربة اليدوية: في لوحتَي تتبّع النِّسب (تتبّع العملة المراقَبة + تتبّع نسبة BTC) تظهر «نسبة التغيّر» و«نسبة التتبّع» بالقيمة نفسها طوال العملية. المطلوب فصل الدلالتين لكلتا اللوحتين: (أ) «نسبة التغيّر» تُحسب عن كل انتقال سعري لحظي — السعر السابق = قيمة آخر tick، والسعر الحيّ = القيمة الحالية (مثال: السعر 100 لحظة البدء ثم انتقل 101 ⇒ سابق=100 حيّ=101؛ ثم 99 ⇒ سابق=101 حيّ=99 وهكذا). (ب) «نسبة التتبّع» تُحسب عن سعر بدء المراقبة المُجمّد (ثابت طوال الجلسة) مقابل السعر الحيّ، لكلٍّ من العملة المراقَبة وBTC.",
+  "professional_proposal": "السبب الجذري: ocobot/ui/monitoring.py::_refresh_monitored_tracker يمرّر update_prices(current, anchor, anchor) فيتطابق المرجعان (كلاهما المرساة) ⇒ النسبتان متطابقتان؛ ومتتبّع BTC (_refresh_btc_tracker) يستخدم window_start (نافذة متدحرجة ~5s من price_snapshot) للتتبّع بدل سعر بدء المراقبة المُجمّد. الحل (عرض فقط، بلا شبكة، داخل scope_boundary): (1) العملة المراقَبة: إبقاء _monitored_anchor (سعر البدء المُجمّد) للتتبّع، وإضافة حقل _monitored_prev يُحدَّث كل نبضة ليحمل السعر الحيّ السابق، فيصير update_prices(current, _monitored_prev, _monitored_anchor) ثم _monitored_prev=current. (2) BTC: تجميد _btc_anchor (أول سعر BTC صالح عند بدء المراقبة) واستخدامه مرجعًا للتتبّع، واستخدام prev من اللقطة لنسبة التغيّر: update_prices(last, prev, _btc_anchor). (3) تصفير _monitored_prev و_btc_anchor عند set_selected والإيقاف الطارئ (جلسة جديدة) تمامًا كـ _monitored_anchor. PercentTracker يبقى كما هو (يقبل مرجعين منفصلين) — لا تغيير في منطق النِّسب الخالص. acceptance_checks: اختبارات بلا شبكة تُثبت أن «نسبة التغيّر» تتبع آخر tick و«نسبة التتبّع» تتبع المرساة المُجمّدة وأن القيمتين تختلفان عند توفّر ≥3 أسعار متغيّرة (للعملة وBTC) + كامل السويت أخضر (≥665) + §1.5 ثنائية اللغة محفوظة + لا Live/T16 (§10.5).",
+  "discovered_at": "2026-10-13T13:46:00Z",
+  "evidence_path": "docs/G1_48_tracker_semantics_report.md (split per-file: ran=672 OK, 0 fail/0 err)",
+  "seal": {
+    "verified": true,
+    "evidence_path": "docs/G1_48_tracker_semantics_report.md (split per-file: ran=672 OK, 0 fail/0 err)",
+    "evidence_count": 672,
+    "docs_synced": true,
+    "ts": "2026-10-13T14:05:00Z"
+  }
+}

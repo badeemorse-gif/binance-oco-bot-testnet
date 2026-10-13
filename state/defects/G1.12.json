@@ -1,0 +1,24 @@
+{
+  "id": "G1.12",
+  "label": null,
+  "title": "لا يوجد زر لإيقاف/قطع الاتصال بحساب Binance من الواجهة",
+  "description": "بعد ختم G1.11 أصبحت شاشة 07_connection تعمل (إدخال المفاتيح + زر اتصال + لمبة حالة) ويظهر أعلى يسار لوحة التحكم بادج «متصل» + «Testnet». لكن لا يوجد أي زر لقطع/إلغاء الاتصال؛ لفصل البوت عن الحساب يضطر المستخدم لإغلاق البرنامج بالكامل. المطلوب زر قطع اتصال في مكانين: (1) أعلى يسار بجوار بادج «متصل» (Topbar)، (2) في شاشة الاتصال بجوار زر «اتصال». عند الضغط تتحوّل الحالة متصل→غير متصل/منفصل مع لمبة حمراء، مع إمكانية إعادة الاتصال دون إعادة تشغيل.",
+  "severity": "major",
+  "professional_proposal": "طبقة معزولة لتبديل الحالة فقط لا تمسّ منطق التداول/OCO/المراقبة/Live: منطق قطع موحّد (handler واحد قابل لإعادة الاستخدام) في ocobot/core/connection.py يمسح مصدر مفاتيح الجلسة عبر session.clear_key_source الجديد (نظير set_key_source) ويعيد ConnectionState(status=DISCONNECTED). يُربط بزرّين يستدعيان نفس المنطق: (أ) Topbar بجوار conn_pill، (ب) ConnectionScreen بجوار زر اتصال. عند الفصل: ConnectionStateNotifier.set_state(DISCONNECTED) لتحديث بادج Topbar + connection_screen.set_connection_state للّمبة (حمراء + «غير متصل»). الإقلاع الافتراضي غير متصل (كما هو، آمن ضد غياب المفاتيح). إعادة الاتصال بالضغط على «اتصال» ثانيةً دون إعادة تشغيل. لا مساس بـ signed_request/monitoring_loop/create_oco_only/buy_and_oco/system_prompt أو أي مسار Live/Withdrawals — تبديل حالة ومصدر مفاتيح فقط.",
+  "status": "sealed",
+  "discovered_at": "2026-09-30T18:46:55Z",
+  "evidence_path": "_g1_12_run.txt",
+  "seal": {
+    "task": "G1.12",
+    "verified": true,
+    "evidence_path": "_g1_12_run.txt",
+    "evidence_count": 294,
+    "docs_synced": true,
+    "ts": "2026-09-30T19:36:47Z"
+  },
+  "environment": "Testnet",
+  "live_forbidden": true,
+  "evidence_count": 294,
+  "verification_status": "verified",
+  "next_action": "sealed"
+}

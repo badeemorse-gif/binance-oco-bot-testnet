@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OCOBot — المراقبة الديناميكية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#031021; --sidebar:#020d1c; --card:#061529; --card-alt:#081d32;
+    --border:#0d2a43; --text:#f0f7fb; --text-soft:#dce9f2; --muted:#6f8ba2;
+    --blue:#0876e8; --teal:#073b42; --green:#19c58b; --red:#ff4b68; --amber:#f08f1b;
+    --radius:12px; --shadow:0 8px 24px rgba(0,0,0,.35);
+    --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Tajawal","Segoe UI",Tahoma,"Noto Sans Arabic",Arial,sans-serif;
+    background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+  .app{display:grid;grid-template-columns:1fr 250px;min-height:100vh}
+  aside{background:var(--sidebar);border-inline-start:1px solid var(--border);padding:22px 16px;order:2}
+  .brand{display:flex;align-items:center;gap:12px;margin-bottom:26px;padding:0 6px}
+  .brand .logo{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,var(--blue),#0aa);display:grid;place-items:center;font-weight:700;color:#fff}
+  .brand .nm{font-size:19px;font-weight:700}.brand .sb{font-size:11px;color:var(--muted)}
+  nav a{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:10px;color:var(--text-soft);text-decoration:none;font-size:14.5px;margin-bottom:5px;transition:.15s;position:relative}
+  nav a .ic{width:20px;text-align:center;opacity:.85}
+  nav a:hover{background:var(--card-alt)}
+  nav a.active{background:linear-gradient(90deg,rgba(8,118,232,.18),transparent);color:#fff}
+  nav a.active::after{content:"";position:absolute;inset-inline-end:0;top:8px;bottom:8px;width:3px;background:var(--blue);border-radius:3px}
+  main{order:1;display:flex;flex-direction:column;min-width:0}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 26px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#061a30,transparent)}
+  .topbar h1{font-size:20px}.topbar .right{display:flex;align-items:center;gap:10px}
+  .pill{display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:999px;font-size:12.5px;font-weight:600;border:1px solid var(--border)}
+  .pill .dot{width:8px;height:8px;border-radius:50%}
+  .pill.env{background:rgba(240,143,27,.12);color:var(--amber);border-color:rgba(240,143,27,.4)}
+  .pill.conn{background:rgba(25,197,139,.12);color:var(--green);border-color:rgba(25,197,139,.4)}
+  .pill.conn .dot{background:var(--green);box-shadow:0 0 8px var(--green)}
+  .content{padding:26px;overflow:auto}
+  .section-h{margin-bottom:14px}.section-h h2{font-size:17px}.section-h .sub{color:var(--muted);font-size:13px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+  .rules{display:grid;grid-template-columns:repeat(3,1fr) auto;gap:16px;align-items:end}
+  .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+  .inputg{display:flex;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:9px;overflow:hidden}
+  .inputg input{flex:1;background:transparent;border:0;padding:12px 13px;color:var(--text);font-family:var(--mono);font-size:17px;width:100%}
+  .inputg input:focus{outline:0}
+  .inputg .unit{padding:0 13px;color:var(--muted);font-family:var(--mono);border-inline-start:1px solid var(--border);align-self:stretch;display:flex;align-items:center}
+  .startbtn{background:var(--green);color:#04241a;border:0;padding:13px 26px;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+  .startbtn.stop{background:var(--red);color:#fff}
+  .strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-top:16px}
+  .scard{background:var(--card-alt);border:1px solid var(--border);border-radius:11px;padding:13px 15px;border-top:3px solid var(--border)}
+  .scard.g{border-top-color:var(--green)}.scard.r{border-top-color:var(--red)}
+  .scard.b{border-top-color:var(--blue)}.scard.a{border-top-color:var(--amber)}.scard.t{border-top-color:#12707f}
+  .scard .l{color:var(--muted);font-size:11.5px;margin-bottom:5px}
+  .scard .n{font-family:var(--mono);font-size:19px;font-weight:700}
+  .scard .n.green{color:var(--green)}.scard .n.red{color:var(--red)}.scard .n.amber{color:var(--amber)}
+  .statepill{display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:999px;font-weight:700;font-size:13px;background:rgba(25,197,139,.15);color:var(--green)}
+  .statepill .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+  .timeline{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:6px}
+  .step{display:flex;align-items:center;gap:8px}
+  .step .box{background:var(--card-alt);border:1px solid var(--border);border-radius:9px;padding:9px 13px;font-size:12.5px;white-space:nowrap}
+  .step .box.done{border-color:var(--green);color:var(--green);background:rgba(25,197,139,.1)}
+  .step .box.now{border-color:var(--blue);color:#5db0ff;background:rgba(8,118,232,.12)}
+  .step .arw{color:var(--muted)}
+  .mt{margin-top:22px}
+  @media(max-width:900px){.rules{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand"><div class="logo">OCO</div><div><div class="nm">OCOBot</div><div class="sb">إدارة أوامر OCO</div></div></div>
+    <nav>
+      <a href="01_dashboard.html"><span class="ic">▦</span> لوحة التحكم</a>
+      <a href="02_open_orders.html"><span class="ic">▤</span> الأوامر المفتوحة</a>
+      <a href="03_selected_and_edit.html"><span class="ic">✎</span> تفاصيل وتعديل</a>
+      <a class="active" href="04_dynamic_monitoring.html"><span class="ic">◎</span> المراقبة الديناميكية</a>
+      <a href="05_safe_execution.html"><span class="ic">⚡</span> التنفيذ الآمن</a>
+    </nav>
+  </aside>
+  <main>
+    <div class="topbar">
+      <h1>المراقبة الديناميكية</h1>
+      <div class="right">
+        <span class="pill env"><span class="dot" style="background:var(--amber)"></span> Testnet</span>
+        <span class="pill conn"><span class="dot"></span> متصل</span>
+      </div>
+    </div>
+    <div class="content">
+      <div class="section-h"><h2>قواعد المراقبة — ثلاث نسب فقط</h2><span class="sub">النظام ينفّذ قواعدك ولا يخترع استراتيجية · TUTUSDT · Order List ID 8001</span></div>
+      <div class="card">
+        <div class="rules">
+          <div class="field"><label>Trigger Rise % — نسبة التفعيل</label><div class="inputg"><input type="text" value="1"><span class="unit">%</span></div></div>
+          <div class="field"><label>TP Above Current % — TP فوق الحالي</label><div class="inputg"><input type="text" value="4"><span class="unit">%</span></div></div>
+          <div class="field"><label>SL Below Current % — SL تحت الحالي</label><div class="inputg"><input type="text" value="2"><span class="unit">%</span></div></div>
+          <button class="startbtn">▶ Start</button>
+        </div>
+      </div>
+
+      <div class="section-h mt"><h2>الحالة الحية</h2></div>
+      <div class="strip">
+        <div class="scard t"><div class="l">Reference Price</div><div class="n">0.05000</div></div>
+        <div class="scard a"><div class="l">Trigger Price</div><div class="n amber">0.05050</div></div>
+        <div class="scard g"><div class="l">Current Price</div><div class="n green">0.05060</div></div>
+        <div class="scard b"><div class="l">Next TP</div><div class="n">0.05262</div></div>
+        <div class="scard r"><div class="l">Next SL</div><div class="n red">0.04959</div></div>
+        <div class="scard r"><div class="l">SL Limit</div><div class="n">0.04958</div></div>
+        <div class="scard"><div class="l">Tick Size</div><div class="n">0.00001</div></div>
+        <div class="scard g"><div class="l">Monitoring State</div><div class="n" style="font-size:14px"><span class="statepill"><span class="dot"></span>ACTIVE</span></div></div>
+      </div>
+
+      <div class="section-h mt"><h2>دورة إعادة التموضع (Cycle)</h2><span class="sub">Trigger Latching + Latest Price Principle · إعادة تموضع واحدة فقط في كل مرة</span></div>
+      <div class="card">
+        <div class="timeline">
+          <div class="step"><span class="box done">Reference</span><span class="arw">←</span></div>
+          <div class="step"><span class="box done">Wait</span><span class="arw">←</span></div>
+          <div class="step"><span class="box now">Trigger latched</span><span class="arw">←</span></div>
+          <div class="step"><span class="box">Verify</span><span class="arw">←</span></div>
+          <div class="step"><span class="box">Cancel</span><span class="arw">←</span></div>
+          <div class="step"><span class="box">Latest price</span><span class="arw">←</span></div>
+          <div class="step"><span class="box">Create</span><span class="arw">←</span></div>
+          <div class="step"><span class="box">New OCO</span><span class="arw">←</span></div>
+          <div class="step"><span class="box">Continue</span></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

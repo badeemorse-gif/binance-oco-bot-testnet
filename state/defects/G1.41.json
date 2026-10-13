@@ -1,0 +1,33 @@
+{
+  "id": "G1.41",
+  "title": "تسرّب نصوص عربية في وضع الإنجليزية عبر عدة شاشات",
+  "severity": "major",
+  "phase": "G1_MANUAL_TESTING",
+  "status": "sealed",
+  "discovered_at": "2026-10-12T12:44:56Z",
+  "reported_by": "user_manual_testing",
+  "root_cause": "العربية هي لغة المصدر، والترجمة للإنجليزية تتم بالبحث في قاموس AR_TO_EN عبر translate(): إن لم يكن النص العربي مفتاحًا في القاموس تُعيده عربيًّا كما هو. بعد ختم تعريب الواجهة G1.7 أضافت مهامٌ لاحقة نصوصًا عربية جديدة (عناوين وحالات ديناميكية ودليل تشغيل التنبيهات في ocobot/ui/alerts.py) دون تسجيل مفاتيحها في AR_TO_EN، كما أن retranslate_widget_tree لا تغطّي بعض أنواع الودجت مثل QListWidget. فظهرت تلك النصوص عربية حتى في وضع الإنجليزية.",
+  "expected": "في وضع النافذة الإنجليزية تظهر كل نصوص الواجهة بالإنجليزية، وفي الوضع العربي تظهر بالعربية، دون بقاء أي حرف بغير لغته.",
+  "actual": "بعض النصوص تبقى عربية في وضع الإنجليزية (عناوين، حالات ديناميكية، ودليل تشغيل بوت التنبيهات).",
+  "fix_plan": "إكمال قاموس AR_TO_EN بكل النصوص العربية الظاهرة في الواجهة عبر كل الشاشات (إضافة فقط)، وتوسيع تغطية retranslate_widget_tree لتشمل القوائم وأي ودجت غير مُغطّى، وإضافة اختبار حارس يفشل عند بقاء أي عربية في وضع EN، مع إبقاء العربية كما هي وإبقاء كامل سويت الاختبارات أخضر.",
+  "scope": "ocobot/ui/*.py و ocobot/ui/i18n.py (AR_TO_EN + retranslate) و ocobot/ui/alerts.py — لا منطق تداول ولا شبكة.",
+  "status_note": "مختوم: أُصلحت كل التسريبات؛ كامل السويت أخضر واختبار حارس يمنع العودة.",
+  "evidence_path": "tests/test_g1_41_i18n_no_leak.py",
+  "seal": {
+    "sealed_at": "2026-10-12T13:57:15Z",
+    "verified_by": "full_suite + guard_test",
+    "suite_result": "python -m unittest discover -s tests -t .  => Ran 558 tests, OK (failures=0 errors=0 skipped=0)",
+    "guard_test": "tests/test_g1_41_i18n_no_leak.py",
+    "protocol_version": "1.5",
+    "files_changed": [
+      "ocobot/ui/i18n.py (AR_TO_EN +45 keys; QListWidget+QComboBox coverage; retranslate_i18n hook)",
+      "ocobot/ui/guardian_indicator.py (i18n-aware _apply + retranslate_i18n)",
+      "ocobot/ui/monitoring.py (central translate + composed-message wraps)",
+      "ocobot/ui/connection_screen.py (file dialog + error wraps)",
+      "ocobot/ui/safe_execution.py (legend wrap + retranslate_i18n)",
+      "ocobot/ui/alerts.py (retranslate_i18n + delete-button wrap)",
+      "tests/test_g1_41_i18n_no_leak.py (new guard)"
+    ],
+    "note": "العربية مصدرٌ لم يُمَس؛ الإصلاح إضافي ويطال وضع الإنجليزية فقط."
+  }
+}
