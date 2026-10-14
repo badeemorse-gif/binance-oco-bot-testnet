@@ -36,12 +36,15 @@ from ._qt import (
 )
 from .theme import PALETTE
 from . import i18n
+from .profitability_panel import ProfitabilityPanel
 from ocobot.domain.models import fmt
 from ocobot.domain.completed_trades import (
     DismissStore,
     default_dismiss_path,
     load_completed_trades,
+    parse_audit_jsonl,
 )
+from ocobot.domain.profitability import extract_exit_executions, profitability_by_mode
 
 EMPTY = "—"
 NA = "غير متاح"  # يُعرض لسعر البيع/الربح حين يغيب سعر الخروج (صفقات قديمة).
@@ -153,6 +156,12 @@ class CompletedTradesScreen(QWidget):
         # بناء الجدول عند كل تحديث دوري متطابق (يحفظ اختيار المستخدم ويزيل تذبذب
         # الجدول كل ثانية). None = لا تعبئة بعد.
         self._last_sig = None
+        # G1.54: الصفقات المرئيّة بعد فلترة الوضع، وفلتر الوضع الحالي ("" = الكل)،
+        # وتوقيع كل الصفقات (لتحديث لوحة الملخّص عند تغيّرها فقط)، وtelemetry التنفيذ.
+        self._visible = []
+        self._mode_filter = ""
+        self._last_all_sig = None
+        self._exit_execs = []
 
         root = QVBoxLayout(self)
         root.setContentsMargins(26, 22, 26, 22)
@@ -166,6 +175,7 @@ class CompletedTradesScreen(QWidget):
         )
         root.addWidget(self.heading)
 
+        self._build_profit_panel(root)
         self._build_top_half(root)
         self._build_bottom_half(root)
 
@@ -175,6 +185,12 @@ class CompletedTradesScreen(QWidget):
     # ------------------------------------------------------------------
     # النصف العلوي: قائمة الصفقات المنتهية + زرّا المسح/التفاصيل
     # ------------------------------------------------------------------
+    def _build_profit_panel(self, root):
+        """لوحة ملخّص الربحية (G1.54) أعلى الشاشة — عرض فقط + drill-down بالوضع."""
+        self.profit_panel = ProfitabilityPanel(self)
+        self.profit_panel.modeSelected.connect(self._on_mode_filter)
+        root.addWidget(self.profit_panel)
+
     def _build_top_half(self, root):
         self.list_section = QLabel("قائمة الصفقات المنتهية", self)
         self.list_section.setObjectName("CompletedTradesListSection")
@@ -319,12 +335,24 @@ class CompletedTradesScreen(QWidget):
         """يقرأ الصفقات المنتهية غير المُخفاة عبر الـ domain (قراءة فقط)."""
         return load_completed_trades(self._audit_path, self._dismiss_path)
 
+    def _load_execs(self):
+        """G1.54: telemetry تنفيذ الخروج (exit_execution) للوحة الربحية — قراءة فقط.
+
+        متسامح تمامًا: مسار مفقود/تالف ⇒ قائمة فارغة (لا شبكة، لا كتابة).
+        """
+        try:
+            return extract_exit_executions(parse_audit_jsonl(self._audit_path))
+        except Exception:
+            return []
+
     def refresh(self):
         """يعيد تحميل القائمة من الـ domain وعرضها (يخفي السفلي حتى يُطلب).
 
         G1.24 P1b: يُستدعى عند إظهار الشاشة فيعيد قراءة ملف التدقيق
         (``self.audit_path``) حتى تظهر الصفقات المغلقة حديثًا دون إعادة تشغيل.
+        G1.54: يُحمّل أيضًا telemetry تنفيذ الخروج للوحة الربحية (قراءة فقط).
         """
+        self._exit_execs = self._load_execs()
         if self._runner is not None:
             return self._runner.submit(self._load, on_result=self.set_trades)
         self.set_trades(self._load())
@@ -350,47 +378,77 @@ class CompletedTradesScreen(QWidget):
         return tuple(getattr(t, "trade_key", None) for t in trades)
 
     def set_trades(self, trades):
-        """يملأ القائمة العلوية من list[CompletedTrade] (الأحدث أولًا من الـ domain).
+        """يحدّث لوحة الملخّص (عند تغيّر الصفقات) ثم يعرض القائمة المفلترة.
 
-        G1.51: حافِظ على اختيار المستخدم وتفاصيله عبر التحديثات الدوريّة:
-          1) إن تطابق توقيع الصفقات (قائمة trade_key) مع آخر توقيع والجدول
-             مُعبَّأ بالفعل، نعود مبكّرًا دون إعادة بناء — فلا يُمسح الاختيار ولا
-             تتذبذب التفاصيل كل ثانية.
-          2) عند الحاجة لإعادة البناء نلتقط trade_key المحدّد قبل المسح، نكتم
-             إشارات الجدول أثناء البناء، ثم نعيد اختيار نفس الصفقة إن بقيت؛ وإلا
-             نتراجع للصف 0 عند وجود صفقات، ونحدّث التفاصيل مرّة واحدة فقط.
+        G1.54: لوحة الربحية أعلى الشاشة تُغذَّى من كل الصفقات وتُحدَّث فقط عند تغيّر
+        مجموعتها (تفادي الوميض كل ثانية). القائمة الوسطى تُعرض عبر ``_apply_list``
+        وفق فلتر الوضع الحالي، مع إبقاء منطق ثبات التحديد (G1.51).
         """
         new_list = list(trades or [])
-        new_sig = self._trades_signature(new_list)
+        self._trades = new_list
+
+        all_sig = self._trades_signature(new_list)
+        if all_sig != self._last_all_sig:
+            self._update_profit_panel(new_list)
+            self._last_all_sig = all_sig
+
+        self._apply_list()
+
+    def _update_profit_panel(self, trades):
+        """يُغذّي لوحة الربحية من profitability_by_mode (قراءة فقط، عرض فقط)."""
+        stats = profitability_by_mode(trades, self._exit_execs)
+        self.profit_panel.set_data(stats, trades)
+
+    def _visible_trades(self):
+        """الصفقات بعد تطبيق فلتر الوضع الحالي (""/None ⇒ الكل)."""
+        f = self._mode_filter
+        if not f:
+            return list(self._trades)
+        return [t for t in self._trades if (getattr(t, "exit_source", "") or "") == f]
+
+    def _on_mode_filter(self, mode):
+        """drill-down: فلترة القائمة الوسطى بالوضع المنقور (لا يمسّ لوحة الملخّص)."""
+        self._mode_filter = mode or ""
+        self._apply_list()
+
+    def _apply_list(self):
+        """يعرض القائمة المفلترة مع ثبات التحديد (منطق G1.51 موسَّعًا بالفلترة).
+
+        التوقيع يضمّ فلتر الوضع، فتغييره يُعيد البناء؛ وأي تحديث دوري متطابق (نفس
+        الفلتر ونفس trade_keys المرئيّة) لا يُعيد البناء ولا يسرق التحديد.
+        """
+        visible = self._visible_trades()
+        new_sig = (self._mode_filter,
+                   tuple(getattr(t, "trade_key", None) for t in visible))
 
         # (1) تحديث متطابق والجدول مُعبَّأ: لا إعادة بناء (حفظ الاختيار/التفاصيل).
         if (
             new_sig == self._last_sig
-            and self.list_table.rowCount() == len(new_list)
-            and len(new_list) > 0
+            and self.list_table.rowCount() == len(visible)
+            and len(visible) > 0
         ):
-            self._trades = new_list
+            self._visible = visible
             return
 
-        # (2) التقاط الصفقة المحدّدة حاليًّا قبل أي مسح (trade_key الثابت).
+        # (2) التقاط الصفقة المحدّدة حاليًّا (من المرئيّة القديمة) قبل أي مسح.
         prev_selected = self._selected_trade()
         prev_key = getattr(prev_selected, "trade_key", None) if prev_selected else None
 
-        self._trades = new_list
+        self._visible = visible
 
         # إعادة البناء مع كتم الإشارات لتفادي _on_selection_changed الطيفيّة.
         self.list_table.blockSignals(True)
         try:
             self.list_table.setRowCount(0)
-            for trade in self._trades:
+            for trade in visible:
                 r = self.list_table.rowCount()
                 self.list_table.insertRow(r)
                 self.list_table.setItem(r, 0, _readonly_item(_trade_label(trade)))
         finally:
             self.list_table.blockSignals(False)
 
-        # حالة فارغة: رسالة عربية + تعطيل الأزرار؛ وإلا إخفاء الرسالة.
-        is_empty = not self._trades
+        # حالة فارغة (لا صفقات أصلًا أو لا صفقات لهذا الوضع): رسالة + تعطيل الأزرار.
+        is_empty = not visible
         self.note.setText(i18n.translate_for_current(EMPTY_STATE) if is_empty else "")
         self.note.setVisible(is_empty)
         self.dismiss_button.setEnabled(not is_empty)
@@ -399,7 +457,7 @@ class CompletedTradesScreen(QWidget):
         self._last_sig = new_sig
 
         if is_empty:
-            # لا صفقات: فرّغ التفاصيل وأعد العنوان الأساسي.
+            # لا صفقات مرئيّة: فرّغ التفاصيل وأعد العنوان الأساسي.
             self.detail_table.setRowCount(0)
             self.detail_title.setText(i18n.translate_for_current("تفاصيل التموضع"))
             return
@@ -407,7 +465,7 @@ class CompletedTradesScreen(QWidget):
         # تحديد صفّ الاختيار الجديد: نفس الصفقة إن بقيت، وإلا تراجع للصف 0.
         target_row = 0
         if prev_key is not None:
-            for idx, trade in enumerate(self._trades):
+            for idx, trade in enumerate(visible):
                 if getattr(trade, "trade_key", None) == prev_key:
                     target_row = idx
                     break
@@ -422,10 +480,10 @@ class CompletedTradesScreen(QWidget):
     # اختيار الصف الحالي
     # ------------------------------------------------------------------
     def _selected_trade(self):
-        """CompletedTrade للصف المحدّد في القائمة العلوية، أو None."""
+        """CompletedTrade للصف المحدّد في القائمة المرئيّة (المفلترة)، أو None."""
         row = self.list_table.currentRow()
-        if 0 <= row < len(self._trades):
-            return self._trades[row]
+        if 0 <= row < len(self._visible):
+            return self._visible[row]
         return None
 
     # ------------------------------------------------------------------

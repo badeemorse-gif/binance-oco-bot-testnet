@@ -1,11 +1,18 @@
 {
   "id": "G1.54",
-  "status": "contracted",
+  "status": "sealed",
   "severity": "major",
   "title": "لوحة ربحية احترافية (عرض فقط) داخل شاشة 08_completed_trades مع drill-down",
   "discovered_at": "2026-10-14T11:10:00Z",
-  "evidence_path": null,
-  "seal": null,
+  "evidence_path": "docs/G1_54_report.md (split per-file: TOTAL ran=788 failures=0 errors=0 files=110 status=OK؛ baseline 762 + 26 جديدة)",
+  "seal": {
+    "verified": true,
+    "evidence_path": "docs/G1_54_report.md",
+    "evidence_count": 788,
+    "docs_synced": true,
+    "ts": "2026-10-14T17:26:00Z"
+  },
+  "verification": "python tools/_run_suite_per_file.py ⇒ TOTAL ran=788 failures=0 errors=0 files=110 status=OK, PROBLEMS(0) (baseline 762 + 26: profitability_panel 16 + integration 6 + i18n 4). عرض فقط، لا شبكة في خيط الواجهة، لا hot_path. انحدار صفري على G1.51/G1.41/G1.20. (discover بعملية واحدة غير حتمي بسبب تعليق Qt التراكمي — نفس اعتماد split-per-file في G1.49–G1.52).",
   "depends_on": ["G1.51", "G1.53"],
   "description": "إعادة تنظيم شاشة 08_completed_trades إلى: أعلى = ملخّص ربحية احترافي لكل وضع، أوسط = قائمة الصفقات (قابلة للفلترة بالوضع + التحديد المُصلَّح من G1.51)، أسفل = تفاصيل التموضع القائمة. تُغذّى قراءةً فقط من profitability_by_mode (G1.53) و load_completed_trades القائمة.",
   "professional_proposal": "مكوّن لوحة ربحية جديد عرض-فقط: بطاقة لكل وضع (win-rate كحلقة تقدّم، متوسط العائد٪، الصافي$، التوقّع/صفقة، متوسط الانزلاق) + ترتيب الأوضاع بالتوقّع (leaderboard) + منحنى P&L تراكمي بسيط (QPainter) + شريط توزيع رابح/خاسر؛ عرض فقط، RTL، ألوان PercentTracker (أخضر صعود/أحمر هبوط)، صيغة أرقام متّسقة. دمجه في 08 مع فلترة القائمة بالوضع و drill-down (نقر وضع ⇒ تصفية القائمة ⇒ نقر صفقة ⇒ تفاصيل) وإعادة استخدام منطق التحديث المحافظ على التحديد من G1.51. مفاتيح i18n §1.5 ثنائية اللغة مع تغطية retranslate. لا شبكة في خيط الواجهة ولا hot_path.",

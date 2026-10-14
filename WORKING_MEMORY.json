@@ -2,7 +2,7 @@
   "active": false,
   "task_id": null,
   "resume_point": null,
-  "last_sealed": "G1.52",
-  "note": "G1.52 مختوم (التقاط أي بيع منفَّذ + نسب exit_source لكل وسيلة شاملًا MANUAL_EXIT + مُساعِد ربط on_order_event). المتبقّي contracted: G1.53 (مُجمِّع ربحية خالص + telemetry تنفيذ الخروج)، G1.54 (لوحة ربحية احترافية في شاشة 08_completed_trades؛ depends_on G1.53/G1.52). لا Live/T16 قبل بوّابة G1 (§10.5).",
-  "updated_at": "2026-10-14T13:47:12Z"
+  "last_sealed": "G1.54",
+  "note": "G1.54 مختوم: لوحة ربحية احترافية (عرض فقط) في شاشة 08_completed_trades — مكوّن جديد ocobot/ui/profitability_panel.py (بطاقات لكل وضع + leaderboard بالتوقّع + منحنى P&L تراكمي QPainter + شريط توزيع؛ دوال خالصة + ودجات رسم) مدموج في completed_trades.py مع فلترة بالوضع و drill-down و telemetry «متوسط الانزلاق»، مع الحفاظ على ثبات تحديد G1.51، ومفاتيح i18n §1.5 + retranslate. التحقّق split-per-file: TOTAL ran=788 failures=0 errors=0 files=110 status=OK (baseline 762 + 26 جديدة). عرض فقط لا شبكة في خيط الواجهة ولا hot_path. حالة defect_log: كل بنود critical/major مختومة (G1.1–G1.54 عدا G1.29 wont_fix) ⇒ صفر بنود مفتوحة. بوّابة G1 (§10.5): لا Live/T16 إلا بعد فحص صلاحيات مفتاح API (تداول فقط بلا سحب) + فحص IP whitelist + عبارة اعتماد صريحة من المستخدم.",
+  "updated_at": "2026-10-14T17:26:00Z"
 }

@@ -20,8 +20,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from decimal import ROUND_DOWN, Decimal
-from typing import Any, Dict, List, Protocol, runtime_checkable
+from decimal import ROUND_DOWN, Decimal, InvalidOperation
+from typing import Any, Dict, List, Optional, Protocol, Tuple, runtime_checkable
 
 from ocobot.domain.pricing import DEFAULT_GAP_TICKS, floor_to_step, round_to_tick
 
@@ -200,6 +200,105 @@ def _result(action: str, symbol: str, exit_side: str, **extra) -> Dict[str, Any]
     return base
 
 
+# ======================================================================
+# G1.53 — telemetry تنفيذ الخروج (exit_execution) عبر audit_sink محقون (opt-in).
+# إضافة بحتة: الكتابة اختيارية (``audit_sink`` default None ⇒ لا انحدار ولا تغيير
+# سلوك)، لا تمسّ hot_path ولا تغيّر أي قرار تنفيذ. القيم كلّها محسوبة أصلًا داخل
+# المنفّذ (كانت تُهمَل). القارئ: ``ocobot.domain.profitability.extract_exit_executions``.
+# ======================================================================
+_EXIT_EXECUTION_EVENT = "exit_execution"
+
+
+def _to_dec_safe(value) -> Optional[Decimal]:
+    """تحويل Decimal متسامح (None/'' ⇒ None؛ التالف ⇒ None) — لا يرمي."""
+    if value is None or value == "":
+        return None
+    try:
+        return value if isinstance(value, Decimal) else Decimal(str(value))
+    except (InvalidOperation, ValueError):
+        return None
+
+
+def sum_commission(resp) -> Tuple[Decimal, Optional[str]]:
+    """G1.53/chunk_3: يجمع عمولة التنفيذ من ردّ وسيط (best-effort، Decimal فقط).
+
+    يدعم شكلَي ردّ Binance الشائعين دون افتراض واحد:
+      - executionReport: الحقل ``n`` = العمولة، ``N`` = أصل العمولة.
+      - order response: ``fills`` = قائمة ``{commission, commissionAsset}``.
+    يُعيد ``(total, asset)``؛ وعند غياب أي عمولة ⇒ ``(Decimal('0'), None)`` بلا رفع
+    استثناء. دالة **خالصة** لا تمسّ أي قرار تنفيذ (قراءة فقط من الردّ).
+    """
+    if not isinstance(resp, dict):
+        return _ZERO, None
+    total = _ZERO
+    asset: Optional[str] = None
+    c = _to_dec_safe(resp.get("n"))
+    if c is not None:
+        total += c
+        asset = resp.get("N") or asset
+    fills = resp.get("fills")
+    if isinstance(fills, list):
+        for f in fills:
+            if not isinstance(f, dict):
+                continue
+            fc = _to_dec_safe(f.get("commission"))
+            if fc is not None:
+                total += fc
+                asset = f.get("commissionAsset") or asset
+    return total, asset
+
+
+def build_exit_execution_record(
+    *, source, exit_side, order_type, tif, requested_price, filled_price,
+    live_bid, slippage_pct, band_pct, attempts_used, reached_floor,
+    floor_price, qty, trade_uid, dry_run, commission=None, commission_asset=None,
+) -> Dict[str, Any]:
+    """يبني قاموس تفاصيل سجلّ ``exit_execution`` (دالة **خالصة** بلا أثر جانبي).
+
+    تبقى قيم ``Decimal`` كما هي؛ يُسلسِلها ``AuditLog`` كنصوص (``default=str``)
+    ويعيدها القارئ إلى ``Decimal`` — فلا تحويل إلى ``float`` إطلاقًا. حقلا
+    ``commission``/``commission_asset`` (G1.53/chunk_3) يُضافان **فقط** عند
+    توفّرهما (best-effort) ليبقى السجلّ مطابقًا لسكيمة chunk_2 عند غياب العمولة.
+    """
+    record: Dict[str, Any] = {
+        "source": source or "",
+        "exit_side": exit_side,
+        "order_type": order_type,
+        "tif": tif,
+        "requested_price": requested_price,
+        "filled_price": filled_price,
+        "live_bid": live_bid,
+        "slippage_pct": slippage_pct,
+        "band_pct": band_pct,
+        "attempts_used": attempts_used,
+        "reached_floor": bool(reached_floor),
+        "floor_price": floor_price,
+        "qty": qty,
+        "trade_uid": trade_uid or "",
+        "dry_run": bool(dry_run),
+    }
+    if commission is not None:
+        record["commission"] = commission
+    if commission_asset is not None:
+        record["commission_asset"] = commission_asset
+    return record
+
+
+def _emit_exit_execution(audit_sink, details: Dict[str, Any]) -> None:
+    """يُرسِل سجلّ telemetry عبر ``audit_sink`` إن وُجد — لا يُفشِل الخروج أبدًا.
+
+    ``audit_sink`` قابل للاستدعاء بتوقيع ``(event, details)`` (مطابق لـ
+    ``AuditLog.record``). ``None`` ⇒ لا شيء (opt-in). أي استثناء يُبتَلع (دفاعي)
+    حتى لا تؤثّر الـtelemetry على مسار التنفيذ.
+    """
+    if audit_sink is None:
+        return
+    try:
+        audit_sink(_EXIT_EXECUTION_EVENT, details)
+    except Exception:  # pragma: no cover - دفاعي: الـtelemetry لا تُفشِل الخروج
+        pass
+
+
 def execute_market_exit(
     *,
     client,
@@ -219,6 +318,9 @@ def execute_market_exit(
     gap_ticks=None,
     stop_limit_offset_pct=None,
     allow_market: bool = False,
+    audit_sink=None,
+    source: str = "",
+    trade_uid: str = "",
     dry_run: bool = True,
 ) -> Dict[str, Any]:
     """ينفّذ تسلسل الخروج الآمن بالترتيب الصارم (وضع واحد على الأكثر).
@@ -249,6 +351,13 @@ def execute_market_exit(
             allow_market=allow_market,
         )
         plan["symbol"] = plan.get("symbol") or symbol
+        if audit_sink is not None:
+            _emit_exit_execution(audit_sink, build_exit_execution_record(
+                source=source, exit_side=exit_side, order_type=plan.get("type"), tif=None,
+                requested_price=(plan.get("limit_price") or plan.get("price")),
+                filled_price=None, live_bid=None, slippage_pct=None, band_pct=None,
+                attempts_used=0, reached_floor=False, floor_price=plan.get("price_floor"),
+                qty=plan.get("quantity"), trade_uid=trade_uid, dry_run=True))
         return _result("DRY_RUN", symbol, exit_side, placed=False, plan=plan,
                        client_order_id=client_order_id, steps=[("dry_run_preview", True)])
 
@@ -316,6 +425,17 @@ def execute_market_exit(
     result = _result("PLACED", symbol, exit_side, placed=True, plan=plan, free=free,
                      eff_qty=eff_qty, client_order_id=client_order_id, response=response,
                      steps=steps)
+
+    if audit_sink is not None:
+        _place_commission, _place_asset = sum_commission(response)
+        _emit_exit_execution(audit_sink, build_exit_execution_record(
+            source=source, exit_side=exit_side, order_type=plan.get("type"), tif=None,
+            requested_price=(plan.get("limit_price") or plan.get("price")),
+            filled_price=None, live_bid=None, slippage_pct=None, band_pct=None,
+            attempts_used=1, reached_floor=False, floor_price=plan.get("price_floor"),
+            qty=plan.get("quantity"), trade_uid=trade_uid, dry_run=False,
+            commission=(_place_commission if _place_commission > _ZERO else None),
+            commission_asset=_place_asset))
 
     # تنبيه اختياري — لا يُفشِل الخروج إن رمى.
     if notifier is not None:
@@ -468,6 +588,9 @@ def execute_exit_chase(
     notifier=None,
     sleeper=None,
     chase_interval_s=None,
+    audit_sink=None,
+    source: str = "",
+    trade_uid: str = "",
     dry_run: bool = True,
 ) -> Dict[str, Any]:
     """طبقة الربط الحيّة لسياسة الخروج الموحّدة (G1.49) فوق الخطط الخالصة.
@@ -507,6 +630,12 @@ def execute_exit_chase(
     # ---- تشغيل جافّ: معاينة خالصة بلا أثر جانبي ----
     if dry_run:
         preview = pol.ladder(init_bid, tick) if init_bid > _ZERO else {"ladder": [], "floor": _ZERO}
+        if audit_sink is not None:
+            _emit_exit_execution(audit_sink, build_exit_execution_record(
+                source=source, exit_side=exit_side, order_type="LIMIT_IOC", tif=TIF_IOC,
+                requested_price=None, filled_price=None, live_bid=init_bid, slippage_pct=None,
+                band_pct=pol.band_pct, attempts_used=0, reached_floor=False,
+                floor_price=preview["floor"], qty=_dec(target_qty), trade_uid=trade_uid, dry_run=True))
         return _result("DRY_RUN", symbol, exit_side, placed=False,
                        reference_bid=init_bid, floor=preview["floor"],
                        ladder=preview["ladder"], client_order_id=client_order_id,
@@ -545,6 +674,8 @@ def execute_exit_chase(
     filled_total = _ZERO
     reached_floor = False
     last_price = None
+    commission_total = _ZERO          # G1.53/chunk_3: عمولة مُجمَّعة (best-effort)
+    commission_asset: Optional[str] = None
 
     for i in range(max(1, int(pol.chase_max_attempts))):
         bid = _ref_bid()
@@ -564,6 +695,10 @@ def execute_exit_chase(
         resp = client.place_limit_sell_ioc(
             symbol=symbol, quantity=qty, price=price,
             client_order_id="%s-ioc-%d" % (client_order_id, i)) or {}
+        _cc, _ca = sum_commission(resp)
+        commission_total += _cc
+        if _ca:
+            commission_asset = _ca
         executed = _dec(resp.get("executedQty", 0))
         if executed < _ZERO:
             executed = _ZERO
@@ -590,6 +725,10 @@ def execute_exit_chase(
         market_resp = client.place_market_sell(
             symbol=symbol, quantity=remaining_step,
             client_order_id="%s-mkt" % client_order_id)
+        _cc, _ca = sum_commission(market_resp)
+        commission_total += _cc
+        if _ca:
+            commission_asset = _ca
         steps.append(("last_resort_market", str(remaining_step)))
         filled_total += remaining_step
         remaining -= remaining_step
@@ -610,6 +749,17 @@ def execute_exit_chase(
         floor=floor, reference_bid=init_bid, last_price=last_price,
         slippage_pct=slippage, market_fallback=(market_resp is not None),
         free=free, client_order_id=client_order_id, steps=steps)
+    if audit_sink is not None:
+        _emit_exit_execution(audit_sink, build_exit_execution_record(
+            source=source, exit_side=exit_side,
+            order_type=("MARKET" if market_resp is not None else "LIMIT_IOC"),
+            tif=(None if market_resp is not None else TIF_IOC),
+            requested_price=last_price, filled_price=None, live_bid=init_bid,
+            slippage_pct=slippage, band_pct=pol.band_pct, attempts_used=len(attempts),
+            reached_floor=reached_floor, floor_price=floor, qty=filled_total,
+            trade_uid=trade_uid, dry_run=False,
+            commission=(commission_total if commission_total > _ZERO else None),
+            commission_asset=commission_asset))
     if notifier is not None:
         try:
             notifier(result)

@@ -1,11 +1,18 @@
 {
   "id": "G1.53",
-  "status": "contracted",
+  "status": "sealed",
   "severity": "major",
   "title": "مُجمِّع ربحية خالص لكل وضع + telemetry تنفيذ الخروج",
   "discovered_at": "2026-10-14T11:10:00Z",
-  "evidence_path": null,
-  "seal": null,
+  "evidence_path": "docs/G1_53_report.md (full suite: TESTS_RUN=762 FAILURES=0 ERRORS=0 SKIPPED=0 SUCCESS=True; baseline 739 + 23 جديدة)",
+  "seal": {
+    "verified": true,
+    "evidence_path": "docs/G1_53_report.md",
+    "evidence_count": 762,
+    "docs_synced": true,
+    "ts": "2026-10-14T16:47:12Z"
+  },
+  "verification": "python tools/_g1_53_run_suite.py ⇒ TESTS_RUN=762 FAILURES=0 ERRORS=0 SKIPPED=0 SUCCESS=True (baseline 739 + 23: profitability 7 + exit_telemetry 7 + commission 9). audit_sink default None ⇒ صفر انحدار. لا لمس hot_path.",
   "depends_on": ["G1.52"],
   "description": "دالة خالصة فوق build_completed_trades تُجمّع CLOSED trades حسب exit_source وتُنتج لكل وضع المقاييس. إضافة telemetry exit_execution تُحفظ من منفّذ الخروج (القيم محسوبة أصلًا في execute_exit_chase لكنها تُهمَل).",
   "professional_proposal": "دالة خالصة profitability_by_mode(trades) تُعيد لكل وضع: n, win_rate=|profit_pct>0|/n*100, avg_return_pct=mean(profit_pct), net_usd=sum(profit_usd), expectancy=net_usd/n, (وعند توفّر exit_execution) avg_slippage_pct و floor_rate — كل الحساب Decimal. وكتابة سجلّ exit_execution append-only عبر audit_sink محقون default None في market_exit (opt-in ⇒ لا انحدار) من داخل execute_exit_chase/execute_market_exit بلا تغيير سلوك. قراءة فقط لإعادة الاستخدام من completed_trades.",

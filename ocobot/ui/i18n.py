@@ -383,6 +383,27 @@ AR_TO_EN = {
     "فشل الاتصال: %s": "Connection failed: %s",
     "حذف": "Delete",
     "⚠️ نافذة عارية: المركز بلا حماية أثناء الإلغاء ثم الإنشاء": "⚠️ Naked window: the position is unprotected during cancel-then-create",
+    # G1.54: لوحة الربحية الاحترافية في شاشة 08_completed_trades (§1.5 ثنائية اللغة).
+    "ملخّص الربحية": "Profitability Summary",
+    "ترتيب الأوضاع (حسب التوقّع)": "Modes Ranking (by Expectancy)",
+    "منحنى الربح/الخسارة التراكمي": "Cumulative P&L Curve",
+    "توزيع الصفقات": "Trades Distribution",
+    "كل الأوضاع": "All Modes",
+    "لا بيانات ربحية بعد.": "No profitability data yet.",
+    "معدّل الربح": "Win Rate",
+    "متوسط العائد": "Avg Return",
+    "الصافي": "Net",
+    "التوقّع/صفقة": "Expectancy/Trade",
+    "متوسط الانزلاق": "Avg Slippage",
+    "عدد الصفقات": "Trades",
+    "رابحة": "Wins",
+    "خاسرة": "Losses",
+    # تسميات أوضاع الخروج (exit_source) المعروضة في بطاقات اللوحة.
+    "المراقبة الديناميكية": "Dynamic Monitoring",
+    "قوس السعر": "Price Bracket",
+    "تتبّع BTC": "BTC Follow",
+    "شبكة أمان المركز": "Position Safety Net",
+    "خروج يدوي": "Manual Exit",
 }
 
 EN_TO_AR = {v: k for k, v in AR_TO_EN.items()}
