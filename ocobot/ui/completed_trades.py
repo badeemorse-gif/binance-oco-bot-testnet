@@ -149,6 +149,10 @@ class CompletedTradesScreen(QWidget):
 
         # قائمة CompletedTrade الحالية؛ خريطة صف→صفقة للنصف العلوي.
         self._trades = []
+        # G1.51: توقيع آخر مجموعة صفقات (قائمة trade_key بالترتيب) لتفادي إعادة
+        # بناء الجدول عند كل تحديث دوري متطابق (يحفظ اختيار المستخدم ويزيل تذبذب
+        # الجدول كل ثانية). None = لا تعبئة بعد.
+        self._last_sig = None
 
         root = QVBoxLayout(self)
         root.setContentsMargins(26, 22, 26, 22)
@@ -340,14 +344,50 @@ class CompletedTradesScreen(QWidget):
         self._refresh_timer.stop()
         super().hideEvent(event)
 
+    @staticmethod
+    def _trades_signature(trades):
+        """توقيع ثابت لقائمة الصفقات = tuple من trade_key بالترتيب (G1.51)."""
+        return tuple(getattr(t, "trade_key", None) for t in trades)
+
     def set_trades(self, trades):
-        """يملأ القائمة العلوية من list[CompletedTrade] (الأحدث أولًا من الـ domain)."""
-        self._trades = list(trades or [])
-        self.list_table.setRowCount(0)
-        for trade in self._trades:
-            r = self.list_table.rowCount()
-            self.list_table.insertRow(r)
-            self.list_table.setItem(r, 0, _readonly_item(_trade_label(trade)))
+        """يملأ القائمة العلوية من list[CompletedTrade] (الأحدث أولًا من الـ domain).
+
+        G1.51: حافِظ على اختيار المستخدم وتفاصيله عبر التحديثات الدوريّة:
+          1) إن تطابق توقيع الصفقات (قائمة trade_key) مع آخر توقيع والجدول
+             مُعبَّأ بالفعل، نعود مبكّرًا دون إعادة بناء — فلا يُمسح الاختيار ولا
+             تتذبذب التفاصيل كل ثانية.
+          2) عند الحاجة لإعادة البناء نلتقط trade_key المحدّد قبل المسح، نكتم
+             إشارات الجدول أثناء البناء، ثم نعيد اختيار نفس الصفقة إن بقيت؛ وإلا
+             نتراجع للصف 0 عند وجود صفقات، ونحدّث التفاصيل مرّة واحدة فقط.
+        """
+        new_list = list(trades or [])
+        new_sig = self._trades_signature(new_list)
+
+        # (1) تحديث متطابق والجدول مُعبَّأ: لا إعادة بناء (حفظ الاختيار/التفاصيل).
+        if (
+            new_sig == self._last_sig
+            and self.list_table.rowCount() == len(new_list)
+            and len(new_list) > 0
+        ):
+            self._trades = new_list
+            return
+
+        # (2) التقاط الصفقة المحدّدة حاليًّا قبل أي مسح (trade_key الثابت).
+        prev_selected = self._selected_trade()
+        prev_key = getattr(prev_selected, "trade_key", None) if prev_selected else None
+
+        self._trades = new_list
+
+        # إعادة البناء مع كتم الإشارات لتفادي _on_selection_changed الطيفيّة.
+        self.list_table.blockSignals(True)
+        try:
+            self.list_table.setRowCount(0)
+            for trade in self._trades:
+                r = self.list_table.rowCount()
+                self.list_table.insertRow(r)
+                self.list_table.setItem(r, 0, _readonly_item(_trade_label(trade)))
+        finally:
+            self.list_table.blockSignals(False)
 
         # حالة فارغة: رسالة عربية + تعطيل الأزرار؛ وإلا إخفاء الرسالة.
         is_empty = not self._trades
@@ -356,11 +396,27 @@ class CompletedTradesScreen(QWidget):
         self.dismiss_button.setEnabled(not is_empty)
         self.details_button.setEnabled(not is_empty)
 
-        # تفريغ تفاصيل النصف السفلي عند كل إعادة تحميل.
-        self.detail_table.setRowCount(0)
-        self.detail_title.setText(i18n.translate_for_current("تفاصيل التموضع"))
-        if self._trades:
-            self.list_table.setCurrentCell(0, 0)
+        self._last_sig = new_sig
+
+        if is_empty:
+            # لا صفقات: فرّغ التفاصيل وأعد العنوان الأساسي.
+            self.detail_table.setRowCount(0)
+            self.detail_title.setText(i18n.translate_for_current("تفاصيل التموضع"))
+            return
+
+        # تحديد صفّ الاختيار الجديد: نفس الصفقة إن بقيت، وإلا تراجع للصف 0.
+        target_row = 0
+        if prev_key is not None:
+            for idx, trade in enumerate(self._trades):
+                if getattr(trade, "trade_key", None) == prev_key:
+                    target_row = idx
+                    break
+
+        # ضبط الاختيار (الإشارات غير مكتومة الآن) ثم تحديث التفاصيل مرّة واحدة.
+        self.list_table.setCurrentCell(target_row, 0)
+        selected = self._selected_trade()
+        if selected is not None:
+            self.show_trade_details(selected)
 
     # ------------------------------------------------------------------
     # اختيار الصف الحالي
@@ -442,6 +498,9 @@ class CompletedTradesScreen(QWidget):
         # الإخفاء فقط عبر DismissStore (ملف JSON منفصل): لا يمسّ سجل التدقيق
         # append-only إطلاقًا (DS1). ثم نعيد التحميل فتختفي الصفقة من القائمة.
         DismissStore(self._dismiss_path).dismiss(trade.trade_key)
+        # G1.51: أبطِل التوقيع لإجبار إعادة بناء القائمة بعد الإخفاء (قد تتطابق
+        # الأطوال لكن المحتوى تغيّر؛ التوقيع يكفل عدم العودة المبكّرة الخاطئة).
+        self._last_sig = None
         self.refresh()
 
     # ------------------------------------------------------------------

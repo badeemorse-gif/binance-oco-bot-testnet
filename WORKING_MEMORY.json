@@ -1,7 +1,8 @@
 {
-  "active": false,
-  "task_id": null,
-  "note": "G1.50 مختوم (sealed). خامل — صفر بنود critical/major غير مختومة في defect_log؛ بوّابة G1 تنتظر فحص صلاحيات المفتاح + IP whitelist + عبارة اعتماد المستخدم الصريحة (§10.5). لا Live/T16 قبل ذلك.",
+  "active": true,
+  "task_id": "G1.51",
+  "resume_point": "step_0_contract_written",
+  "note": "فُتحت أربعة بنود write-first (§10.2): G1.51 إصلاح ثبات التحديد في «الصفقات المنتهية»؛ G1.52 التقاط أي أمر بيع منفَّذ (ليس OCO فقط) [الأساس]؛ G1.53 قياس الربحية لكل وضع (telemetry + تجميع)؛ G1.54 لوحة الربحية الاحترافية في شاشة 08. ترتيب التنفيذ G1.51→G1.52→G1.53→G1.54 مع احترام depends_on. كلها major وبحالة contracted. لا Live/T16 قبل بوّابة G1 (§10.5).",
   "last_sealed": "G1.50",
-  "updated_at": "2026-10-13T23:25:00Z"
+  "updated_at": "2026-10-14T11:10:00Z"
 }

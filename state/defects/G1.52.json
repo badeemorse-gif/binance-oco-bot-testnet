@@ -1,0 +1,58 @@
+{
+  "id": "G1.52",
+  "status": "contracted",
+  "severity": "major",
+  "title": "التقاط أي أمر بيع منفَّذ (OCO أو مستقل) ونسبته للصفقة النشطة في نموذج الصفقات المنتهية",
+  "discovered_at": "2026-10-14T11:10:00Z",
+  "evidence_path": null,
+  "seal": null,
+  "description": "root-cause (مؤكَّد): completed_trades.build_fill_recorder يكتب trade_closed_fill من executionReport بحالة FILLED ويأخذ order_list_id من الحقل g (= orderListId). الأوامر المستقلة (LIMIT/MARKET/STOP SELL خارج OCO) تحمل g = -1، فلا تُنسب للصفقة ⇒ خروجات الوسائل (manual_exit عبر execute_market_exit، bracket، guardian STOP_LOSS_LIMIT، market_exit chase) لا تُلتقط كـ exit_price ⇒ profit_available=False دائمًا للخروج غير-OCO. أيضًا لا يوجد أي سجلّ exit_source مُصدَر حاليًا (0 في ocobot_audit.jsonl) فكل صفقة تُنسب MONITORING افتراضيًا. وجسر التنبيهات AlertsAuditBridge._ALERT_EVENTS = {monitor_start, repositioned} فقط.",
+  "goal_user_approved": "الصفقات المنتهية ولوحة الربحية يجب أن تقرأ أي أمر بيع تنفّذ، وليس أوامر OCO فقط.",
+  "professional_proposal": "توسيع build_fill_recorder ليلتقط أي executionReport FILLED حيث S==SELL (ليس فقط g>0) ويكتب trade_closed_fill مع order_id/client_order_id والرمز وسعر/كمية التعبئة؛ ومطابقة التعبئة بالصفقة النشطة عبر symbol + orderId/clientOrderId لا orderListId فقط مع إبقاء توافق OCO. إصدار سجلّ exit_source عبر AuditLog.record لحظة إطلاق كل وسيلة بالقيمة الصحيحة من {PRICE_BRACKET, BTC_FOLLOW, POSITION_SAFETY_NET, MANUAL_EXIT, MONITORING}، وتوسيع _EXIT_SOURCE_ALLOWED بـ MANUAL_EXIT. كل الحقن opt-in (sink/callable default None ⇒ لا انحدار). ربط build_fill_recorder عند نقطة تجميع UserDataStreamConsumer عبر on_order_event مع الحفاظ على أي معالِج قائم.",
+  "scope_boundary": {
+    "in": "ocobot/domain/completed_trades.py (توسيع build_fill_recorder ومطابقة التعبئة بالصفقة النشطة عبر symbol + orderId/clientOrderId لا orderListId فقط, مع إبقاء توافق OCO), نقطة تجميع UserDataStreamConsumer (ربط build_fill_recorder — غالبًا ocobot/app_wiring.py أو ocobot/ui/app.py), إصدار exit_source من ocobot/ui/manual_exit.py و ocobot/ui/bracket_wiring.py و ocobot/domain/guardian_supervisor.py و ocobot/ui/btc_follow_wiring.py لحظة الإطلاق, توسيع _EXIT_SOURCE_ALLOWED بـ MANUAL_EXIT في ocobot/domain/completed_trades.py, ocobot/ui/i18n.py لأي نص جديد",
+    "out": "منطق hot_path/التنفيذ, تغيير قرارات التسعير/الخروج, أي Live/T16"
+  },
+  "ordered_steps": [
+    {
+      "id": "chunk_1",
+      "description": "اختبار تشخيصي يثبت أن تعبئة SELL مستقلّة (g=-1) يجب أن تُنسب للصفقة النشطة ضمن مقطع monitor_start المفتوح (بالرمز/الوقت) وتعطي exit_price.",
+      "risk": "long",
+      "produces": "اختبار تشخيصي"
+    },
+    {
+      "id": "chunk_2",
+      "description": "توسيع build_fill_recorder ليلتقط أي executionReport FILLED حيث S==SELL (ليس فقط g>0) ويكتب trade_closed_fill مع order_id/client_order_id والرمز وسعر/كمية التعبئة؛ وتعديل منطق النسب في build_completed_trades ليقبل التعبئة المستقلّة داخل المقطع. إبقاء مسار OCO كما هو (لا انحدار).",
+      "risk": "long",
+      "produces": "كود"
+    },
+    {
+      "id": "chunk_3",
+      "description": "إصدار سجلّ exit_source عبر AuditLog.record لحظة إطلاق كل وسيلة بالقيمة الصحيحة من {PRICE_BRACKET, BTC_FOLLOW, POSITION_SAFETY_NET, MANUAL_EXIT, MONITORING}؛ إضافة MANUAL_EXIT إلى _EXIT_SOURCE_ALLOWED. كل الحقن opt-in (sink/callable default None ⇒ لا انحدار).",
+      "risk": "long",
+      "produces": "كود"
+    },
+    {
+      "id": "chunk_4",
+      "description": "ربط build_fill_recorder عند نقطة تجميع UserDataStreamConsumer عبر on_order_event (يحافظ على أي معالِج قائم)؛ اختبارات لا-انحدار تؤكّد التقاط الخروج اليدوي/السوقي/القوس/الحارس ونسبته + صحة exit_source لكل وسيلة.",
+      "risk": "long",
+      "produces": "ربط + اختبارات"
+    },
+    {
+      "id": "chunk_5",
+      "description": "docs/G1_52_report.md + سويت خضراء + ختم + أرشفة.",
+      "risk": "short",
+      "produces": "توثيق + ختم"
+    }
+  ],
+  "acceptance_checks": [
+    "أي بيع منفَّذ (OCO أو مستقل) يُنتج trade_closed_fill ويُنسب للصفقة",
+    "exit_price/profit متاح للخروج غير-OCO",
+    "exit_source صحيح لكل وسيلة (PRICE_BRACKET/BTC_FOLLOW/POSITION_SAFETY_NET/MANUAL_EXIT/MONITORING)",
+    "توافق OCO القديم محفوظ (لا انحدار)",
+    "لا لمس hot_path",
+    "كامل السويت أخضر >= baseline"
+  ],
+  "human_gate": false,
+  "protocol_version": "1.5"
+}

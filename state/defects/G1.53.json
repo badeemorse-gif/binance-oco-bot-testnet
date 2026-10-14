@@ -1,0 +1,51 @@
+{
+  "id": "G1.53",
+  "status": "contracted",
+  "severity": "major",
+  "title": "مُجمِّع ربحية خالص لكل وضع + telemetry تنفيذ الخروج",
+  "discovered_at": "2026-10-14T11:10:00Z",
+  "evidence_path": null,
+  "seal": null,
+  "depends_on": ["G1.52"],
+  "description": "دالة خالصة فوق build_completed_trades تُجمّع CLOSED trades حسب exit_source وتُنتج لكل وضع المقاييس. إضافة telemetry exit_execution تُحفظ من منفّذ الخروج (القيم محسوبة أصلًا في execute_exit_chase لكنها تُهمَل).",
+  "professional_proposal": "دالة خالصة profitability_by_mode(trades) تُعيد لكل وضع: n, win_rate=|profit_pct>0|/n*100, avg_return_pct=mean(profit_pct), net_usd=sum(profit_usd), expectancy=net_usd/n, (وعند توفّر exit_execution) avg_slippage_pct و floor_rate — كل الحساب Decimal. وكتابة سجلّ exit_execution append-only عبر audit_sink محقون default None في market_exit (opt-in ⇒ لا انحدار) من داخل execute_exit_chase/execute_market_exit بلا تغيير سلوك. قراءة فقط لإعادة الاستخدام من completed_trades.",
+  "scope_boundary": {
+    "in": "ocobot/domain/ (مُجمِّع جديد profitability_by_mode خالص + اختباراته), ocobot/domain/market_exit.py (كتابة exit_execution عبر audit_sink DI opt-in داخل execute_exit_chase/execute_market_exit — بلا تغيير سلوك), ocobot/domain/completed_trades.py (قراءة فقط لإعادة الاستخدام)",
+    "out": "hot_path, تغيير أي قرار تنفيذ, أي Live/T16"
+  },
+  "ordered_steps": [
+    {
+      "id": "chunk_1",
+      "description": "دالة خالصة profitability_by_mode(trades) تُعيد لكل وضع: n, win_rate=|profit_pct>0|/n*100, avg_return_pct=mean(profit_pct), net_usd=sum(profit_usd), expectancy=net_usd/n, (وعند توفّر exit_execution) avg_slippage_pct و floor_rate. كل الحساب Decimal. + اختبارات على مقطع تخليقي.",
+      "risk": "long",
+      "produces": "دالة خالصة + اختبارات"
+    },
+    {
+      "id": "chunk_2",
+      "description": "كتابة سجلّ exit_execution append-only (source, exit_side, order_type∈{LIMIT_IOC,MARKET,STOP_LOSS_LIMIT}, tif, requested_price, filled_price, live_bid, slippage_pct, band_pct, attempts_used, reached_floor, floor_price, qty, trade_uid, dry_run) عبر audit_sink محقون default None في market_exit (opt-in ⇒ لا انحدار). + اختبارات.",
+      "risk": "long",
+      "produces": "telemetry + اختبارات"
+    },
+    {
+      "id": "chunk_3",
+      "description": "التقاط العمولة (executionReport حقول n/N) لحساب صافي PnL لو متاح (اختياري).",
+      "risk": "short",
+      "produces": "عمولة (اختياري)"
+    },
+    {
+      "id": "chunk_4",
+      "description": "docs/G1_53_report.md + سويت خضراء + ختم + أرشفة.",
+      "risk": "short",
+      "produces": "توثيق + ختم"
+    }
+  ],
+  "acceptance_checks": [
+    "المقاييس لكل وضع صحيحة على مقطع تخليقي (اختبار)",
+    "exit_execution تُكتب append-only Decimal",
+    "audit_sink default None ⇒ لا انحدار",
+    "لا لمس hot_path",
+    "كامل السويت أخضر >= baseline"
+  ],
+  "human_gate": false,
+  "protocol_version": "1.5"
+}
