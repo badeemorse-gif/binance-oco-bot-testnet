@@ -58,6 +58,7 @@ def run_manual_market_exit(
     policy=None,
     chase_interval_s=None,
     sleeper=None,
+    exit_source_noter=None,
 ):
     """ينفّذ الخروج اليدوي الأحادي: البوّابة أولًا ثم مسار الخروج المُختبَر.
 
@@ -83,6 +84,14 @@ def run_manual_market_exit(
             "exit_side": exit_side,
             "gate": gate,
         }
+
+    # G1.52: وسم مصدر الخروج (MANUAL_EXIT) لحظة الإطلاق الفعلي — opt-in محروس.
+    # default None ⇒ لا أثر؛ وفي dry_run (معاينة) لا نُسجّل لأنه لا خروج فعلي.
+    if exit_source_noter is not None and not dry_run:
+        try:
+            exit_source_noter("MANUAL_EXIT")
+        except Exception:
+            pass
 
     cid = client_order_id or default_manual_exit_cid()
     if bid_getter is not None:
@@ -140,6 +149,7 @@ def build_manual_exit_fn(
     policy=None,
     chase_interval_s=None,
     sleeper=None,
+    exit_source_noter=None,
 ):
     """يبني ``callable`` أحاديًا بلا وسائط لزرّ «تنفيذ» في شاشة المراقبة.
 
@@ -204,6 +214,7 @@ def build_manual_exit_fn(
                 chase_interval_s=chase_interval_s,
                 sleeper=sleeper,
                 dry_run=dry_run,
+                exit_source_noter=exit_source_noter,
             )
         except Exception as exc:  # fail-safe: لا يرمي إلى الواجهة
             return {"action": "ERROR", "placed": False, "error": str(exc)}

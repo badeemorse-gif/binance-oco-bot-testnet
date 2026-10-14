@@ -105,6 +105,7 @@ class GuardianSupervisor:
         btc_alert_cb: Optional[Callable[[str], None]] = None,
         stop_limit_offset_pct=None,
         price_floor_pct=None,
+        exit_source_sink=None,
     ):
         self._state_provider = state_provider
         self._client = client
@@ -123,6 +124,9 @@ class GuardianSupervisor:
         # G1.49: إزاحة/أرضية STOP_LOSS_LIMIT للحارس (وتُطبَّق أيضًا على مسار شبكة الأمان المشترك). None ⇒ سلوك قديم.
         self._stop_limit_offset_pct = stop_limit_offset_pct
         self._price_floor_pct = price_floor_pct
+        # G1.52: مُسجِّل مصدر الخروج (opt-in) — يكتب exit_source في سجل التدقيق
+        # لحظة التدخّل، فيلتقطه نموذج الصفقات المنتهية. default None ⇒ لا أثر.
+        self._exit_source_sink = exit_source_sink
 
         # G1.44: BTC-follow guard (optional, additive, OFF by default).
         self._btc_follow = btc_follow
@@ -315,6 +319,12 @@ class GuardianSupervisor:
                 stop_engine.note_exit_source("POSITION_SAFETY_NET")
             except Exception:
                 pass
+        # G1.52: جَسر مصدر الخروج إلى سجل التدقيق (opt-in) ليُنسب في نموذج الصفقات المنتهية.
+        if self._exit_source_sink is not None:
+            try:
+                self._exit_source_sink("POSITION_SAFETY_NET")
+            except Exception:
+                pass
         if stop_engine is not None and hasattr(stop_engine, "kill_switch"):
             try:
                 stop_engine.kill_switch()
@@ -408,6 +418,12 @@ class GuardianSupervisor:
             if engine is not None and hasattr(engine, "note_exit_source"):
                 try:
                     engine.note_exit_source("BTC_FOLLOW")
+                except Exception:
+                    pass
+            # G1.52: جَسر مصدر الخروج إلى سجل التدقيق (opt-in).
+            if self._exit_source_sink is not None:
+                try:
+                    self._exit_source_sink("BTC_FOLLOW")
                 except Exception:
                     pass
             try:

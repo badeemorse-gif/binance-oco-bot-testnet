@@ -1,11 +1,17 @@
 {
   "id": "G1.51",
-  "status": "contracted",
+  "status": "sealed",
   "severity": "major",
   "title": "إصلاح سرقة التحديد في شاشة الصفقات المنتهية بسبب التحديث الدوري",
   "discovered_at": "2026-10-14T11:10:00Z",
-  "evidence_path": null,
-  "seal": null,
+  "evidence_path": "docs/G1_51_report.md (split per-file: ran=727 OK, 0 fail/0 err)",
+  "seal": {
+    "verified": true,
+    "evidence_path": "docs/G1_51_report.md (split per-file: ran=727 OK, 0 fail/0 err)",
+    "evidence_count": 727,
+    "docs_synced": true,
+    "ts": "2026-10-14T12:59:11Z"
+  },
   "description": "root-cause (مؤكَّد من ocobot/ui/completed_trades.py): يوجد QTimer بفاصل 1000ms في __init__ موصّل بـ self.refresh يعمل أثناء ظهور الشاشة (showEvent يبدؤه، hideEvent يوقفه). كل نبضة تستدعي refresh()->set_trades() الذي ينفّذ self.list_table.setRowCount(0) (يمسح كل الصفوف والتحديد) ثم يعيد الإدراج، وفي نهايته: `if self._trades: self.list_table.setCurrentCell(0, 0)` أي يفرض الرجوع للصف الأول دائمًا، ويفرّغ detail_table. لذلك عند اختيار الصف الثاني/الثالث يرجع التحديد للصف الأول خلال ثانية واحدة كحدّ أقصى.",
   "professional_proposal": "جعل set_trades محافظًا على التحديد وغير هدّام: (أ) حساب توقيع من قائمة trade_key وعدم إعادة بناء الجدول إن لم يتغيّر؛ (ب) قبل أي إعادة بناء، حفظ trade_key للصف المحدّد ثم إعادة اختيار نفس المفتاح بعد البناء؛ (ج) الرجوع للصف الأول setCurrentCell(0,0) فقط عند أول تحميل أو عند اختفاء الصفقة المحدّدة؛ (د) لفّ إعادة البناء بـ blockSignals لتفادي إعادة تحميل التفاصيل بالغلط. كل العمل عرض-فقط داخل الطبقة المعزولة بلا لمس hot_path.",
   "scope_boundary": {
@@ -17,19 +23,23 @@
       "id": "chunk_1",
       "description": "اختبار انحدار يحاكي اختيار الصف 2 ثم استدعاء refresh/set_trades بنفس البيانات ويؤكّد بقاء currentRow==2 (أحمر بالتصميم قبل الإصلاح).",
       "risk": "long",
-      "produces": "اختبار انحدار"
+      "produces": "اختبار انحدار",
+      "status": "done"
     },
     {
       "id": "chunk_2",
       "description": "جعل set_trades محافظًا على التحديد وغير هدّام: (أ) توقيع من قائمة trade_key وتخطّي إعادة البناء عند عدم التغيّر؛ (ب) حفظ trade_key للصف المحدّد وإعادة اختياره بعد البناء؛ (ج) setCurrentCell(0,0) فقط عند أول تحميل أو اختفاء الصفقة المحدّدة؛ (د) blockSignals حول إعادة البناء.",
       "risk": "long",
-      "produces": "كود الإصلاح"
+      "produces": "كود الإصلاح",
+      "status": "done",
+      "note": "أثبت القرص اكتماله عند الاستئناف (§9.4/§10.4ب) فلم يُعَد تنفيذه."
     },
     {
       "id": "chunk_3",
       "description": "docs/G1_51_report.md + سويت خضراء split-per-file + ختم + أرشفة.",
       "risk": "short",
-      "produces": "توثيق + ختم"
+      "produces": "توثيق + ختم",
+      "status": "done"
     }
   ],
   "acceptance_checks": [
@@ -40,6 +50,7 @@
     "§1.5 ثنائية اللغة سليمة",
     "كامل السويت أخضر >= baseline"
   ],
+  "verification": "split-per-file (tools/_run_suite_per_file.py): TOTAL ran=727 failures=0 errors=0 files=101 status=OK (baseline 724 + 3). test_g1_51_selection_stability ran=3 OK؛ test_g1_41_i18n_no_leak ran=3 OK.",
   "human_gate": false,
   "protocol_version": "1.5"
 }

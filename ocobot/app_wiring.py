@@ -88,3 +88,22 @@ def make_convert_cb(convert_executor, price_provider):
             reference_price = price
         return convert_executor.convert(source, tp_pct, sl_pct, reference_price, dry_run=dry_run)
     return convert_cb
+
+
+from ocobot.domain.completed_trades import build_fill_recorder
+
+
+def make_fill_recorder_order_event(audit, prior_on_order_event=None):
+    """G1.52: يبني ``on_order_event`` جاهزًا للحقن في ``UserDataStreamConsumer``.
+
+    يلتقط أيّ تعبئة بيع (``executionReport`` بحالة ``FILLED`` و ``S == SELL``،
+    سواء OCO أو أمر مستقل ``g == -1``) ويكتب ``trade_closed_fill`` append-only عبر
+    ``audit``، مع الحفاظ على أيّ معالِج سابق (``prior_on_order_event``) يُنادى لكل
+    حدث. تكامل opt-in بحت: ``prior_on_order_event=None`` سليم، ولا شبكة ولا hot_path.
+
+    الاستعمال عند نقطة تجميع تُنشئ المستهلك:
+        consumer = UserDataStreamConsumer(
+            ..., on_order_event=make_fill_recorder_order_event(audit, prior),
+        )
+    """
+    return build_fill_recorder(audit, prior_on_order_event)

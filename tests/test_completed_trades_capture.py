@@ -45,6 +45,8 @@ def _filled_event():
         "L": "27000.50",
         "S": "SELL",
         "z": "0.005",
+        "i": 777,
+        "c": "cli-777",
     }
 
 
@@ -67,6 +69,8 @@ class BuildFillRecorderTests(unittest.TestCase):
                 "side": "SELL",
                 "quantity": "0.005",
                 "status": "FILLED",
+                "order_id": 777,
+                "client_order_id": "cli-777",
             },
         )
 

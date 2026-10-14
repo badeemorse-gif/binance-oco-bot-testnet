@@ -1,8 +1,8 @@
 {
-  "active": true,
-  "task_id": "G1.51",
-  "resume_point": "step_0_contract_written",
-  "note": "فُتحت أربعة بنود write-first (§10.2): G1.51 إصلاح ثبات التحديد في «الصفقات المنتهية»؛ G1.52 التقاط أي أمر بيع منفَّذ (ليس OCO فقط) [الأساس]؛ G1.53 قياس الربحية لكل وضع (telemetry + تجميع)؛ G1.54 لوحة الربحية الاحترافية في شاشة 08. ترتيب التنفيذ G1.51→G1.52→G1.53→G1.54 مع احترام depends_on. كلها major وبحالة contracted. لا Live/T16 قبل بوّابة G1 (§10.5).",
-  "last_sealed": "G1.50",
-  "updated_at": "2026-10-14T11:10:00Z"
+  "active": false,
+  "task_id": null,
+  "resume_point": null,
+  "last_sealed": "G1.52",
+  "note": "G1.52 مختوم (التقاط أي بيع منفَّذ + نسب exit_source لكل وسيلة شاملًا MANUAL_EXIT + مُساعِد ربط on_order_event). المتبقّي contracted: G1.53 (مُجمِّع ربحية خالص + telemetry تنفيذ الخروج)، G1.54 (لوحة ربحية احترافية في شاشة 08_completed_trades؛ depends_on G1.53/G1.52). لا Live/T16 قبل بوّابة G1 (§10.5).",
+  "updated_at": "2026-10-14T13:47:12Z"
 }

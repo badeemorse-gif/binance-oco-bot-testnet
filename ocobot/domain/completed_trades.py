@@ -39,6 +39,7 @@ _EXIT_SOURCE_ALLOWED: Set[str] = {
     "PRICE_BRACKET",
     "BTC_FOLLOW",
     "POSITION_SAFETY_NET",
+    "MANUAL_EXIT",  # G1.52: الخروج اليدوي كوسيلة إغلاق مُعترف بها.
 }
 
 
@@ -383,13 +384,24 @@ def build_completed_trades(records: List[dict]) -> List[CompletedTrade]:
                     quantity = q
 
         # trade_closed_fill (اختياري، أُضيف لاحقًا): يوفّر سعر/جانب الخروج الحقيقي.
+        # G1.52: نُفضّل آخر تعبئة جانبها SELL (الأوامر المستقلّة g=-1 تُلتقط أيضًا)؛
+        # وإن لم توجد أي تعبئة SELL نرجع إلى آخر trade_closed_fill (توافق خلفي).
+        # الإسناد يبقى بعضوية المقطع فقط (لا مطابقة order_list_id). أوامر OCO
+        # جانبها SELL أصلًا فلا يتغيّر سلوكها.
         exit_price: Optional[Decimal] = None
         side: Optional[str] = None
+        last_any_fill: Optional[dict] = None
+        last_sell_fill: Optional[dict] = None
         for rec in segment:
             if rec.get("event") == "trade_closed_fill":
                 det = rec.get("details", {}) or {}
-                exit_price = _to_dec(det.get("fill_price"))
-                side = det.get("side")
+                last_any_fill = det
+                if det.get("side") == "SELL":
+                    last_sell_fill = det
+        chosen_fill = last_sell_fill if last_sell_fill is not None else last_any_fill
+        if chosen_fill is not None:
+            exit_price = _to_dec(chosen_fill.get("fill_price"))
+            side = chosen_fill.get("side")
 
         reference_price = _to_dec(start_details.get("reference_price"))
         initial_id = start_details.get("order_list_id")
@@ -518,9 +530,13 @@ def build_fill_recorder(audit_log, next_callback=None):
     بيانات المستخدم إطلاقًا. مكتبة قياسية فقط، بلا Qt وبلا شبكة، والكتابة
     append-only حصريًّا عبر ``AuditLog.record``.
 
+    G1.52: يُشترط أيضًا ``S == "SELL"`` (تعبئات الدخول BUY ليست إغلاقًا)، ولا
+    نُرشّح بـ ``g`` فالأوامر المستقلّة (``g == -1``) تُلتقط. أُضيف للحقول
+    ``order_id`` (i) و``client_order_id`` (c).
+
     مطابقة الحقول (executionReport):
       g -> order_list_id, s -> symbol, L -> fill_price, S -> side,
-      z -> quantity, X -> status.
+      z -> quantity, X -> status, i -> order_id, c -> client_order_id.
 
     للتفعيل عند توفّر نقطة تجميع تُنشئ UserDataStreamConsumer: مرّر
     on_order_event=build_fill_recorder(audit, prior_on_order_event) إلى الباني.
@@ -533,7 +549,9 @@ def build_fill_recorder(audit_log, next_callback=None):
             if (
                 event.get("e") == "executionReport"
                 and event.get("X") == "FILLED"
+                and event.get("S") == "SELL"  # G1.52: تعبئات الدخول BUY ليست إغلاقًا.
             ):
+                # G1.52: لا نُرشّح بـ g — الأوامر المستقلّة (g=-1) تُلتقط كذلك.
                 audit_log.record(
                     "trade_closed_fill",
                     {
@@ -543,6 +561,8 @@ def build_fill_recorder(audit_log, next_callback=None):
                         "side": event.get("S"),
                         "quantity": event.get("z"),
                         "status": event.get("X"),
+                        "order_id": event.get("i"),
+                        "client_order_id": event.get("c"),
                     },
                 )
             if next_callback is not None:
@@ -556,3 +576,23 @@ def build_fill_recorder(audit_log, next_callback=None):
                 pass
 
     return _recorder
+
+
+def make_exit_source_recorder(audit_log):
+    """G1.52: يبني ``callable(source)`` يُسجّل حدث ``exit_source`` في سجل التدقيق.
+
+    يُحقَن (opt-in) في وسائل الخروج الأربع (قوس السعر/شبكة أمان المركز/حارس هبوط
+    BTC/الخروج اليدوي) ليكتب مصدر الخروج append-only لحظة الإطلاق، فيلتقطه
+    ``_derive_exit_source`` ضمن مقطع الصفقة وتُنسب للوسيلة الصحيحة بدل MONITORING.
+    يسجّل فقط المصادر المسموح بها (``_EXIT_SOURCE_ALLOWED``)؛ محروس بالكامل (لا
+    يرمي)، وبلا أثر عند ``audit_log is None`` (توافق/لا انحدار). مكتبة قياسية فقط.
+    """
+
+    def _note(source) -> None:
+        try:
+            if audit_log is not None and source in _EXIT_SOURCE_ALLOWED:
+                audit_log.record("exit_source", {"source": source})
+        except Exception:
+            pass
+
+    return _note

@@ -163,6 +163,7 @@ def make_connect_wrapper(window, base_connect, cfg):
                             from ocobot.domain.pricing import DEFAULT_GAP_TICKS as _ME_GAP
                             from types import SimpleNamespace as _MeNS
                             from .manual_exit import build_manual_exit_fn as _build_manual_exit_fn
+                            from ocobot.domain.completed_trades import make_exit_source_recorder as _mk_exit_src
                             _me_broker = _MeBroker(_lazy_client)
                             _me_exinfo = ExchangeInfoService(_lazy_client)
 
@@ -201,6 +202,7 @@ def make_connect_wrapper(window, base_connect, cfg):
                                     kill_switch_getter=lambda e=_lazy_engine: getattr(e, "kill_switch", None),
                                     exit_side="upper",
                                     dry_run=False,
+                                    exit_source_noter=_mk_exit_src(_audit),
                                 )
                             )
                     except Exception:
