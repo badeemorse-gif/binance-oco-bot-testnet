@@ -15,7 +15,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from decimal import Decimal
 from enum import Enum
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Callable, List, Optional
 from uuid import uuid4
 
 from ocobot.core.errors import BinanceApiError, TransportError
@@ -253,6 +253,17 @@ class SafeExecutor:
             gap_ticks=self._gap_ticks,
         )
         return oco, draft
+
+    # ---- draft from Live bridge (read-only, P2) — G1.59 ----
+    def build_draft_from_bridge(self, order_list_id: int, bridge, reference_price):
+        """يبني مسودّة «الدورة التالية» من نِسب الوصلة الحيّة (Live/أساس) — قراءة فقط (P2).
+
+        لا يُلغي ولا يُنشئ أي أمر (ليست T16)، ولا يمسّ الأمر المفتوح لحظيًا: مجرّد
+        توجيه نِسب «الدورة التالية فقط» من RepositionRecommendationBridge إلى
+        build_draft القائمة بلا أي تغيير في سلوكها أو رسائلها.
+        """
+        pcts = bridge.pcts_for_next_cycle()
+        return self.build_draft(order_list_id, pcts.tp_pct, pcts.sl_pct, reference_price)
 
     # ---- execute (may write, only after Activate) ----
     def execute(self, order_list_id: int, tp_pct, sl_pct, reference_price,
@@ -514,3 +525,106 @@ class SafeExecutor:
             "recheck": True,
         })
         return result
+
+
+# ====================================================================
+# G1.59 — جسر تطبيق Live لمتتبّع مُرشِّح النِّسب على «دورة التموضع التالية فقط».
+# وحدة domain خالصة (بلا Qt/شبكة). لا تمسّ الأمر المفتوح لحظيًا ولا hot_path،
+# ولا تنفّذ أي أمر Live فعلي (ليست T16). الأثر مؤجَّل حصراً إلى الدورة التالية.
+# ====================================================================
+
+def _opt_dec(value):
+    """تحويل آمن إلى Decimal (أو None لو None) — لا يرفع استثناءً على None."""
+    if value is None:
+        return None
+    return value if isinstance(value, Decimal) else Decimal(str(value))
+
+
+@dataclass
+class NextCyclePcts:
+    """النِّسب التي ستُغذّي حساب دورة التموضع التالية فقط (لا الأمر القائم)."""
+    tp_pct: Optional[Decimal]
+    sl_pct: Optional[Decimal]
+    trigger_pct: Optional[Decimal]
+    source: str              # "base" | "live_rec"
+    reason: str = ""         # آخر سبب من المتتبّع: first|applied|observe|off|cooldown|hysteresis|session_cap
+
+
+class RepositionRecommendationBridge:
+    """يربط RecommendationTracker بنِسب «دورة التموضع التالية فقط» (G1.59).
+
+    يحتفظ بنِسب أساس (base) وبآخر نِسب اعتُمدت في MODE_LIVE، ويقرّر — عبر
+    ``tracker.offer`` — أيّها يُغذّي بناء المسودّة التالية. الأثر مؤجَّل حصراً
+    إلى الدورة التالية؛ لا مسّ للأمر المفتوح لحظيًا ولا لأي hot_path، ولا تنفيذ
+    T16. حارس صريح ``enabled``: ما لم يكن True ويكن المتتبّع في MODE_LIVE وقد
+    اعتُمد القرار (``decision.applied``)، تبقى الوصلة خاملة الأثر على التموضع.
+    """
+
+    def __init__(self, tracker, *, base_tp_pct=None, base_sl_pct=None,
+                 base_trigger_pct=None, enabled: bool = True,
+                 audit: Optional[Callable[[dict], None]] = None):
+        self._tracker = tracker
+        self._base = (_opt_dec(base_tp_pct), _opt_dec(base_sl_pct),
+                      _opt_dec(base_trigger_pct))
+        self._live = None            # (tp, sl, trigger) آخر اعتماد Live
+        self._enabled = bool(enabled)
+        self._audit_cb = audit
+        self.audit_log: List[dict] = []
+        self.last_decision = None
+        self.last_reason = ""
+
+    @property
+    def enabled(self) -> bool:
+        return self._enabled
+
+    def set_enabled(self, value: bool) -> None:
+        self._enabled = bool(value)
+
+    @property
+    def mode(self):
+        return getattr(self._tracker, "mode", None)
+
+    def set_base(self, tp_pct=None, sl_pct=None, trigger_pct=None) -> None:
+        self._base = (_opt_dec(tp_pct), _opt_dec(sl_pct), _opt_dec(trigger_pct))
+
+    def reset_live(self) -> None:
+        self._live = None
+
+    def offer(self, rec, now=None):
+        """يمرّر الاقتراح للمتتبّع؛ ويعتمد نِسبه للدورة التالية فقط إن طُبِّق Live والحارس مفعّل."""
+        decision = self._tracker.offer(rec, now)
+        self.last_decision = decision
+        self.last_reason = decision.reason
+        applied_to_next_cycle = False
+        if self._enabled and decision.applied and rec is not None:
+            self._live = (_opt_dec(rec.tp_pct), _opt_dec(rec.sl_pct),
+                          _opt_dec(rec.trigger_pct))
+            applied_to_next_cycle = True
+        self._emit_audit({
+            "event": "reposition_bridge_offer",
+            "enabled": self._enabled,
+            "mode": decision.mode,
+            "reason": decision.reason,
+            "tracker_applied": decision.applied,
+            "applied_to_next_cycle": applied_to_next_cycle,
+            "tpPct": None if rec is None else str(rec.tp_pct),
+            "slPct": None if rec is None else str(rec.sl_pct),
+            "triggerPct": None if rec is None else str(rec.trigger_pct),
+        })
+        return decision
+
+    def pcts_for_next_cycle(self) -> NextCyclePcts:
+        """النِّسب للدورة التالية: المُعتمدة Live إن وُجدت، وإلا الأساس."""
+        if self._live is not None:
+            tp, sl, trig = self._live
+            return NextCyclePcts(tp, sl, trig, "live_rec", self.last_reason)
+        tp, sl, trig = self._base
+        return NextCyclePcts(tp, sl, trig, "base", self.last_reason)
+
+    def _emit_audit(self, record: dict) -> None:
+        self.audit_log.append(record)
+        if callable(self._audit_cb):
+            try:
+                self._audit_cb(record)
+            except Exception:
+                pass

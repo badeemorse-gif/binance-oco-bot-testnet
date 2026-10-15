@@ -107,3 +107,22 @@ def make_fill_recorder_order_event(audit, prior_on_order_event=None):
         )
     """
     return build_fill_recorder(audit, prior_on_order_event)
+
+
+def build_recommendation_provider(klines_service, symbol_fn, *, interval="1h",
+                                  limit=200, filters_fn=None, params=None,
+                                  atr_period=14, horizon=24):
+    """G1.60: يبني دالة اقتراح نِسب بلا وسائط (تُسلَّم إلى runner.submit) فوق KlinesService.
+
+    الشبكة (GET /api/v3/klines) تمرّ عبر العميل المُحقَن داخل KlinesService، وتُنفَّذ
+    خارج خيط Qt عبر الرَنَر. symbol_fn يُعيد الرمز المختار حاليًا (أو None/فارغ ⇒ لا
+    اقتراح وبلا نداء شبكة). لا hot_path ولا تنفيذ Live فعلي (ليست T16).
+    """
+    from ocobot.domain.rec_provider import make_recommendation_provider
+
+    def _candles_fn(symbol):
+        return klines_service.get_candles(symbol, interval=interval, limit=limit)
+
+    return make_recommendation_provider(
+        _candles_fn, symbol_fn=symbol_fn, filters_fn=filters_fn, params=params,
+        atr_period=atr_period, horizon=horizon)

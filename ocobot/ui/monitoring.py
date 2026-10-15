@@ -47,6 +47,8 @@ from ocobot.domain.models import fmt
 from ocobot.domain.pricing import compute_levels
 from ocobot.domain.monitoring import MSG_KILL_SWITCH, MonitoringStateEnum
 from ocobot.domain.reposition import ExecutionState
+from ocobot.domain.rec_tracker import RecommendationTracker, MODE_OBSERVE
+from .rec_panel import RecommendationPanel
 from ocobot.domain.completed_trades import load_completed_trades, default_dismiss_path
 from .theme import PALETTE
 from . import i18n
@@ -130,7 +132,7 @@ class DynamicMonitoringScreen(QWidget):
 
     def __init__(self, parent=None, engine=None, price_provider=None, runner=None,
                  selected_oco=None, environment=None, convert_cb=None,
-                 audit_path=None, dismiss_path=None):
+                 audit_path=None, dismiss_path=None, recommendation_provider=None):
         super().__init__(parent)
         self.screen_key = "04_dynamic_monitoring"
         self.setObjectName("Screen_04_dynamic_monitoring")
@@ -207,6 +209,19 @@ class DynamicMonitoringScreen(QWidget):
         self._deal_results_timer = QTimer(self)
         self._deal_results_timer.setInterval(1000)
         self._deal_results_timer.timeout.connect(self.refresh_deal_results)
+        # G1.58: لوحة مُرشِّح النِّسب (RecommendationPanel) — عرض/Observe فوق «قواعد المراقبة».
+        #   on_fill_once ⇒ ملء حقول النِّسب مرّة واحدة؛ on_mode_change ⇒ RecommendationTracker.
+        #   Live خامل التطبيق على التموضع (مؤجّل إلى G1.59). لا شبكة في خيط الواجهة.
+        self._rec_provider = recommendation_provider
+        self._rec_tracker = RecommendationTracker(mode=MODE_OBSERVE)
+        self.rec_panel = RecommendationPanel(
+            on_fill_once=self._on_rec_fill_once,
+            on_mode_change=self._on_rec_mode_change,
+        )
+        root.addWidget(self.rec_panel)
+        self._rec_timer = QTimer(self)
+        self._rec_timer.setInterval(20000)
+        self._rec_timer.timeout.connect(self._recompute_recommendation)
         self._build_rules_section(root)   # checkbox تفعيل + 3 حقول نِسب + أزرار التحكّم
         self._build_guardian_row(root)    # G1.31: شارة الحارس + مُبدِّل وضع Off/Observe/Live
         self._build_btc_follow_row(root)  # G1.44: حارس هبوط BTC (مؤشّر + مُبدِّل مستقلّ)
@@ -1054,6 +1069,11 @@ class DynamicMonitoringScreen(QWidget):
             self._deal_results_timer.start()
         except Exception:
             pass
+        try:
+            self._recompute_recommendation()
+            self._rec_timer.start()
+        except Exception:
+            pass
 
     def hideEvent(self, event):
         """G1.46.1: عند إخفاء الشاشة: إيقاف المؤقّت الدوري (لا IO وهي مخفية)."""
@@ -1061,7 +1081,73 @@ class DynamicMonitoringScreen(QWidget):
             self._deal_results_timer.stop()
         except Exception:
             pass
+        try:
+            self._rec_timer.stop()
+        except Exception:
+            pass
         super().hideEvent(event)
+
+    def _on_rec_fill_once(self, rec):
+        """G1.58: ملء النِّسب (trigger/tp/sl) من الاقتراح مرّة واحدة — عرض فقط، بلا تنفيذ."""
+        if rec is None:
+            return
+        mapping = (
+            ("trigger_pct", getattr(rec, "trigger_pct", None)),
+            ("tp_pct", getattr(rec, "tp_pct", None)),
+            ("sl_pct", getattr(rec, "sl_pct", None)),
+        )
+        for key, val in mapping:
+            edit = self._pct_edits.get(key)
+            if edit is not None and val is not None:
+                try:
+                    edit.setText(fmt(val))
+                except Exception:
+                    pass
+
+    def _on_rec_mode_change(self, mode):
+        """G1.58: تبديل وضع المتتبّع (off/observe/live) — ضبط الحالة فقط؛ Live لا يُطبّق على التموضع (G1.59)."""
+        try:
+            self._rec_tracker.set_mode(mode)
+        except Exception:
+            pass
+
+    def set_recommendation_provider(self, provider):
+        """G1.60: حقن/تحديث مزوّد اقتراح النِّسب (klines⇒recommender) — توصيل فقط.
+
+        يُخزَّن المزوّد ثم يُعاد الحساب فورًا إن كانت الشاشة ظاهرة (وإلا يبدأ عند
+        العرض/المؤقّت الدوري). لا شبكة متزامنة هنا: التنفيذ يمرّ عبر الرَنَر خارج خيط Qt.
+        """
+        self._rec_provider = provider
+        try:
+            if self.isVisible():
+                self._recompute_recommendation()
+        except Exception:
+            pass
+
+    def _recompute_recommendation(self):
+        """G1.58: إعادة حساب الاقتراح خارج خيط الواجهة عبر provider محقون + الرَنر. لا شبكة متزامنة هنا."""
+        if self._rec_provider is None or self.runner is None:
+            return
+        try:
+            self.runner.submit(
+                self._rec_provider,
+                on_result=self._apply_recommendation,
+                on_error=self._on_rec_error,
+            )
+        except Exception:
+            pass
+
+    def _apply_recommendation(self, rec):
+        """G1.58: عرض الاقتراح المحدَّث + تقديمه للمتتبّع (Observe/Live للعرض/التدقيق فقط — لا تموضع)."""
+        try:
+            self.rec_panel.update_recommendation(rec)
+            self._rec_tracker.offer(rec)
+        except Exception:
+            pass
+
+    def _on_rec_error(self, exc):
+        """G1.58: تعذّر إعادة الحساب لا يكسر الشاشة — عرض فقط."""
+        return None
 
     def set_manual_exit_fn(self, fn):
         """G1.47: حقن/تحديث callable الخروج اليدوي الفوري (أو None) — تخزين فقط.
@@ -1187,8 +1273,9 @@ class DynamicMonitoringScreen(QWidget):
         self._current_price = price
         event = getattr(tick, "event", "") if tick is not None else ""
         if event == "REPOSITIONED":
-            # G1.34: ملامسة القوس ووضع أمر جديد ⇒ حالة عرضية ORDER_PLACED + رسالة التنقّل
-            #        الجديدة بدل «أعيد التموضع إلى OCO …» + التقاط الأمر النشط (عرض فقط).
+            # G1.55: حدث إعادة تموضع (REPOSITIONED) ووضع أمر OCO جديد ⇒ حالة عرضية ORDER_PLACED
+            #        + رسالة التنقّل (تُنسب لحدّ القوس فقط عند عبور فعلي، وإلا لمُشغّل التموضع).
+            #        REPOSITIONED ليس لمس قوس؛ التقاط الأمر النشط عرض فقط.
             new_msg = self._capture_active_order(tick, price)
             if new_msg:
                 self._set_last_operation("مراقبة", new_msg)
@@ -1485,15 +1572,11 @@ class DynamicMonitoringScreen(QWidget):
             return None, None
         lower = getattr(cfg, "lower", None)
         upper = getattr(cfg, "upper", None)
+        # G1.55: نُرجع حدًّا فقط عند عبور فعلي (p<=lower أو p>=upper). أُزيلت خوارزمية
+        #        «أقرب حدّ» والارتدادات أحادية-الحدّ لأنها كانت تنسب التموضع إلى حدّ لم يُعبَر.
         if lower is not None and p <= lower:
             return "السفلي", lower
         if upper is not None and p >= upper:
-            return "العلوي", upper
-        if lower is not None and upper is not None:
-            return ("السفلي", lower) if abs(p - lower) <= abs(p - upper) else ("العلوي", upper)
-        if lower is not None:
-            return "السفلي", lower
-        if upper is not None:
             return "العلوي", upper
         return None, None
 
@@ -1503,7 +1586,8 @@ class DynamicMonitoringScreen(QWidget):
             bound_txt = i18n.translate_for_current("الحد %s %s") % (
                 i18n.translate_for_current(side_label), fmt(bound_value))
         else:
-            bound_txt = i18n.translate_for_current("القوس")
+            # G1.55: إعادة تموضع عادية (لم يُعبَر حدّ القوس) ⇒ وصف صادق بدل «القوس».
+            bound_txt = i18n.translate_for_current("ارتفاع السعر (مُشغّل التموضع)")
         return (i18n.translate_for_current(
                 "تم التنقل من التموضع إلى أمر جديد OCO %s بناءً على %s - السعر الحالي %s")
                 % (list_id, bound_txt, fmt(price)))
@@ -1522,7 +1606,8 @@ class DynamicMonitoringScreen(QWidget):
         qty = getattr(draft, "quantity", None) if draft is not None else None
         if qty is None and self._selected is not None:
             qty = getattr(self._selected, "quantity", None)
-        reason = (i18n.translate_for_current("ملامسة الحد %s") % i18n.translate_for_current(side_label)) if side_label else i18n.translate_for_current("ملامسة القوس")
+        # G1.55: السبب يُنسب لحدّ القوس فقط عند عبور فعلي؛ وإلا إعادة تموضع (مُشغّل الصعود).
+        reason = (i18n.translate_for_current("ملامسة الحد %s") % i18n.translate_for_current(side_label)) if side_label else i18n.translate_for_current("ارتفاع السعر (مُشغّل التموضع)")
         self._active_order = {
             "list_id": list_id,
             "type": "SELL OCO",

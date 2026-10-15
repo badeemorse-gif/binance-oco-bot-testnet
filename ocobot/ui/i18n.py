@@ -350,6 +350,7 @@ AR_TO_EN = {
     "الحد %s %s": "Bound %s %s",
     "ملامسة الحد %s": "Bound touch %s",
     "ملامسة القوس": "Bracket touch",
+    "ارتفاع السعر (مُشغّل التموضع)": "price rise (reposition trigger)",
     "تم التنقل من التموضع إلى أمر جديد OCO %s بناءً على %s - السعر الحالي %s": "Moved from repositioning to a new OCO order %s based on %s - current price %s",
     "سيُحوَّل إلى OCO تلقائيًا عند بدء المراقبة": "Will convert to OCO automatically when monitoring starts",
     "الحارس: مطفأ": "Guardian: Off",
@@ -404,6 +405,18 @@ AR_TO_EN = {
     "تتبّع BTC": "BTC Follow",
     "شبكة أمان المركز": "Position Safety Net",
     "خروج يدوي": "Manual Exit",
+    # G1.56: لوحة «ترشيح النِّسب التكيّفي» + أوضاع المتتبّع (§1.5 ثنائية اللغة).
+    "ترشيح النِّسب التكيّفي": "Adaptive Ratio Recommendation",
+    "ملء مرّة واحدة": "Fill Once",
+    "وضع المتتبّع": "Tracker Mode",
+    "جني الأرباح %": "Take Profit %",
+    "وقف الخسارة %": "Stop Loss %",
+    "مُشغّل التموضع %": "Reposition Trigger %",
+    "فجوة (ticks)": "Gap (ticks)",
+    "النظام": "Regime",
+    "مُطفأ": "Off",
+    "مراقبة فقط": "Observe",
+    "حيّ": "Live",
 }
 
 EN_TO_AR = {v: k for k, v in AR_TO_EN.items()}

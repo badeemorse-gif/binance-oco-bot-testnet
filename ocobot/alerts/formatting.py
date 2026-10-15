@@ -28,6 +28,8 @@ __all__ = [
     "build_reposition_message",
     "build_guardian_message",
     "build_market_exit_message",
+    "build_btc_follow_message",
+    "build_manual_exit_message",
     "format_event",
 ]
 
@@ -112,6 +114,26 @@ def _fmt_pct(value: Any) -> str:
     except (InvalidOperation, ValueError):
         text = str(dec)
     return escape_mdv2(text + "%")
+
+
+def _plain_pct(value: Any) -> str:
+    """صيغة نصية مُطبّعة لنسبة (بلا تهريب MDV2) لإدراجها داخل سطر reason.
+
+    تُستعمل داخل نصّ reason للـBTC حيث يمرّ السطر لاحقًا عبر ``escape_mdv2`` كجزء
+    من القيمة في ``_label_str``. ``_MISSING`` عند غياب القيمة. لا يرمي أبدًا.
+    """
+    if value is None:
+        return _MISSING
+    dec = _to_decimal(value)
+    if dec is None:
+        try:
+            return str(value)
+        except Exception:
+            return _MISSING
+    try:
+        return format(dec.normalize(), "f")
+    except (InvalidOperation, ValueError):
+        return str(dec)
 
 
 def _derive_price(reference: Any, pct: Any, *, add: bool) -> Optional[Decimal]:
@@ -199,6 +221,43 @@ def _label_str(label: str, value: Any) -> str:
     if value is None:
         return label + _MISSING
     return label + escape_mdv2(value)
+
+
+def _pnl_pct(entry: Any, exit_price: Any) -> str:
+    """نسبة الربح/الخسارة ‪(exit-entry)/entry*100‬ مُنسّقة لـMarkdownV2، أو ``_MISSING``.
+
+    دفاعي بالكامل: إن غاب أيٌّ منهما أو كان ``entry == 0`` أو تعذّر الحساب ⇒
+    ``_MISSING``. لا يرمي أبدًا.
+    """
+    try:
+        e = _to_decimal(entry)
+        x = _to_decimal(exit_price)
+        if e is None or x is None or e == Decimal(0):
+            return _MISSING
+        pct = (x - e) / e * Decimal(100)
+        return _fmt_pct(pct)
+    except (InvalidOperation, ValueError, ArithmeticError, TypeError):
+        return _MISSING
+
+
+def _standard_field_lines(*, symbol, reason, entry, exit_price, quantity,
+                          order_id, client_order_id, time_str):
+    """أسطر الحقول القياسية الموحّدة لرسائل التدخّل الأربع (مُهرّبة لـMDV2).
+
+    تُستعمل القيم المُمرّرة مباشرةً عبر الدوال المساعدة القائمة. دفاعي؛ يُفترض أن
+    يُستدعى داخل ``try`` في الباني. ``PnL%`` تُحسب من ‪entry→exit_price‬.
+    """
+    return [
+        _label_str("Symbol: ", symbol),
+        _label_str("Reason: ", reason),
+        "Entry: " + _fmt_decimal(entry),
+        "Exit price: " + _fmt_decimal(exit_price),
+        "PnL%: " + _pnl_pct(entry, exit_price),
+        "Quantity: " + _fmt_decimal(quantity),
+        _label_str("Order id: ", order_id),
+        _label_str("Client order id: ", client_order_id),
+        "Time: " + time_str,
+    ]
 
 
 def build_monitor_start_message(record: Any, state: Optional[Any] = None) -> str:
@@ -354,6 +413,11 @@ def build_guardian_message(record: Any, state: Optional[Any] = None) -> str:
         order_id = _response_order_id(details)
         naked_seconds = _get(details, "naked_seconds")
 
+        # G1.57: Exit price للحارس = stop_trigger ثم stop_price (أول متاح).
+        exit_price = stop_trigger if stop_trigger is not None else stop_limit
+        if exit_price is None:
+            exit_price = _plan_get(details, "stop_price")
+
         lines = [
             "🛡️ *Position Guardian*",
             "",
@@ -362,6 +426,10 @@ def build_guardian_message(record: Any, state: Optional[Any] = None) -> str:
             _label_str("Action: ", action),
             "Quantity: " + _fmt_decimal(quantity),
             "Reference price: " + _fmt_decimal(reference_price),
+            # G1.57: الحقول القياسية الموحّدة (Entry/Exit price/PnL%).
+            "Entry: " + _fmt_decimal(reference_price),
+            "Exit price: " + _fmt_decimal(exit_price),
+            "PnL%: " + _pnl_pct(reference_price, exit_price),
             "Stop trigger: " + _EMOJI_SL + " " + _fmt_decimal(stop_trigger),
             "Stop limit: " + _fmt_decimal(stop_limit),
             "Emergency SL: " + _fmt_pct(emergency_sl_pct),
@@ -403,13 +471,33 @@ def build_market_exit_message(record: Any, state: Optional[Any] = None) -> str:
         client_order_id = _get(details, "client_order_id")
         order_id = _response_order_id(details)
 
+        # G1.57: Exit price = plan price → limit_price → stop_price (أول متاح).
+        exit_price = limit_price
+        if exit_price is None:
+            exit_price = stop_limit
+        if exit_price is None:
+            exit_price = stop_price
+
+        # G1.57: لاحقة الجهة في الرأس من exit_side (مُهرّبة لـMarkdownV2).
+        side = str(exit_side).strip().lower() if exit_side is not None else ""
+        if side == "upper":
+            header = "🧷 *Price Exit Bracket* \\(Upper\\)"
+        elif side == "lower":
+            header = "🧷 *Price Exit Bracket* \\(Lower\\)"
+        else:
+            header = "🧷 *Price Exit Bracket*"
+
         lines = [
-            "🏁 *Price Exit Bracket*",
+            header,
             "",
             _label_str("Symbol: ", symbol),
             _label_str("Exit side: ", exit_side),
             _label_str("Action: ", action),
             "Quantity: " + _fmt_decimal(quantity),
+            # G1.57: الحقول القياسية الموحّدة (Entry/Exit price/PnL%).
+            "Entry: " + _fmt_decimal(reference_price),
+            "Exit price: " + _fmt_decimal(exit_price),
+            "PnL%: " + _pnl_pct(reference_price, exit_price),
             _label_str("Order type: ", order_type),
             "Stop price: " + _EMOJI_SL + " " + _fmt_decimal(stop_price),
             "Stop limit: " + _fmt_decimal(stop_limit),
@@ -423,7 +511,96 @@ def build_market_exit_message(record: Any, state: Optional[Any] = None) -> str:
         return "\n".join(lines)
     except Exception:
         # Absolute last-resort: never raise.
-        return "🏁 *Price Exit Bracket*\n" + escape_mdv2(
+        return "🧷 *Price Exit Bracket*\n" + escape_mdv2(
+            "(partial: formatting error)")
+
+
+def build_btc_follow_message(record: Any, state: Optional[Any] = None) -> str:
+    """Render a MarkdownV2 message for a ``btc_follow_intervention`` record.
+
+    Fired ONLY on an actual defensive-tighten exit placement by the BTC-drop
+    guard. Shows the unified standard fields. Defensive; never raises.
+    """
+    try:
+        details = _get(record, "details", {}) or {}
+
+        symbol = _get(details, "symbol", _state_attr(state, "symbol"))
+        drop_pct = _get(details, "drop_pct")
+        reason = "BTC drop confirmed (~" + _plain_pct(drop_pct) + "%)"
+
+        quantity = _get(details, "eff_qty")
+        if quantity is None:
+            quantity = _plan_get(details, "quantity")
+
+        reference_price = _get(details, "reference_price")
+        exit_price = _plan_get(details, "price")
+        if exit_price is None:
+            exit_price = _plan_get(details, "limit_price")
+        if exit_price is None:
+            exit_price = _plan_get(details, "stop_price")
+
+        client_order_id = _get(details, "client_order_id")
+        order_id = _response_order_id(details)
+
+        lines = ["⬇️ *BTC\\-Follow Guard*", ""]
+        lines.extend(_standard_field_lines(
+            symbol=symbol,
+            reason=reason,
+            entry=reference_price,
+            exit_price=exit_price,
+            quantity=quantity,
+            order_id=order_id,
+            client_order_id=client_order_id,
+            time_str=_timestamp(record, details),
+        ))
+        return "\n".join(lines)
+    except Exception:
+        # Absolute last-resort: never raise.
+        return "⬇️ *BTC\\-Follow Guard*\n" + escape_mdv2(
+            "(partial: formatting error)")
+
+
+def build_manual_exit_message(record: Any, state: Optional[Any] = None) -> str:
+    """Render a MarkdownV2 message for a ``manual_exit`` record.
+
+    Fired on an actual manual market-exit placement. Shows the unified standard
+    fields. Defensive; never raises.
+    """
+    try:
+        details = _get(record, "details", {}) or {}
+
+        symbol = _get(details, "symbol", _state_attr(state, "symbol"))
+        reason = "Manual exit (best live price)"
+
+        quantity = _get(details, "eff_qty")
+        if quantity is None:
+            quantity = _plan_get(details, "quantity")
+
+        reference_price = _get(details, "reference_price")
+        exit_price = _plan_get(details, "price")
+        if exit_price is None:
+            exit_price = _plan_get(details, "limit_price")
+        if exit_price is None:
+            exit_price = _plan_get(details, "stop_price")
+
+        client_order_id = _get(details, "client_order_id")
+        order_id = _response_order_id(details)
+
+        lines = ["✋ *Manual Exit*", ""]
+        lines.extend(_standard_field_lines(
+            symbol=symbol,
+            reason=reason,
+            entry=reference_price,
+            exit_price=exit_price,
+            quantity=quantity,
+            order_id=order_id,
+            client_order_id=client_order_id,
+            time_str=_timestamp(record, details),
+        ))
+        return "\n".join(lines)
+    except Exception:
+        # Absolute last-resort: never raise.
+        return "✋ *Manual Exit*\n" + escape_mdv2(
             "(partial: formatting error)")
 
 
@@ -446,4 +623,8 @@ def format_event(record: Any, state: Optional[Any] = None,
         return build_guardian_message(record, state)
     if event == "market_exit":
         return build_market_exit_message(record, state)
+    if event == "btc_follow_intervention":
+        return build_btc_follow_message(record, state)
+    if event == "manual_exit":
+        return build_manual_exit_message(record, state)
     return None

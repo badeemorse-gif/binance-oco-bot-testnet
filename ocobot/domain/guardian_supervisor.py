@@ -103,6 +103,7 @@ class GuardianSupervisor:
         btc_follow: Any = None,
         btc_exit_fn: Optional[Callable[..., Any]] = None,
         btc_alert_cb: Optional[Callable[[str], None]] = None,
+        btc_notifier: Optional[Callable[[dict], None]] = None,
         stop_limit_offset_pct=None,
         price_floor_pct=None,
         exit_source_sink=None,
@@ -132,6 +133,9 @@ class GuardianSupervisor:
         self._btc_follow = btc_follow
         self._btc_exit_fn = btc_exit_fn
         self._btc_alert_cb = btc_alert_cb
+        # G1.57 (emit-only): مُطلِق تنبيه Telegram ثريّ لحارس هبوط BTC على التدخّل
+        #        الفعلي (PLACED) فقط — مرآة لخطّاف self._notifier؛ محروس ولا يرمي.
+        self._btc_notifier = btc_notifier
         self._btc_armed = False
         self.last_btc_decision = None
         self.last_btc_result = None
@@ -439,6 +443,25 @@ class GuardianSupervisor:
                       "drop_pct": str(getattr(btc_decision, "drop_pct", ""))}
         self.last_btc_result = result
         self._btc_armed = True
+        # G1.57 (emit-only): تنبيه Telegram ثريّ لحارس هبوط BTC — فقط على تدخّل
+        #        فعلي (PLACED). مرآة لكتلة self._notifier في _intervene؛ لا يمسّ
+        #        المنطق المختوم؛ محروس ولا يرمي أبدًا.
+        if (
+            self._btc_notifier is not None
+            and isinstance(result, dict)
+            and result.get("action") == "PLACED"
+        ):
+            try:
+                self._btc_notifier({
+                    "symbol": symbol,
+                    "drop_pct": getattr(btc_decision, "drop_pct", None),
+                    "reason": "BTC drop confirmed",
+                    "result": result,
+                    "reference_price": (getattr(state, "reference_price", None)
+                                        or getattr(state, "last_price", None)),
+                })
+            except Exception:
+                pass
         cb = self._btc_alert_cb or self._alert_cb
         if cb is not None:
             try:

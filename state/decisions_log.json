@@ -403,5 +403,11 @@
     "ts": "2026-10-14T13:47:12Z",
     "decision": "g1_52_subagent_partial_recovery",
     "note": "فُوِّض تنفيذ chunk_1..chunk_4 لعملية فرعية أعادت placeholder فارغًا؛ أثبت القرص (§9.4) أنها نفّذت chunk_2 فقط في completed_trades.py وكسرت tests/test_completed_trades_capture.py (تطابق قاموس). طُبّق §9.2(ج): العملية جزئية، وأُصلح الاختبار وأُكمل chunk_1/3/4 + الاختبارات يدويًّا بلا تفويض."
+  },
+  {
+    "id": "G1.57_design",
+    "ts": "2026-10-14T20:01:06Z",
+    "decision": "توحيد تنبيهات التدخّل الثريّة",
+    "note": "رأس القوس 🏁→🧷؛ alert_cb/btc_alert_cb إلى LOG-ONLY لمنع الإرسال المزدوج (الرسالة الثريّة تحمل تنبيه PLACED)؛ خطّاف btc_notifier إضافي محروس في guardian_supervisor._btc_tick (مرآة لخطّاف notifier القائم، خارج hot_path المختوم)؛ لقطة ثبات لرسالتَي monitor_start/repositioned."
   }
 ]

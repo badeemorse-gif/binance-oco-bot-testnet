@@ -364,11 +364,149 @@ def make_market_exit_notifier(*, notifier, store=None):
     return emit
 
 
+# ---------------------------------------------------------------------------
+# G1.57 — BTC-follow guard + manual-exit emit-only adapters (NOT audit-driven)
+# ---------------------------------------------------------------------------
+# Mirror the G1.37 guardian/market-exit adapters: build a rich Telegram alert
+# ONLY on an actual PLACED intervention. These events are NOT written to the
+# audit log and never go through ``AlertsAuditBridge``. Every function is
+# defensive (``.get`` everywhere) and NEVER raises.
+
+
+def btc_follow_record(*, symbol, drop_pct=None, reason=None, result,
+                      reference_price=None, ts=None):
+    """Build a ``btc_follow_intervention`` record from a PLACED BTC-guard result.
+
+    Defensive (``.get`` everywhere). Never raises.
+    """
+    try:
+        plan = _dget(result, "plan", {}) or {}
+        quantity = _dget(result, "eff_qty")
+        if quantity is None:
+            quantity = _dget(plan, "quantity")
+        details = {
+            "symbol": symbol,
+            "drop_pct": drop_pct,
+            "reason": reason,
+            "action": _dget(result, "action"),
+            "eff_qty": _dget(result, "eff_qty"),
+            "plan": plan,
+            "quantity": quantity,
+            "price": _dget(plan, "price"),
+            "stop_price": _dget(plan, "stop_price"),
+            "limit_price": _dget(plan, "limit_price"),
+            "reference_price": reference_price
+            if reference_price is not None
+            else (_dget(result, "reference_price")
+                  if _dget(result, "reference_price") is not None
+                  else _dget(plan, "reference_price")),
+            "client_order_id": _dget(result, "client_order_id"),
+            "response": _dget(result, "response"),
+        }
+        record = {"event": "btc_follow_intervention", "details": details}
+        if ts is not None:
+            record["ts"] = ts
+        return record
+    except Exception:
+        return {"event": "btc_follow_intervention", "details": {"symbol": symbol}}
+
+
+def manual_exit_record(result, *, reference_price=None, ts=None):
+    """Build a ``manual_exit`` record from a PLACED manual-exit result.
+
+    Defensive (``.get`` everywhere). Never raises.
+    """
+    try:
+        plan = _dget(result, "plan", {}) or {}
+        quantity = _dget(result, "eff_qty")
+        if quantity is None:
+            quantity = _dget(plan, "quantity")
+        details = {
+            "symbol": _dget(result, "symbol"),
+            "exit_side": _dget(result, "exit_side"),
+            "action": _dget(result, "action"),
+            "eff_qty": _dget(result, "eff_qty"),
+            "plan": plan,
+            "quantity": quantity,
+            "price": _dget(plan, "price"),
+            "stop_price": _dget(plan, "stop_price"),
+            "limit_price": _dget(plan, "limit_price"),
+            "reference_price": reference_price
+            if reference_price is not None
+            else (_dget(result, "reference_price")
+                  if _dget(result, "reference_price") is not None
+                  else _dget(plan, "reference_price")),
+            "client_order_id": _dget(result, "client_order_id"),
+            "response": _dget(result, "response"),
+        }
+        record = {"event": "manual_exit", "details": details}
+        if ts is not None:
+            record["ts"] = ts
+        return record
+    except Exception:
+        return {"event": "manual_exit", "details": {}}
+
+
+def make_btc_follow_notifier(*, notifier, store=None):
+    """Return an ``emit(payload_dict)`` callable for BTC-follow interventions.
+
+    ``payload_dict`` carries symbol/drop_pct/reason/result/reference_price/ts.
+    Respects ``store.enabled_provider()``, builds the message via
+    ``format_event(btc_follow_record(**payload))`` and enqueues it. Swallows ALL
+    exceptions.
+    """
+
+    def emit(payload):
+        try:
+            if not _store_enabled(store):
+                return
+            payload = payload if isinstance(payload, dict) else {}
+            text = format_event(btc_follow_record(**payload))
+            if text:
+                notifier.enqueue(text)
+        except Exception:
+            try:
+                logger.warning("btc follow notifier swallowed an exception")
+            except Exception:
+                pass
+
+    return emit
+
+
+def make_manual_exit_notifier(*, notifier, store=None):
+    """Return an ``emit(result)`` callable for manual-exit interventions.
+
+    Matches the ``notifier(result)`` signature ``execute_market_exit`` expects.
+    Respects ``store.enabled_provider()``, builds the message via
+    ``format_event(manual_exit_record(result))`` and enqueues it. Swallows ALL
+    exceptions.
+    """
+
+    def emit(result):
+        try:
+            if not _store_enabled(store):
+                return
+            text = format_event(manual_exit_record(result))
+            if text:
+                notifier.enqueue(text)
+        except Exception:
+            try:
+                logger.warning("manual exit notifier swallowed an exception")
+            except Exception:
+                pass
+
+    return emit
+
+
 __all__ = [
     "AlertsAuditBridge",
     "default_audit_path",
     "guardian_record",
     "market_exit_record",
+    "btc_follow_record",
+    "manual_exit_record",
     "make_guardian_notifier",
     "make_market_exit_notifier",
+    "make_btc_follow_notifier",
+    "make_manual_exit_notifier",
 ]

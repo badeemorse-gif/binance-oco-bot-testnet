@@ -1,0 +1,17 @@
+{
+  "id": "G1.56",
+  "status": "sealed",
+  "severity": "minor",
+  "title": "مُرشِّح نِسب تكيّفي للعملة (TP/SL/Trigger) + ملء تلقائي بوضعين (مرّة واحدة/متتبّع)",
+  "description": "ميزة عرض/اقتراح: يقترح أفضل tp_pct/sl_pct/trigger_pct من تقلّب العملة وحركتها بحيث لا نخرج مبكرًا ونلتقط أكبر حركة تتبّع. وضعان للملء: مرّة واحدة (يتجمّد بعد البدء) ومتتبّع (Off/Observe/Live، async، مُحارَس، يؤثّر في دورة التموضع التالية فقط).",
+  "professional_proposal": "وحدات domain خالصة: volatility (ATR%/Yang-Zhang/EWMA) + excursion (MFE/MAE + عمق الارتداد) + regime (ADX/DMI/Choppiness/Hurst/Variance-Ratio) + recommender (ربط ⇒ اقتراحات مقصوصة على فلاتر العملة). قرار المنفّذ المعتمد: (1) إضافة طبقة سيولة/سبريد كحارس قصّ (clamp) تتكامل مع فلاتر tickSize/LOT_SIZE/minNotional وأرضية الفلاش-كراش G1.33 المُحقَّنة. (2) استبعاد RSI/Momentum/SuperTrend من المدخلات الأساسية (تكرار/overfitting؛ SuperTrend مشتقّ من ATR؛ وregime تغطّي الاتجاه/التذبذب)؛ تبقى تجريبية خلف بوّابة Walk-Forward وفي وضع Observe فقط. لوحة UI عرض-فقط + CLI معايرة Walk-Forward على klines عامة. لا شبكة في الواجهة، لا hot_path، لا Live قبل G1. نُفِّذ على 8 chunks c1..c8.",
+  "discovered_at": "2026-10-14T18:59:20Z",
+  "evidence_path": "docs/G1_56_report.md (split per-file: TOTAL ran=940 failures=0 errors=0 files=120 status=OK)",
+  "ref_plan": "docs/G1_55_to_57_plan.md",
+  "seal": {
+    "verified": true,
+    "evidence_path": "docs/G1_56_report.md (split per-file: TOTAL ran=940 failures=0 errors=0 files=120 status=OK)",
+    "docs_synced": true,
+    "ts": "2026-10-14T20:58:56Z"
+  }
+}

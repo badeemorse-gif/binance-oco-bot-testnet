@@ -32,6 +32,53 @@ from ocobot.core.guardian_lazy_client import LazyGuardianRestClient
 log = logging.getLogger(__name__)
 
 
+class _LazyNotifierShim:
+    """ناقل lazy للـ``Notifier``: يحلّ ``window_getter()._alerts_notifier`` وقت
+
+    الاستدعاء ويستدعي ``enqueue(text)``؛ إن تعذّر (نافذة/notifier غير جاهزين)
+    يُسقِط بأمان. يُستعمل كـ``notifier=`` في المُطلِقات الثريّة (الربط المتأخّر
+    لأنّ النافذة تُبنى بعد هذا النداء). محروس ولا يرمي أبدًا.
+    """
+
+    __slots__ = ("_window_getter",)
+
+    def __init__(self, window_getter):
+        self._window_getter = window_getter
+
+    def enqueue(self, text, **kwargs):
+        try:
+            w = self._window_getter() if callable(self._window_getter) else None
+            notifier = getattr(w, "_alerts_notifier", None) if w is not None else None
+            if notifier is not None and hasattr(notifier, "enqueue"):
+                return notifier.enqueue(text, **kwargs)
+        except Exception:
+            pass
+        return None
+
+
+class _LazyStoreShim:
+    """ناقل lazy للـ``AlertsStore``: يحلّ ``window_getter()._alerts_store`` وقت
+
+    الاستدعاء ويفوّض ``enabled_provider()``. إن تعذّر الحلّ يُعيد ``True``
+    (يُعامَل كمُفعَّل) حتى لا يُكبح التنبيه بلا داعٍ. محروس ولا يرمي أبدًا.
+    """
+
+    __slots__ = ("_window_getter",)
+
+    def __init__(self, window_getter):
+        self._window_getter = window_getter
+
+    def enabled_provider(self):
+        try:
+            w = self._window_getter() if callable(self._window_getter) else None
+            store = getattr(w, "_alerts_store", None) if w is not None else None
+            if store is not None and hasattr(store, "enabled_provider"):
+                return store.enabled_provider()
+        except Exception:
+            pass
+        return True
+
+
 def _mode() -> str:
     return (os.environ.get("OCOBOT_GUARDIAN") or "off").strip().lower()
 
@@ -71,6 +118,7 @@ def build_guardian_supervisor(window_getter):
     from ocobot.domain.exchange_info import ExchangeInfoService
     from ocobot.domain.guardian_supervisor import GuardianSupervisor
     from ocobot.domain.pricing import DEFAULT_GAP_TICKS
+    from ocobot.alerts.bridge import make_guardian_notifier
 
     lazy_client = LazyGuardianRestClient()
     broker = GuardianBroker(lazy_client)
@@ -111,20 +159,18 @@ def build_guardian_supervisor(window_getter):
             return None
 
     def alert_cb(text):
+        # G1.57: LOG-ONLY — الرسالة الثريّة (make_guardian_notifier) تحمل تنبيه
+        #        Telegram عند PLACED، فنمنع هنا الإرسال المزدوج ونكتفي بالسجلّ.
         try:
-            w = window_getter()
-            notifier = getattr(w, "_alerts_notifier", None) if w is not None else None
-            if notifier is not None and hasattr(notifier, "enqueue"):
-                try:
-                    from ocobot.alerts.formatting import escape_mdv2
-
-                    notifier.enqueue(escape_mdv2(text))
-                    return
-                except Exception:
-                    pass
             log.warning("GUARDIAN ALERT: %s", text)
         except Exception:
             pass
+
+    # G1.57: مُطلِق تنبيه Telegram ثريّ للحارس — كان مفقودًا في الإنتاج. notifier
+    #        و store عبر ناقلَي lazy (الربط المتأخّر للنافذة). alert_cb يبقى LOG
+    #        فقط هنا لتفادي الإرسال المزدوج (الرسالة الثريّة تحمل التنبيه عند PLACED).
+    _rich_notifier = _LazyNotifierShim(window_getter)
+    _rich_store = _LazyStoreShim(window_getter)
 
     supervisor = GuardianSupervisor(
         state_provider=state_provider,
@@ -134,6 +180,7 @@ def build_guardian_supervisor(window_getter):
         dry_run=dry_run,
         base_asset_fn=base_asset_fn,
         filters_fn=filters_fn,
+        notifier=make_guardian_notifier(notifier=_rich_notifier, store=_rich_store),
     )
     log.info("Guardian armed: mode=%s dry_run=%s", mode, dry_run)
     return supervisor
@@ -150,6 +197,10 @@ def _build_supervisor_core(window_getter, dry_run):
     from ocobot.domain.exchange_info import ExchangeInfoService
     from ocobot.domain.guardian_supervisor import GuardianSupervisor
     from ocobot.domain.pricing import DEFAULT_GAP_TICKS
+    from ocobot.alerts.bridge import (
+        make_guardian_notifier,
+        make_btc_follow_notifier,
+    )
 
     lazy_client = LazyGuardianRestClient()
     broker = GuardianBroker(lazy_client)
@@ -190,17 +241,9 @@ def _build_supervisor_core(window_getter, dry_run):
             return None
 
     def alert_cb(text):
+        # G1.57: LOG-ONLY — الرسالة الثريّة (make_guardian_notifier) تحمل تنبيه
+        #        Telegram عند PLACED، فنمنع هنا الإرسال المزدوج ونكتفي بالسجلّ.
         try:
-            w = window_getter()
-            notifier = getattr(w, "_alerts_notifier", None) if w is not None else None
-            if notifier is not None and hasattr(notifier, "enqueue"):
-                try:
-                    from ocobot.alerts.formatting import escape_mdv2
-
-                    notifier.enqueue(escape_mdv2(text))
-                    return
-                except Exception:
-                    pass
             log.warning("GUARDIAN ALERT: %s", text)
         except Exception:
             pass
@@ -263,8 +306,8 @@ def _build_supervisor_core(window_getter, dry_run):
                 order_list_id = getattr(selected, "order_list_id", None)
             kill_switch = getattr(engine, "kill_switch", None) if engine is not None else None
             cid = _default_btc_cid()
-            w = window_getter()
-            notifier = getattr(w, "_alerts_notifier", None) if w is not None else None
+            # G1.57: notifier=None — كان يُمرَّر _alerts_notifier الخام (ليس callable)
+            #        فيُبتلع بلا إرسال؛ التنبيه الثريّ الآن عبر btc_notifier في المُشرِف.
             return execute_market_exit(
                 client=exit_broker,
                 symbol=symbol,
@@ -276,28 +319,23 @@ def _build_supervisor_core(window_getter, dry_run):
                 client_order_id=cid,
                 order_list_id=order_list_id,
                 kill_switch=kill_switch,
-                notifier=notifier,
+                notifier=None,
                 dry_run=False,
             )
         except Exception as exc:
             return {"action": "ERROR", "placed": False, "error": str(exc)}
 
     def btc_alert_cb(text):
-        # نفس توجيه alert_cb: enqueue إلى _alerts_notifier عبر escape_mdv2، وإلا log.
+        # G1.57: LOG-ONLY — التنبيه الثريّ (make_btc_follow_notifier) يحمل رسالة
+        #        Telegram عند PLACED، فنمنع هنا الإرسال المزدوج ونكتفي بالسجلّ.
         try:
-            w = window_getter()
-            notifier = getattr(w, "_alerts_notifier", None) if w is not None else None
-            if notifier is not None and hasattr(notifier, "enqueue"):
-                try:
-                    from ocobot.alerts.formatting import escape_mdv2
-
-                    notifier.enqueue(escape_mdv2(text))
-                    return
-                except Exception:
-                    pass
             log.warning("BTC GUARD ALERT: %s", text)
         except Exception:
             pass
+
+    # G1.57: ناقلا lazy للـnotifier/store (الربط المتأخّر للنافذة) للمُطلِقات الثريّة.
+    _rich_notifier = _LazyNotifierShim(window_getter)
+    _rich_store = _LazyStoreShim(window_getter)
 
     return GuardianSupervisor(
         state_provider=state_provider,
@@ -310,6 +348,9 @@ def _build_supervisor_core(window_getter, dry_run):
         btc_follow=btc_follow,
         btc_exit_fn=btc_exit_fn,
         btc_alert_cb=btc_alert_cb,
+        # G1.57: الرسالة الثريّة للحارس + سدّ ثغرة ثراء حارس هبوط BTC.
+        notifier=make_guardian_notifier(notifier=_rich_notifier, store=_rich_store),
+        btc_notifier=make_btc_follow_notifier(notifier=_rich_notifier, store=_rich_store),
     )
 
 

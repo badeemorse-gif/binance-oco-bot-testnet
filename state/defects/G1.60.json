@@ -1,0 +1,49 @@
+{
+  "id": "G1.60",
+  "status": "sealed",
+  "severity": "major",
+  "title": "توصيل recommendation_provider الحقيقي (klines⇒recommender) إلى شاشة المراقبة لتفعيل عرض لوحة ترشيح النِّسب في الإنتاج",
+  "description": "أثناء الاختبار اليدوي (G1_MANUAL_TESTING): في لوحة RecommendationPanel داخل شاشة المراقبة، عند MODE_OBSERVE/MODE_OFF (وحتى MODE_LIVE) تبقى خانات النِّسب على الشَّرطة '—'. السبب الجذري: ocobot/ui/content.py يُنشئ DynamicMonitoringScreen بلا recommendation_provider ⇒ self._rec_provider=None ⇒ _recompute_recommendation no-op ⇒ تبقى اللوحة على update_recommendation(None). هذه 'الوصلة المتبقّية' الموثّقة في G1.58/G1.59 (حقن recommendation_provider الحقيقي klines⇒recommender).",
+  "professional_proposal": "مصنع domain خالص (rec_provider.py) + مساعد app_wiring فوق KlinesService + setter set_recommendation_provider على شاشة المراقبة + توصيل app.py::main()، تنفيذ خارج خيط Qt عبر runner، بلا hot_path/T16/شبكة متزامنة في الواجهة.",
+  "discovered_at": "2026-10-14T22:40:00Z",
+  "reported_by": "manual_testing",
+  "depends_on": [
+    "G1.58",
+    "G1.59"
+  ],
+  "human_gate": false,
+  "scope_boundary": {
+    "in": [
+      "ocobot/domain/rec_provider.py (جديد: candles⇒recommender factory)",
+      "ocobot/app_wiring.py (build_recommendation_provider فوق KlinesService)",
+      "ocobot/ui/monitoring.py (setter set_recommendation_provider فقط — توصيل)",
+      "ocobot/ui/app.py (توصيل الإنتاج في main(): الإقلاع + إعادة الاتصال)",
+      "tests/test_g1_60_recommendation_provider.py"
+    ],
+    "out": [
+      "عرض/تخطيط RecommendationPanel (G1.56/58)",
+      "وصلة Live للتموضع (G1.59)",
+      "أي hot_path حسّاس",
+      "أي تنفيذ أوامر Live فعلي (T16)",
+      "أي شبكة متزامنة في خيط Qt",
+      "أي نصّ Qt عربي جديد خارج i18n (§1.5)"
+    ]
+  },
+  "acceptance_checks": [
+    "python tools/_run_suite_per_file.py ⇒ failures=0 errors=0 (TOTAL ran=969 files=123، +9/+1 عن 960/122)",
+    "recommendation_from_candles: klines/candles ⇒ Recommendation، و[]/None ⇒ None",
+    "make_recommendation_provider: symbol None ⇒ None بلا نداء candles_fn (تفادي جلب بلا رمز)",
+    "build_recommendation_provider فوق KlinesService: get_candles(symbol, interval, limit) صحيحة",
+    "set_recommendation_provider يملأ لوحة النِّسب عبر رَنَر: الخانات تتحوّل من '—' إلى قيمة٪",
+    "test_ui_no_direct_network أخضر (لا شبكة مباشرة في الواجهة) + test_g1_41_i18n_no_leak أخضر (§1.5)"
+  ],
+  "resolution": "أُضيف ocobot/domain/rec_provider.py (recommendation_from_candles + make_recommendation_provider) يُعيد استخدام خط أنابيب domain نفسه المستعمَل في backtest._calibrate (as_candles + volatility_summary + excursion_stats + regime_summary + recommend). ocobot/app_wiring.build_recommendation_provider يبني المزوّد (بلا وسائط) فوق KlinesService (public_request، GET /api/v3/klines)؛ symbol None ⇒ لا جلب. DynamicMonitoringScreen.set_recommendation_provider setter توصيل (كنمط set_price_provider/set_btc_price_provider) يُخزّن المزوّد ويُعيد الحساب فورًا إن كانت الشاشة ظاهرة. ocobot/ui/app.py::main() يحقن المزوّد في موضعَي الإقلاع وإعادة الاتصال بعد build_app (symbol_fn = _mon_screen._selected.symbol). التنفيذ خارج خيط Qt عبر runner.submit (لا شبكة متزامنة في الواجهة؛ test_ui_no_direct_network أخضر). النتيجة: خانات لوحة ترشيح النِّسب تُعبَّأ في MODE_OBSERVE بدل '—'. لا مساس بعرض RecommendationPanel (G1.56/58) ولا بوصلة Live للتموضع (G1.59) ولا hot_path ولا T16. التحقّق المستقل: python tools/_run_suite_per_file.py docs/G1_60_report.md 120 ⇒ TOTAL ran=969 failures=0 errors=0 files=123 status=OK.",
+  "evidence_path": "docs/G1_60_report.md",
+  "seal": {
+    "verified": true,
+    "evidence_path": "docs/G1_60_report.md (split per-file: TOTAL ran=969 failures=0 errors=0 files=123 status=OK)",
+    "evidence_count": 969,
+    "docs_synced": true,
+    "ts": "2026-10-14T23:16:53Z"
+  }
+}

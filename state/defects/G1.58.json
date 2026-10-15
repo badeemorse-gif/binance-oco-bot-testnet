@@ -1,0 +1,29 @@
+{
+  "id": "G1.58",
+  "status": "sealed",
+  "severity": "minor",
+  "title": "تركيب لوحة مُرشِّح النِّسب (RecommendationPanel) في شاشة المراقبة — عرض/Observe (الاختيار ب)",
+  "description": "RecommendationPanel (ocobot/ui/rec_panel.py) مُنجَزة ومُختبَرة في G1.56·c6 لكنها غير مركّبة في واجهة الإنتاج (مرجعيتها في الاختبارات فقط). يُركّبها هذا البند أعلى DynamicMonitoringScreen (ocobot/ui/monitoring.py) فوق بطاقة «قواعد المراقبة» (MonitoringRulesCard) حيث حقول النِّسب self._pct_edits.",
+  "professional_proposal": "الاختيار (ب): (1) إنشاء RecommendationPanel وإدراجها في root أعلى DynamicMonitoringScreen قبل _build_rules_section. (2) on_fill_once ⇒ ملء self._pct_edits[trigger_pct/tp_pct/sl_pct] من current_recommendation مرّة واحدة بلا تنفيذ. (3) on_mode_change ⇒ RecommendationTracker (ocobot/domain/rec_tracker.py) Off/Observe/Live مع إبقاء Live خامل التطبيق على التموضع. (4) حلقة إعادة حساب دورية أثناء المراقبة: الرَنَر ⇒ recommendation_provider ⇒ update_recommendation، تحت Observe، بلا شبكة في خيط Qt وبلا hot_path. التطبيق التلقائي على التموضع مؤجّل إلى G1.59.",
+  "discovered_at": "2026-10-14T21:00:00Z",
+  "acceptance_checks": [
+    "python tools/_run_suite_per_file.py ⇒ failures=0 errors=0 بعدد ≥ 940 + اختبارات G1.58 الجديدة",
+    "اختبار يؤكّد تركيب RecommendationPanel ضمن شجرة DynamicMonitoringScreen عبر build_app()",
+    "اختبار «ملء مرّة واحدة» يملأ _pct_edits[trigger_pct/tp_pct/sl_pct]",
+    "اختبار تبديل الوضع يضبط RecommendationTracker.set_mode",
+    "test_g1_41_i18n_no_leak أخضر (§1.5)"
+  ],
+  "scope_boundary": {
+    "in": ["ocobot/ui/monitoring.py", "tests/test_g1_58_rec_panel_wiring.py", "docs/G1_58_report.md"],
+    "out": ["ocobot/domain/reposition.py وأي تطبيق Live على التموضع (G1.59)", "أي hot_path حسّاس", "أي تنفيذ أوامر Live فعلي (T16)", "أي نصّ Qt عربي جديد خارج i18n (§1.5)"]
+  },
+  "resolution": "monitoring.py: استيراد RecommendationPanel + RecommendationTracker/MODE_OBSERVE؛ إضافة بارامتر recommendation_provider=None؛ إنشاء self.rec_panel + self._rec_tracker(mode=observe) وإدراج اللوحة في root فوق MonitoringRulesCard؛ _on_rec_fill_once(rec)⇒ملء _pct_edits[trigger_pct/tp_pct/sl_pct] عبر fmt (بلا تنفيذ)؛ _on_rec_mode_change(mode)⇒_rec_tracker.set_mode؛ _recompute_recommendation عبر runner.submit(provider,...) (no-op بلا provider/runner)⇒_apply_recommendation=update_recommendation+_rec_tracker.offer؛ QTimer(20000ms) يبدأ في showEvent ويتوقّف في hideEvent. Live خامل التطبيق على التموضع (مؤجّل G1.59). لا مساس بـ reposition.py/MonitoringEngine/hot_path (تأكّد بالطابع الزمني). الواجهة بلا شبكة متزامنة. §1.5: اللوحة تمرّر نصوصها عبر i18n (test_g1_41_i18n_no_leak أخضر). التحقّق المستقل: python tools/_run_suite_per_file.py docs/G1_58_report.md 120 ⇒ TOTAL ran=947 failures=0 errors=0 files=121 status=OK (+7 اختبارات/+1 ملف عن 940/120).",
+  "evidence_path": "docs/G1_58_report.md",
+  "seal": {
+    "verified": true,
+    "evidence_path": "docs/G1_58_report.md (split per-file: TOTAL ran=947 failures=0 errors=0 files=121 status=OK)",
+    "evidence_count": 947,
+    "docs_synced": true,
+    "ts": "2026-10-14T21:35:00Z"
+  }
+}

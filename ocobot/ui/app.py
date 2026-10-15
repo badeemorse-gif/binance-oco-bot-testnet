@@ -23,6 +23,8 @@ from ocobot.core.environment import Environment
 from ocobot.app_wiring import SelectionPriceProvider, BtcPriceProvider, build_convert_executor, make_convert_cb
 from ocobot.domain.monitoring import MonitoringEngine
 from ocobot.domain.open_orders_reader import read_all_open_sell_orders
+# G1.57: ناقلا lazy للـnotifier/store (مُعادان من محور تسليح الحارس) للخروج اليدوي.
+from ocobot.ui.guardian_arm import _LazyNotifierShim, _LazyStoreShim
 
 
 def build_app(argv=None, select_fn=None, executor=None, execute_cb=None, engine=None, price_provider=None, convert_cb=None, audit_path=None, guardian_supervisor=None):
@@ -154,6 +156,16 @@ def make_connect_wrapper(window, base_connect, cfg):
                             mon.set_btc_price_provider(BtcPriceProvider(_lazy_cfg, _lazy_client))
                     except Exception:
                         pass
+                    # G1.60: حقن مزوّد اقتراح النِّسب (klines⇒recommender) — الشبكة داخل الرَنَر.
+                    try:
+                        if hasattr(mon, "set_recommendation_provider"):
+                            from ocobot.domain.klines import KlinesService as _KlinesSvc
+                            from ocobot.app_wiring import build_recommendation_provider as _mk_rec
+                            mon.set_recommendation_provider(_mk_rec(
+                                _KlinesSvc(_lazy_client),
+                                lambda _m=mon: getattr(getattr(_m, "_selected", None), "symbol", None)))
+                    except Exception:
+                        pass
                     # G1.47: ربط الخروج اليدوي الفوري — زرّ «تنفيذ» (Testnet فقط، dry_run=False).
                     # معزول ومتسامح: فشل هنا لا يمسّ باقي الحقن ولا تدفّق الاتصال.
                     try:
@@ -164,6 +176,8 @@ def make_connect_wrapper(window, base_connect, cfg):
                             from types import SimpleNamespace as _MeNS
                             from .manual_exit import build_manual_exit_fn as _build_manual_exit_fn
                             from ocobot.domain.completed_trades import make_exit_source_recorder as _mk_exit_src
+                            # G1.57: مُطلِق تنبيه ✋ ثريّ للخروج اليدوي عبر notifier(result) عند PLACED.
+                            from ocobot.alerts.bridge import make_manual_exit_notifier as _mk_manual_notifier
                             _me_broker = _MeBroker(_lazy_client)
                             _me_exinfo = ExchangeInfoService(_lazy_client)
 
@@ -200,6 +214,12 @@ def make_connect_wrapper(window, base_connect, cfg):
                                     filters_fn=_me_filters_fn,
                                     base_asset_fn=_me_base_asset_fn,
                                     kill_switch_getter=lambda e=_lazy_engine: getattr(e, "kill_switch", None),
+                                    # G1.57: مُطلِق ✋ ثريّ — يُستدعى notifier(result) عند PLACED.
+                                    #        shim lazy يحلّ window._alerts_notifier/_alerts_store وقت التشغيل.
+                                    notifier_getter=lambda w=window: _mk_manual_notifier(
+                                        notifier=_LazyNotifierShim(lambda: w),
+                                        store=_LazyStoreShim(lambda: w),
+                                    ),
                                     exit_side="upper",
                                     dry_run=False,
                                     exit_source_noter=_mk_exit_src(_audit),
@@ -280,6 +300,17 @@ def main():  # pragma: no cover - interactive entry point
         try:
             if _client is not None and _mon_screen is not None and hasattr(_mon_screen, "set_btc_price_provider"):
                 _mon_screen.set_btc_price_provider(BtcPriceProvider(_cfg, _client))
+        except Exception:
+            pass
+
+        # G1.60: حقن مزوّد اقتراح النِّسب (klines⇒recommender) — الشبكة داخل الرَنَر خارج خيط Qt.
+        try:
+            if _client is not None and _mon_screen is not None and hasattr(_mon_screen, "set_recommendation_provider"):
+                from ocobot.domain.klines import KlinesService as _KlinesSvc
+                from ocobot.app_wiring import build_recommendation_provider as _mk_rec
+                _mon_screen.set_recommendation_provider(_mk_rec(
+                    _KlinesSvc(_client),
+                    lambda _s=_mon_screen: getattr(getattr(_s, "_selected", None), "symbol", None)))
         except Exception:
             pass
 

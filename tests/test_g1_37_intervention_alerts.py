@@ -206,9 +206,12 @@ class TestMarketExitBuilder(unittest.TestCase):
             },
         }
         msg = build_market_exit_message(record)
-        self.assertIn("🏁", msg)
+        self.assertIn("🧷", msg)             # G1.57: الرأس المميّز الموحّد
         self.assertIn("LSKUSDT", msg)        # symbol
         self.assertIn("upper", msg)          # exit side
+        self.assertIn("Entry:", msg)         # G1.57: حقل Entry القياسي
+        self.assertIn("Exit price:", msg)    # G1.57: حقل Exit price القياسي
+        self.assertIn("PnL%:", msg)          # G1.57: حقل PnL% القياسي
         self.assertIn("50", msg)             # quantity
         self.assertIn("LIMIT", msg)          # order type
         self.assertIn("1", msg)              # some price digit
@@ -220,7 +223,7 @@ class TestMarketExitBuilder(unittest.TestCase):
         msg = build_market_exit_message({"event": "market_exit",
                                          "details": {"symbol": "LSKUSDT"}})
         self.assertTrue(msg)
-        self.assertIn("🏁", msg)
+        self.assertIn("🧷", msg)
         self.assertIn("LSKUSDT", msg)
 
     def test_empty_record_never_raises(self):
@@ -242,7 +245,7 @@ class TestFormatEventRouting(unittest.TestCase):
         msg = format_event({"event": "market_exit",
                             "details": {"symbol": "LSKUSDT"}})
         self.assertIsNotNone(msg)
-        self.assertIn("🏁", msg)
+        self.assertIn("🧷", msg)
 
     def test_unknown_event_returns_none(self):
         self.assertIsNone(format_event({"event": "something_else"}))
@@ -331,7 +334,7 @@ class TestMarketExitNotifier(unittest.TestCase):
         emit = make_market_exit_notifier(notifier=notifier, store=store)
         emit(self._result())
         self.assertEqual(len(notifier.texts), 1)
-        self.assertIn("🏁", notifier.texts[0])
+        self.assertIn("🧷", notifier.texts[0])
         self.assertIn("LSKUSDT", notifier.texts[0])
         self.assertIn("7777", notifier.texts[0])
 
@@ -405,7 +408,7 @@ class TestBracketWiringNotifier(unittest.TestCase):
         self.assertEqual(r["action"], "EXIT_TRIGGERED")
         self.assertEqual(r["result"]["action"], "PLACED")
         self.assertEqual(len(notifier.texts), 1)
-        self.assertIn("🏁", notifier.texts[0])
+        self.assertIn("🧷", notifier.texts[0])
         self.assertIn("LSKUSDT", notifier.texts[0])
 
     def test_no_emit_on_non_placed_outcome(self):

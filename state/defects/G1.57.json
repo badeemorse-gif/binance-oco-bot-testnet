@@ -1,0 +1,19 @@
+{
+  "id": "G1.57",
+  "status": "sealed",
+  "severity": "major",
+  "title": "توحيد تنبيهات تليجرام لكل وسائل التدخّل برسالة ثريّة موحّدة + سدّ ثغرة ثراء حارس BTC",
+  "description": "حاليًا monitor_start/repositioned تُرسَل ثريّة عبر bridge؛ الحارس وقوس الخروج عبر notifier(result) (G1.37)؛ حارس BTC عبر btc_alert_cb نصّي مقتضب (ثغرة)؛ القوالب الثريّة build_guardian_message/build_market_exit_message غير مفعّلة عبر الجسر (عدم اتساق المسارين).",
+  "professional_proposal": "رسالة ثريّة موحّدة لكل وسيلة (🛡️ شبكة أمان المركز / 🧷 قوس علوي / 🧷 قوس سفلي / ⬇️ حارس هبوط BTC / ✋ خروج يدوي) بنفس حقول رسالة التموضع (الرمز·السبب·الدخول·الخروج·ربح/خسارة%·الكمية·المعرّف·الوقت)، مع سدّ ثغرة BTC وتوحيد المسارين، دون تغيير رسالتَي repositioned/monitor_start. التغيير محصور في ocobot/alerts/* ونقاط الإطلاق في wiring؛ لا hot_path.",
+  "discovered_at": "2026-10-14T18:59:20Z",
+  "ref_plan": "docs/G1_55_to_57_plan.md",
+  "resolution": "formatting.py: حقول قياسية موحّدة (Symbol·Reason·Entry=reference·Exit·PnL%·Quantity·Order/Client id·Time) + رؤوس مميّزة؛ build_market_exit_message رأس 🏁→🧷 (+Upper/Lower) وإثراؤها؛ إثراء build_guardian_message؛ إضافة build_btc_follow_message (⬇️) و build_manual_exit_message (✋) وتوجيههما في format_event عبر حدثَي btc_follow_intervention/manual_exit. bridge.py: btc_follow_record/manual_exit_record + make_btc_follow_notifier/make_manual_exit_notifier. guardian_supervisor.py: خطّاف btc_notifier إضافي محروس عند PLACED (مرآة لخطّاف notifier القائم؛ لا منطق تنفيذ). guardian_arm.py: توصيل notifier=make_guardian_notifier (كان مفقودًا في الإنتاج) + btc_notifier؛ alert_cb/btc_alert_cb إلى LOG-ONLY لمنع الإرسال المزدوج؛ btc_exit_fn notifier=None (كان خامًا معطوبًا). app.py: notifier_getter للخروج اليدوي (✋). رسالتا monitor_start/repositioned ثابتتان بايت-ببايت (اختبار لقطة). التحقّق المستقل: python tools/_run_suite_per_file.py ⇒ TOTAL ran=823 failures=0 errors=0 files=112 status=OK (منها test_g1_57=28، test_g1_37=25). §1.5: لا نصّ Qt UI عربي جديد (رسائل تليجرام إنجليزية).",
+  "evidence_path": "docs/G1_57_report.md",
+  "seal": {
+    "verified": true,
+    "evidence_path": "docs/G1_57_report.md (split per-file: TOTAL ran=823 failures=0 errors=0 files=112 status=OK)",
+    "evidence_count": 823,
+    "docs_synced": true,
+    "ts": "2026-10-14T20:01:06Z"
+  }
+}

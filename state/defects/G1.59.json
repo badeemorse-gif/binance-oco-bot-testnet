@@ -1,0 +1,44 @@
+{
+  "id": "G1.59",
+  "status": "sealed",
+  "severity": "minor",
+  "title": "تطبيق Live لمتتبّع مُرشِّح النِّسب على دورة التموضع التالية",
+  "description": "المتتبّع RecommendationTracker في ocobot/domain/rec_tracker.py يدعم MODE_LIVE لاعتماد اقتراح جديد تحت ضوابط hysteresis (min_delta_pct) + cooldown_s + max_changes_per_session، لكن أثره الفعلي غير موصَّل بالتموضع. بعد G1.58 يعمل الوضع المتتبّع بالعرض/Observe فقط ولا يُطبَّق Live على التموضع. يوصّل هذا البند اعتماد Live بحيث يؤثّر في «دورة التموضع التالية فقط» (لا على الأمر المفتوح لحظيًا) عبر ocobot/domain/reposition.py. ملاحظة أمان: هذا ليس T16 (لا تنفيذ أوامر حيّة فعلية)؛ بل اعتماد نِسب (tp/sl/trigger) المحسوبة على حساب دورة التموضع التالية.",
+  "professional_proposal": "توصيل RecommendationTracker.offer(rec).applied في MODE_LIVE لتحديث النِّسب المستخدمة في حساب دورة التموضع التالية فقط، خلف حارس صريح، مع تدقيق audit لكل اعتماد/رفض وإظهار السبب (first|applied|cooldown|hysteresis|session_cap)، بلا مسّ للأمر المفتوح الحالي ولا لأي hot_path حسّاس. اختبارات: اعتماد/رفض وفق الضوابط + عدم التأثير على الأمر القائم لحظيًا + ثبات رسائل التموضع.",
+  "discovered_at": "2026-10-14T21:00:00Z",
+  "depends_on": [
+    "G1.58"
+  ],
+  "human_gate": false,
+  "scope_boundary": {
+    "in": [
+      "ocobot/domain/reposition.py (نقطة إدخال النِّسب لحساب الدورة التالية)",
+      "توصيل RecommendationTracker بمسار التموضع",
+      "tests/test_g1_59_*.py"
+    ],
+    "out": [
+      "أي تنفيذ أوامر Live فعلي (T16)",
+      "أي مسّ للأمر المفتوح لحظيًا",
+      "أي تغيير في hot_path الحسّاس",
+      "واجهة العرض (أُنجزت في G1.58)"
+    ]
+  },
+  "acceptance_checks": [
+    "python tools/_run_suite_per_file.py ⇒ failures=0 errors=0 بعدد ≥ 947 + اختبارات G1.59 الجديدة (TOTAL ran=960 files=122)",
+    "اعتماد/رفض وفق الضوابط first|applied|cooldown|hysteresis|session_cap منعكسة على pcts_for_next_cycle",
+    "الحارس enabled=False يمنع تطبيق Live على التموضع رغم decision.applied",
+    "عدم التأثير على الأمر القائم لحظيًا: build_draft_from_bridge بلا كتابة (cancel_calls()/create_calls() فارغان)",
+    "ثبات رسائل/سلوك التموضع: تطابق حقول draft مع المسار المباشر + test_g1_55_reposition_message أخضر",
+    "test_g1_41_i18n_no_leak أخضر (§1.5)"
+  ],
+  "resolution": "ocobot/domain/reposition.py: أُضيفت وحدة domain خالصة RepositionRecommendationBridge + NextCyclePcts + _opt_dec، إضافةً إلى SafeExecutor.build_draft_from_bridge (قراءة فقط P2). الوصلة تمرّر الاقتراح إلى RecommendationTracker.offer وتعتمد نِسبه لِـ«دورة التموضع التالية فقط» حين decision.applied في MODE_LIVE وخلف حارس enabled، مع audit (reason ∈ first|applied|observe|off|cooldown|hysteresis|session_cap و applied_to_next_cycle). pcts_for_next_cycle تُعيد live_rec عند وجود اعتماد وإلا base. لا مسّ للأمر المفتوح لحظيًا (build_draft_from_bridge لا تُلغي/تُنشئ شيئًا؛ تأكّد بـ cancel_calls()/create_calls()==[]) ولا hot_path ولا تنفيذ T16. ثبات رسائل/سلوك التموضع: مطابقة تامّة لحقول draft (tp_price/stop_trigger/stop_limit) مع المسار المباشر، و test_g1_55_reposition_message أخضر، و test_g1_41_i18n_no_leak أخضر (§1.5). التحقّق المستقل: python tools/_run_suite_per_file.py docs/G1_59_report.md 120 ⇒ TOTAL ran=960 failures=0 errors=0 files=122 status=OK (+13 اختبارات/+1 ملف عن 947/121).",
+  "evidence_path": "docs/G1_59_report.md",
+  "seal": {
+    "verified": true,
+    "evidence_path": "docs/G1_59_report.md (split per-file: TOTAL ran=960 failures=0 errors=0 files=122 status=OK)",
+    "evidence_count": 960,
+    "docs_synced": true,
+    "ts": "2026-10-14T22:50:41Z"
+  },
+  "gate_note": "بند لاحق مُسجَّل مسبقًا بأمر المستخدم ونُفِّذ عند أمر «نفّذ G1.59». لم يُفعَّل أي تنفيذ T16 حيّ، ولا يُرقَّى T16 قبل بوّابة G1 (§10.5). severity=minor فلا يحجب خروج G1 (§10.5-أ)."
+}
