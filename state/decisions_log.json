@@ -409,5 +409,15 @@
     "ts": "2026-10-14T20:01:06Z",
     "decision": "توحيد تنبيهات التدخّل الثريّة",
     "note": "رأس القوس 🏁→🧷؛ alert_cb/btc_alert_cb إلى LOG-ONLY لمنع الإرسال المزدوج (الرسالة الثريّة تحمل تنبيه PLACED)؛ خطّاف btc_notifier إضافي محروس في guardian_supervisor._btc_tick (مرآة لخطّاف notifier القائم، خارج hot_path المختوم)؛ لقطة ثبات لرسالتَي monitor_start/repositioned."
+  },
+  {
+    "id": "G1.61-open",
+    "decision": "scalp_recalibration_contracted",
+    "note": "c=0.25,R=2 net,5m/1h/1m,quiet 1h ATR%<0.6,band[0.3,0.9]"
+  },
+  {
+    "id": "G1.61-seal",
+    "decision": "scalp_recalibration_sealed",
+    "note": "evidence _g1_61_tests.out"
   }
 ]

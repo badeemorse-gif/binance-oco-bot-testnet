@@ -30,6 +30,7 @@ __all__ = [
     "build_market_exit_message",
     "build_btc_follow_message",
     "build_manual_exit_message",
+    "build_monitor_closed_message",
     "format_event",
 ]
 
@@ -560,6 +561,18 @@ def build_btc_follow_message(record: Any, state: Optional[Any] = None) -> str:
             "(partial: formatting error)")
 
 
+# G1.63: ملاحظات إنجليزية موجزة لنتيجة عدم تنفيذ الخروج اليدوي (§1.5: لا عربية في Telegram).
+_MANUAL_EXIT_OUTCOME_NOTES = {
+    "ABORT_GATE": "blocked by the double sell safety gate",
+    "ABORT_PROTECTED": "a protective sell order already rests",
+    "ABORT_NO_FREE_QTY": "no free balance to sell; it is locked in a resting order",
+    "ABORT_NO_SELECTION": "no trade is selected",
+    "ABORT_INVALID_FILTERS": "invalid symbol filters",
+    "ERROR": "an internal error prevented the exit",
+    "DRY_RUN": "dry run; no live action",
+}
+
+
 def build_manual_exit_message(record: Any, state: Optional[Any] = None) -> str:
     """Render a MarkdownV2 message for a ``manual_exit`` record.
 
@@ -568,6 +581,25 @@ def build_manual_exit_message(record: Any, state: Optional[Any] = None) -> str:
     """
     try:
         details = _get(record, "details", {}) or {}
+
+        # G1.63: مسار غير المنفَّذ (placed=False) — رسالة إقرار واضحة بالسبب. المسار
+        #        القديم لم يكن يُنتَج إطلاقًا لغير المنفَّذ؛ والمنفَّذ (placed=True/None)
+        #        يبقى كما هو تمامًا أدناه (لا مساس بأي نجاح).
+        if _get(details, "placed") is False:
+            symbol_np = _get(details, "symbol", _state_attr(state, "symbol"))
+            action_np = _get(details, "action")
+            note_np = _MANUAL_EXIT_OUTCOME_NOTES.get(
+                str(action_np).strip() if action_np is not None else "",
+                "exit was not placed")
+            lines_np = [
+                "✋ *Manual Exit* \\(not placed\\)",
+                "",
+                _label_str("Symbol: ", symbol_np),
+                _label_str("Action: ", action_np),
+                _label_str("Note: ", note_np),
+                "Time: " + _timestamp(record, details),
+            ]
+            return "\n".join(lines_np)
 
         symbol = _get(details, "symbol", _state_attr(state, "symbol"))
         reason = "Manual exit (best live price)"
@@ -604,6 +636,83 @@ def build_manual_exit_message(record: Any, state: Optional[Any] = None) -> str:
             "(partial: formatting error)")
 
 
+# G1.62: تسمية بشرية موجزة لسبب إغلاق الجلسة (EndReason) — بلا رموز MarkdownV2 خاصّة.
+_END_REASON_LABELS = {
+    "completed_tp": "🟢 Take Profit",
+    "completed_sl": "🔴 Stop Loss",
+    "stopped_manual": "✋ Stopped manually",
+    "stopped_disconnect": "🔌 Stopped on disconnect",
+    "stopped_other": "⏹ Stopped",
+}
+
+
+def build_monitor_closed_message(record: Any, state: Optional[Any] = None) -> str:
+    """Render a MarkdownV2 message for a ``monitor_closed`` audit record (G1.62).
+
+    Fires on EVERY session close — whether the position exited by a real sell
+    (TP/SL fill or an intervention) or the user stopped monitoring. Carries the
+    close reason, the operating percentages (trigger/TP/SL) and, for a completed
+    TP/SL exit, the resulting PnL% derived from the configured level. Reads the
+    session context merged by the bridge (``_enrich``) and/or state. Never raises.
+    """
+    try:
+        details = _get(record, "details", {}) or {}
+
+        trade_uid = _get(details, "trade_uid", _state_attr(state, "trade_uid"))
+        session_no = _get(details, "session_no", _state_attr(state, "session_no"))
+        session = _session_id(trade_uid, session_no)
+
+        symbol = _get(details, "symbol", _state_attr(state, "symbol"))
+
+        end_reason = _get(details, "end_reason")
+        reason_key = str(end_reason).strip().lower() if end_reason is not None else ""
+        outcome = _END_REASON_LABELS.get(reason_key, "⏹ Stopped")
+        reason_text = _get(details, "reason")
+
+        reference_price = _get(details, "reference_price",
+                               _state_attr(state, "reference_price"))
+        trigger_pct = _get(details, "trigger_pct", _state_attr(state, "trigger_pct"))
+        tp_pct = _get(details, "tp_pct", _state_attr(state, "tp_pct"))
+        sl_pct = _get(details, "sl_pct", _state_attr(state, "sl_pct"))
+
+        tp_price = _derive_price(reference_price, tp_pct, add=True)
+        sl_price = _derive_price(reference_price, sl_pct, add=False)
+        activation = _derive_price(reference_price, trigger_pct, add=True)
+
+        # G1.62: نتيجة الصفقة% عند خروج فعلي بـTP/SL — تُشتقّ من مستوى الإعداد
+        #        (TP ⇒ +tp_pct ، SL ⇒ -sl_pct). غير ذلك ⇒ _MISSING.
+        result_pct = _MISSING
+        if reason_key == "completed_tp" and tp_pct is not None:
+            result_pct = _fmt_pct(tp_pct)
+        elif reason_key == "completed_sl" and sl_pct is not None:
+            neg = _to_decimal(sl_pct)
+            result_pct = _fmt_pct(-neg) if neg is not None else _MISSING
+
+        lines = [
+            "🏁 *Monitor Closed*",
+            "",
+            "Session: " + session,
+            "Symbol: " + (escape_mdv2(symbol) if symbol is not None else _MISSING),
+            "Outcome: " + outcome,
+            _label_str("Reason: ", reason_text),
+            "Result%: " + result_pct,
+            "",
+            "Reference price: " + _fmt_decimal(reference_price),
+            "Activation \\(next\\): " + _fmt_decimal(activation)
+            + "  \\(" + _fmt_pct(trigger_pct) + "\\)",
+            "TP: " + _EMOJI_TP + " " + _fmt_decimal(tp_price)
+            + "  \\(" + _fmt_pct(tp_pct) + "\\)",
+            "SL: " + _EMOJI_SL + " " + _fmt_decimal(sl_price)
+            + "  \\(" + _fmt_pct(sl_pct) + "\\)",
+            "",
+            "Time: " + _timestamp(record, details),
+        ]
+        return "\n".join(lines)
+    except Exception:
+        # Absolute last-resort: never raise.
+        return "🏁 *Monitor Closed*\n" + escape_mdv2("(partial: formatting error)")
+
+
 def format_event(record: Any, state: Optional[Any] = None,
                  prev_price: Optional[Any] = None) -> Optional[str]:
     """Route an audit *record* to the matching builder by its ``event``.
@@ -627,4 +736,6 @@ def format_event(record: Any, state: Optional[Any] = None,
         return build_btc_follow_message(record, state)
     if event == "manual_exit":
         return build_manual_exit_message(record, state)
+    if event == "monitor_closed":
+        return build_monitor_closed_message(record, state)
     return None

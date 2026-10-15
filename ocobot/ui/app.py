@@ -367,6 +367,7 @@ def main():  # pragma: no cover - interactive entry point
             from ocobot.domain.exchange_info import ExchangeInfoService as _BxExInfo
             from ocobot.domain.pricing import DEFAULT_GAP_TICKS as _BX_GAP
             from .bracket_wiring import BracketExitWiring as _BxWiring
+            from ocobot.alerts.bridge import make_market_exit_notifier as _mk_bx_notifier
             from types import SimpleNamespace as _BxNS
             _bx_client = _BxLazy()
             _bx_broker = _BxBroker(_bx_client)
@@ -430,6 +431,13 @@ def main():  # pragma: no cover - interactive entry point
                     dry_run_getter=lambda: (_bx_os.environ.get('OCOBOT_BRACKET', '').strip().lower() != 'live'),
                     kill_switch_getter=_bx_kill,
                     exit_source_noter=_bx_exit_source,
+                    # G1.62: مُطلِق تنبيه 🧷 ثريّ لقوس الخروج بالسعر عبر notifier(result) عند PLACED.
+                    #        كان مفقودًا في الإنتاج (الدالة مستعملة في الاختبارات فقط) ⇒ القوس كان صامتًا.
+                    #        shim lazy يحلّ window._alerts_notifier/_alerts_store وقت التشغيل.
+                    notifier=_mk_bx_notifier(
+                        notifier=_LazyNotifierShim(lambda: window),
+                        store=_LazyStoreShim(lambda: window),
+                    ),
                 )
         except Exception:
             _bracket_wiring = None

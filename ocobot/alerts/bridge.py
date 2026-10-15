@@ -30,7 +30,7 @@ from ocobot.domain.completed_trades import parse_audit_jsonl
 logger = logging.getLogger("ocobot.alerts.bridge")
 
 # Events that produce an alert message. Mirrors ``format_event`` routing.
-_ALERT_EVENTS = frozenset({"monitor_start", "repositioned"})
+_ALERT_EVENTS = frozenset({"monitor_start", "repositioned", "monitor_closed"})
 
 
 def default_audit_path() -> str:
@@ -118,7 +118,7 @@ class AlertsAuditBridge:
         try:
             if not isinstance(record, dict):
                 return record
-            if record.get("event") != "repositioned" or not self._session_ctx:
+            if record.get("event") not in ("repositioned", "monitor_closed") or not self._session_ctx:
                 return record
             own = record.get("details")
             own = own if isinstance(own, dict) else {}
@@ -439,6 +439,10 @@ def manual_exit_record(result, *, reference_price=None, ts=None):
             "client_order_id": _dget(result, "client_order_id"),
             "response": _dget(result, "response"),
         }
+        # G1.63: مرِّر حالة التنفيذ وسبب عدم الوضع لرسالة الإقرار (كل ضغطة تُشعِر).
+        details["placed"] = _dget(result, "placed")
+        details["reason"] = _dget(result, "reason")
+        details["error"] = _dget(result, "error")
         record = {"event": "manual_exit", "details": details}
         if ts is not None:
             record["ts"] = ts

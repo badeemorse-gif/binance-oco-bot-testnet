@@ -6,5 +6,10 @@
     "label": "Cocbinans_bot",
     "present": true
   },
-  "recipients": []
+  "recipients": [
+    {
+      "chat_id": "8085814093",
+      "label": ""
+    }
+  ]
 }

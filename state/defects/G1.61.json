@@ -1,0 +1,14 @@
+{
+  "id": "G1.61",
+  "status": "sealed",
+  "severity": "major",
+  "title": "نِسب «ترشيح النِّسب التكيّفي» مضخّمة/غير متّسقة (SOL: tp=18.5%، sl=16.3%، trigger=1.774%) — إعادة معايرة للسكالبنج",
+  "evidence_path": "_g1_61_tests.out",
+  "seal": {
+    "verified": true,
+    "evidence_path": "_g1_61_tests.out",
+    "evidence_count": 980,
+    "docs_synced": true,
+    "ts": "2026-10-15T11:50:34Z"
+  }
+}

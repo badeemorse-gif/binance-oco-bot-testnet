@@ -1,0 +1,24 @@
+{
+  "id": "G1.63",
+  "status": "sealed",
+  "severity": "major",
+  "title": "تنبيه الخروج اليدوي الفوري مفقود: زرّ «تنفيذ الخروج الفوري» لا يرسل أي إشعار عند عدم تنفيذ الأمر (abort/gate)؛ المطلوب رسالة في كل حالة بعد الضغط + تفاصيل الصفقة عند الإتمام",
+  "description": "عند الضغط على «تنفيذ الخروج الفوري» لا يصل إشعار Telegram في الحالات الشائعة. السبب: domain/market_exit.execute_market_exit يستدعي notifier(result) على PLACED فقط؛ وكل مسارات ABORT (ABORT_PROTECTED/ABORT_NO_FREE_QTY/ABORT_GATE/ABORT_NO_SELECTION/ABORT_INVALID_FILTERS/ERROR) تعود مبكرًا دون استدعاء notifier ⇒ صمت تام (شائع لأن OCO القائم يحجز الرصيد). كذلك manual_exit_record بلا placed، وbuild_manual_exit_message بلا سطر نتيجة/سبب.",
+  "professional_proposal": "ضمان وصول رسالة ✋ عند كل ضغطة: المنفَّذ (PLACED) يبقى كما هو تمامًا — رسالته هي تفاصيل الصفقة عند الإتمام بهذه الوسيلة؛ وغير المنفَّذ يُطلِق رسالة إقرار واضحة بالسبب. تغيير إضافي معزول دون المساس بأي نجاح ولا hot_path ولا Live.",
+  "discovered_at": "2026-10-15T13:00:00Z",
+  "scope_boundary": [
+    "ocobot/alerts/bridge.py",
+    "ocobot/alerts/formatting.py",
+    "ocobot/ui/manual_exit.py",
+    "tests/test_g1_63_manual_exit_alert.py"
+  ],
+  "resolution": "bridge.py manual_exit_record: + placed/reason/error. formatting.py build_manual_exit_message: فرع placed=False (رسالة ✋ not placed + Action + Note إنجليزية §1.5)؛ مسار المنفَّذ بلا تغيير. manual_exit.py build_manual_exit_fn: إطلاق notifier لكل نتيجة غير منفَّذة (بعد المنفّذ + مسارَي لا-تحديد/خطأ المبكِّرَين) مع تفادي الازدواج (PLACED عبر execute_market_exit، ومسار chase يُطلِق داخليًا). التحقّق: python tools/_run_suite_per_file.py ⇒ TOTAL ran=995 failures=0 errors=0 files=126 status=OK (منها test_g1_63=6).",
+  "evidence_path": "docs/G1_63_report.md",
+  "seal": {
+    "verified": true,
+    "evidence_path": "docs/G1_63_report.md (split per-file: TOTAL ran=995 failures=0 errors=0 files=126 status=OK)",
+    "evidence_count": 995,
+    "docs_synced": true,
+    "ts": "2026-10-15T13:10:00Z"
+  }
+}

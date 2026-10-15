@@ -1,0 +1,24 @@
+{
+  "id": "G1.62",
+  "status": "sealed",
+  "severity": "major",
+  "title": "تغطية تنبيهات Telegram الكاملة لدورة المراقبة: ربط مُطلِّق قوس الخروج (PRICE_BRACKET) في الإنتاج + تنبيه إغلاق موحّد (monitor_closed) + إثراء النِّسب (تموضع/ربح/لمت)",
+  "description": "أثناء التجربة اليدوية (G1): تصل رسالة بدء المراقبة الصحيحة، لكن عند تدخّل أحد الأنظمة الأربعة أو عند الخروج/إغلاق الصفقة لا تصل أي رسالة تفصيلية. (1) قوس الخروج بالسعر يُنشأ في ocobot/ui/app.py عبر BracketExitWiring دون notifier= ⇒ execute_market_exit(notifier=None) ⇒ لا تنبيه؛ وmake_market_exit_notifier مستعملة في الاختبارات فقط. (2) AlertsAuditBridge يقتصر على _ALERT_EVENTS={monitor_start, repositioned}؛ وحدث monitor_closed مُهمَل ⇒ لا رسالة عند إتمام الخروج/البيع أو الإيقاف اليدوي.",
+  "professional_proposal": "كل تغيّر في المراقبة يرسل تفاصيل؛ كل تدخّل من الأنظمة الأربعة يرسل تفاصيل الصفقة بعد التدخّل؛ الخروج (ربح/خسارة) والإيقاف اليدوي (بالسبب) يرسلان رسالة؛ وتُدرَج النِّسب العاملة (تموضع/ربح/لمت).",
+  "discovered_at": "2026-10-15T12:00:00Z",
+  "scope_boundary": [
+    "ocobot/alerts/bridge.py",
+    "ocobot/alerts/formatting.py",
+    "ocobot/ui/app.py",
+    "tests/test_g1_62_alert_coverage.py"
+  ],
+  "resolution": "app.py: تمرير notifier=make_market_exit_notifier عبر _LazyNotifierShim/_LazyStoreShim إلى BracketExitWiring (مرآة للخروج اليدوي G1.57). bridge.py: إضافة monitor_closed إلى _ALERT_EVENTS + توسيع _enrich لإثراء monitor_closed بسياق monitor_start. formatting.py: build_monitor_closed_message (الرمز·سبب الإغلاق·النتيجة%·نِسب trigger/TP/SL·سعر المرجع) + توجيهها في format_event + تصديرها في __all__. رسالتا monitor_start/repositioned بلا تغيير؛ لا hot_path. التحقّق: python tools/_run_suite_per_file.py ⇒ TOTAL ran=989 failures=0 errors=0 files=125 status=OK (منها test_g1_62=9).",
+  "evidence_path": "docs/G1_62_report.md",
+  "seal": {
+    "verified": true,
+    "evidence_path": "docs/G1_62_report.md (split per-file: TOTAL ran=989 failures=0 errors=0 files=125 status=OK)",
+    "evidence_count": 989,
+    "docs_synced": true,
+    "ts": "2026-10-15T13:00:00Z"
+  }
+}

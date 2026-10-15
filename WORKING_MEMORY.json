@@ -2,7 +2,7 @@
   "active": false,
   "task_id": null,
   "resume_point": null,
-  "last_sealed": "G1.60",
-  "note": "G1.60 مختوم (969 أخضر، 123 ملفًا). حُقن recommendation_provider الحقيقي (klines⇒recommender): ocobot/domain/rec_provider.py (recommendation_from_candles + make_recommendation_provider) + app_wiring.build_recommendation_provider فوق KlinesService + DynamicMonitoringScreen.set_recommendation_provider + توصيل app.py::main() (الإقلاع + إعادة الاتصال، symbol_fn=_mon_screen._selected.symbol). خارج خيط Qt عبر runner، بلا hot_path/T16/شبكة في الواجهة (test_ui_no_direct_network أخضر). النتيجة: خانات لوحة ترشيح النِّسب تُعبَّأ في MODE_OBSERVE بدل '—'. لا بنود critical/major غير مختومة؛ الوحيد غير المختوم G1.29 (wont_fix, minor). بوّابة G1 (§10.5): تبقّى فحص صلاحيات مفتاح API + IP whitelist + عبارة اعتماد صريحة قبل ترقية T16.",
-  "updated_at": "2026-10-14T23:16:53Z"
+  "last_sealed": "G1.63",
+  "note": "G1.63 مختوم: زرّ «تنفيذ الخروج الفوري» يُشعِر الآن عند كل ضغطة — المنفَّذ ✋ بتفاصيل الدخول/الخروج/PnL%، وغير المنفَّذ (abort/gate/no-selection/error) ✋ not placed بالسبب. إضافي بحت بلا مساس بأي نجاح. السويت أخضر (995).",
+  "updated_at": "2026-10-15T13:10:00Z"
 }

@@ -171,7 +171,15 @@ def build_manual_exit_fn(
 
             symbol = getattr(selected, "symbol", None) or getattr(state, "symbol", None)
             if not symbol:
-                return {"action": "ABORT_NO_SELECTION", "placed": False}
+                # G1.63: أشعِر حتى عند عدم وجود تحديد (مسار مبكِّر لا يمرّ بالمنفّذ).
+                _res_ns = {"action": "ABORT_NO_SELECTION", "placed": False}
+                try:
+                    _n = notifier_getter() if callable(notifier_getter) else None
+                    if callable(_n):
+                        _n(_res_ns)
+                except Exception:
+                    pass
+                return _res_ns
 
             base_asset = base_asset_fn(symbol) if callable(base_asset_fn) else None
             reference_price = (
@@ -196,7 +204,7 @@ def build_manual_exit_fn(
             resting = exit_broker.get_open_sell_orders(symbol)
             has_resting = bool(resting)
 
-            return run_manual_market_exit(
+            result = run_manual_market_exit(
                 client=exit_broker,
                 symbol=symbol,
                 base_asset=base_asset,
@@ -216,7 +224,27 @@ def build_manual_exit_fn(
                 dry_run=dry_run,
                 exit_source_noter=exit_source_noter,
             )
+            # G1.63: ضمان إشعار عند كل ضغط. execute_market_exit يُطلِق notifier على
+            #        PLACED فقط؛ هنا نُطلِقه لغير المنفَّذ (abort/gate/error) حتى لا يبقى
+            #        الضغط صامتًا. مسار chase (bid_getter) يُطلِق لكل النتائج داخليًا ⇒
+            #        لا نُكرِّر عندما يكون price_getter مُفعّلًا.
+            try:
+                if (callable(notifier) and not callable(price_getter)
+                        and isinstance(result, dict)
+                        and result.get("placed") is not True):
+                    notifier(result)
+            except Exception:
+                pass
+            return result
         except Exception as exc:  # fail-safe: لا يرمي إلى الواجهة
-            return {"action": "ERROR", "placed": False, "error": str(exc)}
+            # G1.63: أشعِر حتى عند الخطأ غير المتوقّع (لا يبقى الضغط صامتًا).
+            _res_err = {"action": "ERROR", "placed": False, "error": str(exc)}
+            try:
+                _n = notifier_getter() if callable(notifier_getter) else None
+                if callable(_n):
+                    _n(_res_err)
+            except Exception:
+                pass
+            return _res_err
 
     return manual_exit_fn

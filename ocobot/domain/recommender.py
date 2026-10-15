@@ -47,6 +47,16 @@ class RecommenderParams:
     thin_tp_haircut: float = 0.8            # تحجيم TP عند ضعف السيولة
     illiquid_extra_gap_ticks: int = 1
     decimals: int = 3            # دقّة تقريب النِّسب
+    # --- معايرة السكالبنج (G1.61) — opt-in؛ الافتراضي "legacy" لا يغيّر السلوك ---
+    objective: str = "legacy"        # "legacy" | "scalp"
+    round_trip_cost_pct: float = 0.25   # تكلفة الرسوم ذهابًا/إيابًا (c)
+    rr_target: float = 2.0           # هدف R:R صافٍ (R)
+    min_net_tp_pct: float = 0.3      # أرضية صافي الربح بعد الرسوم
+    quiet_atr_pct: float = 0.6       # عتبة الهدوء على HTF/1h (ATR%)
+    quiet_band_lo: float = 0.3       # حدّ أدنى لباند تتبّع المُشغّل في الهدوء
+    quiet_band_hi: float = 0.9       # حدّ أعلى لباند تتبّع المُشغّل في الهدوء
+    k_noise: float = 1.0             # معامل أرضية ضوضاء 1m على المُشغّل
+    cost_buffer_pct: float = 0.05    # هامش فوق التكلفة لأرضية المُشغّل
 
 
 @dataclass
@@ -92,12 +102,15 @@ def recommend(volatility: VolatilitySummary,
               params: Optional[RecommenderParams] = None,
               htf_regime: Optional[RegimeSummary] = None,
               ltf_atr_pct: Optional[float] = None,
-              flash_crash_floor_pct: Optional[float] = None) -> Optional[Recommendation]:
+              flash_crash_floor_pct: Optional[float] = None,
+              htf_atr_pct: Optional[float] = None) -> Optional[Recommendation]:
     """يُنتج اقتراح نِسب، أو None إذا تعذّر توفّر أي مُدخل أساسي.
 
     - htf_regime: فريم أعلى لسياق الطموح (adx_factor للـTP)؛ غيابه ⇒ regime التشغيل.
     - ltf_atr_pct: تقلّب فريم منخفض كأرضية ضوضاء (trigger/sl لا يقلّان عنها).
     - flash_crash_floor_pct: أرضية G1.33 مُحقَّنة من المتصل (لا تُختلَق).
+    - htf_atr_pct: ATR% على الفريم الأعلى (1h) لاختبار الهدوء في فرع السكالبنج
+      (objective=\"scalp\")؛ اختياري ⇒ المتصلون القدامى غير متأثّرين.
     """
     p = params or RecommenderParams()
     ref = float(reference_price) if reference_price else 0.0
@@ -149,6 +162,46 @@ def recommend(volatility: VolatilitySummary,
         "medianPullback": med_pull, "adxFactor": adx_factor,
         "regimeLabel": regime.label,
     }
+
+    # --- فرع السكالبنج (G1.61) — opt-in، يستبدل التحجيم النهائي قبل الأرضيات ---
+    # يحافظ على المسار legacy بلا مساس حين objective != "scalp".
+    if p.objective == "scalp":
+        c = p.round_trip_cost_pct
+        rr = p.rr_target
+        # SL الخام = نفس أساس legacy: max(k_sl·ATR%, P80(MAE)).
+        # tp_reach = أقصى طموح واقعي من P75(MFE) (أو احتياط ATR%·1.5) × عامل الاتجاه.
+        if p75_mfe is not None:
+            tp_reach = p75_mfe * adx_factor
+        else:
+            tp_reach = (atr_pct if atr_pct is not None else sl_raw) * 1.5 * adx_factor
+        tp_need = rr * sl_raw + (rr + 1) * c
+        if tp_need <= tp_reach:
+            tp_raw = tp_need
+            # sl_raw يبقى كما هو
+        else:
+            tp_raw = tp_reach
+            sl_raw = max((tp_reach - (rr + 1) * c) / rr, 0.0)
+            flags.append("sl_tightened_for_rr")
+        if (tp_raw - c) < p.min_net_tp_pct:
+            flags.append("below_fee_floor")
+        # المُشغّل: أرضيتا ضوضاء 1m + تكلفة، ثم باند النظام في الهدوء.
+        noise = ltf_atr_pct if ltf_atr_pct is not None else 0.0
+        trigger_raw = max(trigger_raw, p.k_noise * noise, c + p.cost_buffer_pct)
+        is_quiet = (regime.label == "ranging"
+                    and htf_atr_pct is not None
+                    and htf_atr_pct < p.quiet_atr_pct)
+        if is_quiet:
+            trigger_raw = min(max(trigger_raw, p.quiet_band_lo), p.quiet_band_hi)
+            flags.append("quiet_band")
+        rationale.update({
+            "objective": "scalp",
+            "cost": c,
+            "rrTarget": rr,
+            "tpReach": tp_reach,
+            "tpNeed": tp_need,
+            "isQuiet": is_quiet,
+            "htfAtrPct": htf_atr_pct,
+        })
 
     # --- أرضية ضوضاء الفريم المنخفض (هرمية) ---
     if ltf_atr_pct is not None:
