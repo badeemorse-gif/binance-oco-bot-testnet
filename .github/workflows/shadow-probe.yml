@@ -1,0 +1,45 @@
+name: shadow-probe
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *'
+
+concurrency:
+  group: shadow-probe
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run shadow probe (read-only, public data)
+        run: |
+          python tools/_shadow_exit_probe.py | tee probe_output.txt
+
+      - name: Append result to evidence log and commit
+        run: |
+          mkdir -p state
+          {
+            echo "===== run #${{ github.run_number }} @ $(date -u +'%Y-%m-%dT%H:%M:%SZ') ====="
+            cat probe_output.txt
+            echo ""
+          } >> state/shadow_evidence.log
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state/shadow_evidence.log
+          git commit -m "shadow evidence: run #${{ github.run_number }}" || exit 0
+          git pull --rebase --autostash origin main || true
+          git push
