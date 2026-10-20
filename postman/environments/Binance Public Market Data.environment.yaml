@@ -1,0 +1,6 @@
+name: Binance Public Market Data
+values:
+  - key: marketDataBaseUrl
+    value: 'https://data-api.binance.vision'
+    enabled: true
+    type: default

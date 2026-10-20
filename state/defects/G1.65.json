@@ -1,0 +1,55 @@
+{
+  "id": "G1.65",
+  "status": "in_progress",
+  "severity": "major",
+  "kind": "production_application",
+  "title": "تطبيق إنتاجي مُعلَّم وقابل للعكس لمخرجات مسار G1.64 المُتحقَّقة forward: منطق الخروج المتكيّف wave_adaptive + رافعة lock_base + بروفايل بطل المُرشِّح k5.0_tf0.15 — خلف feature-flag مُطفأ افتراضيًّا، صفر رأس مال حيّ",
+  "description": "بعد اجتياز بوّابة forward W3 (EXP-024C داخل G1.64؛ forward_w3_launch_gate = MET) نطبّق النتائج على الكود الإنتاجي بشكل مُعلَّم وقابل للعكس: (أ) وحدة domain خالصة ocobot/domain/dynamic_exit.py تجسّد صيغة الخروج المُتحقَّقة حرفيًّا من backtest_lab/g1_64_ratio_filter/exp_021_run.py::resim_1m_wave — مسافة التتبّع% = clamp(wave_k·ATR%_live, dist_min, dist_max)، وأرضية القفل lf = min(lock_cap, lock_base + lock_slope·g) حيث g = نسبة الركضة% من الدخول إلى القمّة، وستوب رتيب (لا ينزل) = الأعلى من {الستوب السابق، القمّة·(1−dist%/100)، سعر أرضية القفل، قفل BE بعد BE_TRIGGER}؛ بروتوكول wadapt_tight مع lock_base افتراضي 0.80 (بدل 0.60) بقرار احترافي (قويّ ومُتحقَّق forward دون تبنّي حافة 0.95)؛ (ب) بروفايل بطل اختياري للمُرشِّح recommender_profile: baseline (الحالي، بلا تغيير) | champion (k_sl=5.0, trigger_f=0.15)؛ (ج) feature-flag enabled=False افتراضيًّا ⇒ صفر تغيير سلوك ما لم يُفعَّل.",
+  "professional_proposal": "تطبيق على مرحلتين. increment #1 (هذا البند الآن): الوحدة الخالصة dynamic_exit.py مُختبَرة بدقّة + بروفايل البطل موصولًا في ocobot/app_wiring.py عبر config (الافتراضي baseline ⇒ السلوك الحالي تمامًا) + config/flag؛ بلا مساس بحلقة reposition/monitoring الحيّة. increment #2 (لاحق، بمراجعة صريحة): وصل الخروج المتكيّف داخل ocobot/domain/reposition.py + ocobot/domain/monitoring.py خلف الـflag مع اختبار انحدار يثبت أنّ flag-OFF يُعيد السلوك الحالي بتًّا. لا رأس مال حيّ قبل live-forward بوقت الساعة + «نفّذ» + طرح مرحلي (maxpos=1) + إدارة ذيل عبر guardian.",
+  "discovered_at": "2026-10-20T10:00:00Z",
+  "builds_on": "G1.64 / EXP-024C (forward_w3_launch_gate = MET on historical holdout W3)",
+  "scope_boundary": [
+    "ocobot/domain/dynamic_exit.py (جديد — وحدة domain خالصة)",
+    "ocobot/app_wiring.py (وصل بروفايل المُرشِّح عبر config؛ الافتراضي بلا تغيير)",
+    "tests/test_g1_65_dynamic_exit.py (جديد)",
+    "state/defects/G1.65.json",
+    "docs/G1_65_report.md",
+    "ocobot/domain/reposition.py (increment #2 — وصل خلف flag)",
+    "ocobot/domain/monitoring.py (increment #2 — وصل خلف flag)",
+    "tests/test_g1_65_increment2_wiring.py (جديد)"
+  ],
+  "acceptance_checks": [
+    "dynamic_exit.lock_floor_frac و trail_distance_pct تطابق صيغة exp_021_run.resim_1m_wave على قيم مُثبَّتة",
+    "recommender_profile('baseline') == السلوك الحالي؛ recommender_profile('champion') == RecommenderParams(k_sl=5.0, trigger_f=0.15)",
+    "feature-flag enabled=False ⇒ صفر تغيير سلوك (اختبار انحدار على app_wiring / المُرشِّح)",
+    "كامل سويت الاختبارات أخضر: python -m unittest discover -s tests -t . (أو tools/_run_suite_per_file.py)",
+    "ثنائية اللغة §1.5 لأي نص واجهة/سجل",
+    "لا hot_path، لا Live/testnet، لا رأس مال؛ G1.64 تبقى active:true غير مختومة"
+  ],
+  "safety": "صفر تغيير سلوك افتراضيًّا (flag enabled=False + recommender_profile=baseline)؛ وحدة domain خالصة بلا I/O/شبكة؛ لا hot_path ولا Live. المسار G1.64 يبقى مفتوحًا؛ هذا البند جانبي مستقلّ يُختَم وحده عند اكتماله دون غلق G1.64.",
+  "charter_alignment": "تطبيق نتائج G1.64 مسموح بأمر «نفّذ» صريح (§11.8ج)؛ فتح بند جانبي G1.<n> دون غلق مسار التجارب (charter rule 5). لا Live (T16) قبل بوّابة G1.",
+  "increment_1": {
+    "status": "done",
+    "implemented": [
+      "ocobot/domain/dynamic_exit.py",
+      "ocobot/app_wiring.py (profile hook╪î ┘à╪¬┘ê╪º┘ü┘é ╪▒╪¼╪╣┘è┘ï╪º)",
+      "tests/test_g1_65_dynamic_exit.py (19)"
+    ],
+    "behavior_change": "none by default (enabled=False, recommender_profile=baseline)",
+    "evidence": "python -m unittest discover -s tests -t . => Ran 1014 tests OK failures=0 errors=0 (282.5s)╪¢ G1.65 ┘ê╪¡╪»┘ç╪º 19 OK",
+    "ts": "2026-10-20T10:00:00Z"
+  },
+  "evidence_path": "docs/G1_65_report.md",
+  "remaining": "قبل أي رأس مال حيّ: live-forward بوقت الساعة (paper/testnet) + سدّ تحفّظات W3 (تحيّز بقاء الكون + بوّابة EXP-021) + طرح مرحلي (maxpos=1) + إدارة ذيل عبر guardian + توصيل مصدر ATR٪ حيّ/fill/peak دقيق + أمر «نفّذ» صريح. G1.64 تبقى active:true غير مختومة؛ G1.65 يبقى in_progress (غير مختوم).",
+  "increment_2": {
+    "status": "done",
+    "implemented": [
+      "ocobot/domain/reposition.py (build_draft/execute: keyword-only اختيارية dynamic_exit/peak_price/prev_stop/live_atr_pct_value؛ الافتراضي None => السلوك الحالي)",
+      "ocobot/domain/monitoring.py (MonitoringEngine: dynamic_exit + live_atr_pct_provider اختياريان؛ تتبّع القمّة والتمرير للمنفّذ عند التفعيل فقط؛ المسار المُطفأ غير ممسوس)",
+      "tests/test_g1_65_increment2_wiring.py (6)"
+    ],
+    "behavior_change": "none by default (dynamic_exit=None / enabled=False => مطابق بتًّا؛ مُثبَت بمصفوفة مدخلات على build_draft/execute وبتطابق وسائط execute في monitoring)",
+    "evidence": "python -m unittest discover -s tests -t . => Ran 1020 tests OK failures=0 errors=0 (251.7s)؛ 6 اختبارات increment #2 OK (سجلّ: _g1_65_inc2_suite.out)",
+    "ts": "2026-10-20T12:00:00Z"
+  }
+}

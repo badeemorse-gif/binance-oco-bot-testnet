@@ -1,0 +1,20 @@
+$kind: http-request
+name: Ticker Price
+method: GET
+url: '{{marketDataBaseUrl}}/api/v3/ticker/price?symbol={{symbol}}'
+order: 3000
+queryParams:
+  - key: symbol
+    value: '{{symbol}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Status code is 200', function () {
+        pm.response.to.have.status(200);
+      });
+
+      pm.test('Body has a price field', function () {
+        const body = pm.response.json();
+        pm.expect(body).to.have.property('price');
+      });

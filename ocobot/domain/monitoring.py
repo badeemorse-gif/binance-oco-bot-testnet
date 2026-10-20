@@ -26,6 +26,7 @@ from typing import TYPE_CHECKING, Optional
 
 from ocobot.domain.models import fmt
 from ocobot.domain.reposition import ExecutionResult, ExecutionState
+from ocobot.domain.dynamic_exit import DynamicExitConfig, shadow_divergence
 
 
 def _now_iso() -> str:
@@ -157,7 +158,8 @@ class MonitoringEngine:
 
     def __init__(self, executor, *, guard_policy: GuardPolicy = GuardPolicy.HALT_NOTIFY,
                  dry_run: bool = False, audit: Optional["AuditLog"] = None,
-                 checkpoint_sink=None):
+                 checkpoint_sink=None, dynamic_exit: Optional[DynamicExitConfig] = None,
+                 live_atr_pct_provider=None, shadow: bool = False):
         self._executor = executor
         self.guard_policy = GuardPolicy(guard_policy)
         self.dry_run = bool(dry_run)
@@ -165,6 +167,10 @@ class MonitoringEngine:
         self._selected_oco = None  # مرجع الـ OCO المختار (يُضبط في start/resume)
         self._audit = audit
         self._checkpoint_sink = checkpoint_sink
+        self._dynamic_exit = dynamic_exit
+        self._live_atr_pct_provider = live_atr_pct_provider
+        self._shadow = bool(shadow)
+        self._peak = None
 
     def _record(self, event, details):
         # التدقيق اختياري ولا يجب أن يكسر المراقبة أبدًا (backward-compatible).
@@ -173,6 +179,39 @@ class MonitoringEngine:
                 self._audit.record(event, details)
             except Exception:
                 pass   # auditing must never break monitoring
+
+    def _record_dynamic_exit_atr(self, atr_value):
+        """observability (G1.65 #4/#5): يسجّل ATR٪ الحيّ + لقطة عدّادات المزوّد.
+        تسجيل بحت عبر ``_record`` (audit) — لا يكسر المراقبة ولا يُغيّر أي سلوك."""
+        try:
+            details = {"atr_pct": float(atr_value),
+                       "fail_safe": float(atr_value) == 0.0}
+            stats = getattr(self._live_atr_pct_provider, "stats", None)
+            if isinstance(stats, dict):
+                details["provider_stats"] = {
+                    "calls": stats.get("calls"),
+                    "ok": stats.get("ok"),
+                    "failsafe": stats.get("failsafe"),
+                    "last_reason": stats.get("last_reason"),
+                }
+            self._record("dynamic_exit_atr", details)
+        except Exception:
+            pass   # observability must never break monitoring
+
+    def _record_dynamic_exit_shadow(self, reference, st):
+        """شادو-مود (G1.65 #5): يحسب ماذا كان الخروج التكيّف سيفعل ويسجّله فقط
+        — **دون أي تنفيذ** (صفر تغيير سلوك). محصّن: لا يكسر المراقبة أبدًا."""
+        try:
+            _atr = (float(self._live_atr_pct_provider())
+                    if callable(self._live_atr_pct_provider) else 0.0)
+            self._record_dynamic_exit_atr(_atr)
+            _peak = self._peak if self._peak is not None else reference
+            _prev_stop = st.reference_price * (Decimal("1") - st.sl_pct / _HUNDRED)
+            rec = shadow_divergence(reference, _peak, _prev_stop, _atr, st.sl_pct,
+                                    self._dynamic_exit.params())
+            self._record("dynamic_exit_shadow", rec)
+        except Exception:
+            pass   # shadow must never break monitoring
 
     def note_exit_source(self, source: str) -> None:
         """G1.46: يُسجّل علامة نسبة الخروج (exit_source) قبل الإغلاق — إضافة بحتة.
@@ -298,6 +337,8 @@ class MonitoringEngine:
                                    message="دورة إعادة تموضع قيد التنفيذ — احتفظنا بأحدث سعر.")
 
             st.last_price = price
+            if self._dynamic_exit is not None and (self._dynamic_exit.enabled or self._shadow):
+                self._peak = price if self._peak is None else max(self._peak, price)
 
             # (2) Trigger Latching: عبور مستوى التفعيل يُثبّت latched (لا يُلغى بسحب صغير)
             if (st.state == MonitoringStateEnum.MONITORING_ACTIVE and not st.latched
@@ -329,13 +370,36 @@ class MonitoringEngine:
                 # ابدأ دورة واحدة
                 st.in_flight = True
                 st.state = MonitoringStateEnum.REPOSITIONING
-                result = self._executor.execute(
-                    order_list_id=st.target_order_list_id,
-                    tp_pct=st.tp_pct,
-                    sl_pct=st.sl_pct,
-                    reference_price=last,
-                    dry_run=self.dry_run,
-                )
+                if self._dynamic_exit is not None and self._dynamic_exit.enabled:
+                    _atr = (float(self._live_atr_pct_provider())
+                            if callable(self._live_atr_pct_provider) else 0.0)
+                    self._record_dynamic_exit_atr(_atr)
+                    _peak = self._peak if self._peak is not None else last
+                    _prev_stop = st.reference_price * (Decimal("1") - st.sl_pct / _HUNDRED)
+                    result = self._executor.execute(
+                        order_list_id=st.target_order_list_id,
+                        tp_pct=st.tp_pct,
+                        sl_pct=st.sl_pct,
+                        reference_price=last,
+                        dry_run=self.dry_run,
+                        dynamic_exit=self._dynamic_exit,
+                        peak_price=_peak,
+                        prev_stop=_prev_stop,
+                        live_atr_pct_value=_atr,
+                    )
+                else:
+                    # شادو-مود (opt-in، increment #5): احسب ماذا كان الخروج التكيّف
+                    # سيفعل وسجّله فقط — **دون تنفيذه**. نداء execute أدناه يبقى المسار
+                    # الحالي حرفيًّا ⇒ صفر تغيير سلوك.
+                    if self._shadow and self._dynamic_exit is not None:
+                        self._record_dynamic_exit_shadow(last, st)
+                    result = self._executor.execute(
+                        order_list_id=st.target_order_list_id,
+                        tp_pct=st.tp_pct,
+                        sl_pct=st.sl_pct,
+                        reference_price=last,
+                        dry_run=self.dry_run,
+                    )
                 return self._interpret(result, last)
 
             # (4) لا شيء ليُنفَّذ الآن

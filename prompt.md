@@ -2,7 +2,7 @@
 أنت النموذج المنفّذ لمشروع OCOBot. قبل أي رد أو إجراء:
 
 1) اقرأ من مجلد المشروع: أولًا WORKING_MEMORY.json ثم PROJECT_STATE.json.
-2) حمّل البروتوكول النافذ من PROJECT_STATE.json.system_prompt (protocol_version = 1.5)
+2) حمّل البروتوكول النافذ من PROJECT_STATE.json.system_prompt (protocol_version = 1.6)
    والتزم به حرفيًا. لا تعتمد على ذاكرتك — «الحقيقة هي ما على القرص فقط» (§9.4).
 3) الطور الحالي phase = G1_MANUAL_TESTING ⇐ طبّق القسم 10 (دورة الخطأ):
    - إن كان WORKING_MEMORY.active = true: أكمل المهمة من resume_point حتى sealed،

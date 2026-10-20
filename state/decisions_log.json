@@ -419,5 +419,31 @@
     "id": "G1.61-seal",
     "decision": "scalp_recalibration_sealed",
     "note": "evidence _g1_61_tests.out"
+  },
+  {
+    "id": "protocol-1.6",
+    "decision": "protocol_updated",
+    "note": "أُضيف البند 11.8 (قاعدة التجربة التاريخية الافتراضية) ورُفِع الإصدار 1.5->1.6 بأمر صريح من المستخدم؛ bootstrapped_at السابق 2026-09-21T23:05:00Z",
+    "ts": "2026-10-15T22:00:00Z"
+  },
+  {
+    "id": "G1.64-open",
+    "decision": "open_persistent_experiment_track",
+    "note": "ratio-filter accuracy tuning; rules embedded in task (state/defects/G1.64.json + WORKING_MEMORY + backtest_lab/g1_64_ratio_filter/README.md) NOT in protocol; sealing/archiving excluded from steps until explicit user command; WM active:true so G1.64 always appears in RECOVER; side G1.<n> defects may be opened+sealed normally then WM re-activated to G1.64; default method historical walk-forward zero-risk; severity=minor to not block G1 exit (§10.5)"
+  },
+  {
+    "id": "G1.64-backfill",
+    "decision": "import_historical_experiments",
+    "note": "EXP-001 scalp RR variants (tune_out/tune_results), EXP-002 trailing variants (trail_out/trail_results), EXP-003 recommender grid walk-forward (tune_recommender_out/results) best k_sl=3.0 trigger_f=0.4 PF=2.579; full method+results recorded in EXPERIMENTS_LOG.md + REPORTS.md + experiments_index.json; baseline captured; zero-risk documentation, no production change"
+  },
+  {
+    "id": "G1.64-EXP-004",
+    "decision": "experiment_result_time_window",
+    "note": "Cairo availability window 13:00-05:00 improves all quality metrics vs 24h on baseline (win +1.7pp, out/trade +14.8%, PF +13.5%, avgBars 2.6->2.5) while dropping 36% of trades; peak entry hours 18:00-20:00 Cairo; recorded in EXPERIMENTS_LOG/REPORTS/experiments_index + exp_004_time_window.py; NOT adopted to production (needs explicit نفّذ); next EXP-005 proposed"
+  },
+  {
+    "id": "G1.64-EXP-004-singlepos",
+    "decision": "experiment_result_single_position_durations",
+    "note": "single-position realism collapses overlapping signals (24h 543->113, window 348->72) but window stays higher quality per trade (out/trade +36%, PF +30%, win ~flat); trade durations short (median 30m, mean 34m, p90 45-60m, max 1h15-1h45m, none hit 4h cap); only 5.6% of window trades close after trader leaves (handled by OCO); recorded in EXPERIMENTS_LOG/REPORTS/index + exp_004_time_window.py; not adopted to production (needs explicit نفّذ)"
   }
 ]

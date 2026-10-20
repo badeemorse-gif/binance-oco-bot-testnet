@@ -1,0 +1,21 @@
+$kind: http-request
+name: Exchange Info
+method: GET
+url: '{{marketDataBaseUrl}}/api/v3/exchangeInfo?symbol={{symbol}}'
+order: 2000
+queryParams:
+  - key: symbol
+    value: '{{symbol}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Status code is 200', function () {
+        pm.response.to.have.status(200);
+      });
+
+      pm.test('Body has a symbols array', function () {
+        const body = pm.response.json();
+        pm.expect(body).to.have.property('symbols');
+        pm.expect(Array.isArray(body.symbols)).to.be.true;
+      });

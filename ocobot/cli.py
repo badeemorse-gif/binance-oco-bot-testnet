@@ -252,6 +252,36 @@ def _build_feed(cfg: AppConfig, client, symbol: str) -> PriceFeedController:
     return PriceFeedController(ws, rest, symbol)
 
 
+def _dynamic_exit_kwargs(cfg, client, symbol) -> dict:
+    """G1.65: وسائط الخروج المتكيّف لـ MonitoringEngine.
+
+    فارغة تمامًا ما لم يُفعَّل عبر الإعداد (OCOBOT_DYNAMIC_EXIT) ⇒ المسار الافتراضي
+    يبقى مطابقًا بتًّا (لا وسائط جديدة تُمرَّر ⇒ لا تغيير سلوك). عند التفعيل فقط: يبني
+    ``DynamicExitConfig(enabled=True)`` + مزوّد ATR٪ حيّ حقيقي فوق ``KlinesService``
+    للرمز المُراقَب. لا hot_path، لا Live/testnet فعلي، لا رأس مال بلا «نفّذ».
+    """
+    enabled = bool(getattr(cfg, "dynamic_exit_enabled", False))
+    shadow = bool(getattr(cfg, "dynamic_exit_shadow", False))
+    if not enabled and not shadow:
+        return {}
+    from ocobot.app_wiring import build_live_atr_pct_provider
+    from ocobot.domain.dynamic_exit import DynamicExitConfig
+    from ocobot.domain.klines import KlinesService
+    dyn = DynamicExitConfig(
+        enabled=enabled,
+        lock_base=cfg.dynamic_exit_lock_base,
+        recommender_profile=cfg.dynamic_exit_profile,
+    )
+    provider = build_live_atr_pct_provider(
+        KlinesService(client), lambda: symbol, atr_win=dyn.params().atr_win)
+    kwargs = {"dynamic_exit": dyn, "live_atr_pct_provider": provider}
+    # شادو-فقط (increment #5): العلم الرئيسي مُطفأ + شادو مُفعَّل ⇒ المحرّك يحسب
+    # الخروج التكيّف ويسجّله فقط دون تنفيذه (dyn.enabled=False ⇒ المسار الحالي).
+    if shadow and not enabled:
+        kwargs["shadow"] = True
+    return kwargs
+
+
 def _cmd_draft(cfg: AppConfig, order_list_id: int, tp, sl, price) -> int:
     try:
         client = _client_with_keys(cfg)
@@ -366,6 +396,7 @@ def _cmd_monitor(cfg: AppConfig, args) -> int:
                 dry_run=dry_run,
                 audit=audit,
                 checkpoint_sink=checkpoint_sink,
+                **_dynamic_exit_kwargs(cfg, client, selected.symbol),
             )
             engine.resume_from_state(selected, result.state)
             # feed لاستكمال حلقة الأسعار من نفس الرمز المحفوظ.
@@ -391,6 +422,7 @@ def _cmd_monitor(cfg: AppConfig, args) -> int:
                 dry_run=dry_run,
                 audit=audit,
                 checkpoint_sink=checkpoint_sink,
+                **_dynamic_exit_kwargs(cfg, client, selected.symbol),
             )
             engine.start(
                 selected, args.trigger, args.tp, args.sl, reference_price,

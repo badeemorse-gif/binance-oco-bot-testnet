@@ -1,0 +1,32 @@
+$kind: http-request
+name: Klines (Candlesticks)
+method: GET
+url: '{{marketDataBaseUrl}}/api/v3/klines?symbol={{symbol}}&interval={{interval}}&limit={{limit}}'
+order: 1000
+queryParams:
+  - key: symbol
+    value: '{{symbol}}'
+  - key: interval
+    value: '{{interval}}'
+  - key: limit
+    value: '{{limit}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('Status code is 200', function () {
+        pm.response.to.have.status(200);
+      });
+
+      pm.test('Response body is a JSON array', function () {
+        const body = pm.response.json();
+        pm.expect(Array.isArray(body)).to.be.true;
+      });
+
+      pm.test('Each row is an array with 12 elements', function () {
+        const body = pm.response.json();
+        body.forEach(function (row) {
+          pm.expect(Array.isArray(row)).to.be.true;
+          pm.expect(row).to.have.lengthOf(12);
+        });
+      });

@@ -23,6 +23,7 @@ from ocobot.core.errors import BinanceApiError, TransportError
 if TYPE_CHECKING:  # hint only — audit sink is duck-typed at runtime
     from ..core.audit_log import AuditLog
 from ocobot.domain.models import fmt
+from ocobot.domain.dynamic_exit import next_stop
 from ocobot.domain.pricing import (
     DEFAULT_GAP_TICKS,
     compute_levels,
@@ -222,7 +223,8 @@ class SafeExecutor:
                 pass   # auditing must never break execution
 
     # ---- draft (read-only, P2) ----
-    def build_draft(self, order_list_id: int, tp_pct, sl_pct, reference_price):
+    def build_draft(self, order_list_id: int, tp_pct, sl_pct, reference_price, *,
+                    dynamic_exit=None, peak_price=None, prev_stop=None, live_atr_pct_value=None):
         oco = self._reader.get_oco(order_list_id)          # P1: إعادة تحقق الهوية
         filters = self._exchange_info.get_filters(oco.symbol)  # D8
 
@@ -230,11 +232,22 @@ class SafeExecutor:
         sl_pct = Decimal(str(sl_pct))
         reference_price = Decimal(str(reference_price))
 
+        # G1.65 adaptive exit (behind flag; default None => identical behavior)
+        eff_sl_pct = sl_pct
+        if (dynamic_exit is not None and dynamic_exit.enabled
+                and peak_price is not None and prev_stop is not None
+                and live_atr_pct_value is not None and reference_price > 0):
+            _ns = next_stop(
+                float(reference_price), float(peak_price), float(prev_stop),
+                float(live_atr_pct_value), p=dynamic_exit.params(),
+            )
+            eff_sl_pct = (Decimal("1") - Decimal(str(_ns)) / reference_price) * Decimal("100")
+
         remaining = oco.remaining_qty
         qty = floor_to_step(remaining, filters.step_size) if remaining is not None else None  # D7
 
         tp, trg, lim = compute_levels(
-            reference_price, tp_pct, sl_pct, filters.tick_size, gap_ticks=self._gap_ticks
+            reference_price, tp_pct, eff_sl_pct, filters.tick_size, gap_ticks=self._gap_ticks
         )
 
         draft = RepositionDraft(
@@ -245,7 +258,7 @@ class SafeExecutor:
             stop_limit=lim,
             reference_price=reference_price,
             tp_pct=tp_pct,
-            sl_pct=sl_pct,
+            sl_pct=eff_sl_pct,
             filters=filters,
             old_tp=oco.tp_price,
             old_stop_trigger=oco.stop_trigger,
@@ -267,7 +280,8 @@ class SafeExecutor:
 
     # ---- execute (may write, only after Activate) ----
     def execute(self, order_list_id: int, tp_pct, sl_pct, reference_price,
-                dry_run=False) -> ExecutionResult:
+                dry_run=False, *,
+                dynamic_exit=None, peak_price=None, prev_stop=None, live_atr_pct_value=None) -> ExecutionResult:
         steps = [
             ExecutionStep("verify", "① إعادة التحقق من هوية الأمر (P1)", "pending"),
             ExecutionStep("price", "② السعر المرجعي + الكمية المتبقية (D6/D7)", "pending"),
@@ -282,7 +296,9 @@ class SafeExecutor:
 
         # ① + ② + ③ : بناء المسودّة
         try:
-            oco, draft = self.build_draft(order_list_id, tp_pct, sl_pct, reference_price)
+            oco, draft = self.build_draft(order_list_id, tp_pct, sl_pct, reference_price,
+                                          dynamic_exit=dynamic_exit, peak_price=peak_price,
+                                          prev_stop=prev_stop, live_atr_pct_value=live_atr_pct_value)
         except (BinanceApiError, TransportError) as exc:
             by_key["verify"].status = "failed"
             by_key["verify"].detail = str(exc)

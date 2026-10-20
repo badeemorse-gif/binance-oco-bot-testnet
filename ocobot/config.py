@@ -18,6 +18,14 @@ RECV_WINDOW_DEFAULT = 5000
 RECV_WINDOW_MAX = 60000  # سقف Binance
 
 
+def _env_bool(name: str, default: bool = False) -> bool:
+    """قراءة علم منطقي من البيئة (افتراضه default عند الغياب)."""
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in ("1", "true", "yes", "on")
+
+
 @dataclass
 class AppConfig:
     env: Environment = Environment.TESTNET  # A6: الافتراضي Testnet حتى اعتماد Live
@@ -26,11 +34,23 @@ class AppConfig:
     request_timeout: float = 10.0
     rest_base_override: Optional[str] = None
     ws_base_override: Optional[str] = None
+    # G1.65 — الخروج المتكيّف (dynamic exit): مُطفأ افتراضيًّا. لا تغيير سلوك ما لم
+    # يُفعَّل صراحةً عبر OCOBOT_DYNAMIC_EXIT. وصل حيّ فقط، لا ختم/Live بلا «نفّذ».
+    dynamic_exit_enabled: bool = False
+    dynamic_exit_lock_base: float = 0.80
+    dynamic_exit_profile: str = "baseline"
+    # G1.65 increment #5 — شادو-مود: يحسب الخروج التكيّف ويسجّله فقط دون تنفيذه
+    # (صفر تغيير سلوك). مُطفأ افتراضيًّا؛ يُفعَّل عبر OCOBOT_DYNAMIC_EXIT_SHADOW.
+    dynamic_exit_shadow: bool = False
 
     def __post_init__(self):
         self.env = Environment.parse(self.env)
         rw = int(self.recv_window)
         self.recv_window = max(1, min(rw, RECV_WINDOW_MAX))
+        self.dynamic_exit_enabled = bool(self.dynamic_exit_enabled)
+        self.dynamic_exit_lock_base = float(self.dynamic_exit_lock_base)
+        self.dynamic_exit_profile = str(self.dynamic_exit_profile)
+        self.dynamic_exit_shadow = bool(self.dynamic_exit_shadow)
 
     def rest_base(self) -> str:
         return self.rest_base_override or rest_base_url(self.env)
@@ -49,6 +69,10 @@ class AppConfig:
             keys_path=self.keys_path,
             recv_window=self.recv_window,
             request_timeout=self.request_timeout,
+            dynamic_exit_enabled=self.dynamic_exit_enabled,
+            dynamic_exit_lock_base=self.dynamic_exit_lock_base,
+            dynamic_exit_profile=self.dynamic_exit_profile,
+            dynamic_exit_shadow=self.dynamic_exit_shadow,
         )
 
     @classmethod
@@ -57,6 +81,11 @@ class AppConfig:
             env=os.environ.get("OCOBOT_ENV", Environment.TESTNET.value),
             keys_path=os.environ.get("OCOBOT_KEYS_PATH", DEFAULT_KEYS_PATH),
             recv_window=int(os.environ.get("OCOBOT_RECV_WINDOW", RECV_WINDOW_DEFAULT)),
+            dynamic_exit_enabled=_env_bool("OCOBOT_DYNAMIC_EXIT", False),
+            dynamic_exit_lock_base=float(
+                os.environ.get("OCOBOT_DYNAMIC_EXIT_LOCK_BASE", "0.80")),
+            dynamic_exit_profile=os.environ.get("OCOBOT_DYNAMIC_EXIT_PROFILE", "baseline"),
+            dynamic_exit_shadow=_env_bool("OCOBOT_DYNAMIC_EXIT_SHADOW", False),
         )
         base.update(overrides)
         return cls(**base)

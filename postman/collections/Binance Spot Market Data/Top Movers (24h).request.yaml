@@ -1,0 +1,41 @@
+$kind: http-request
+name: Top Movers (24h)
+method: GET
+url: '{{marketDataBaseUrl}}/api/v3/ticker/24hr'
+description: >-
+  أكثر عملات USDT سبوت رواجًا (أعلى ربحًا 24h) بشرط سيولة ≥ minQuoteVolumeUSDT
+  بالـUSDT. يُستخدم لاختيار عملة الترند لإدارتها عبر OCOBot.
+order: 4000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const data = pm.response.json();
+      pm.test("status is 200", () => pm.response.to.have.status(200));
+      pm.test("body is an array", () => pm.expect(Array.isArray(data)).to.be.true);
+
+      const MIN = Number(pm.collectionVariables.get("minQuoteVolumeUSDT") || 15000000);
+      const LEV = ["UPUSDT", "DOWNUSDT", "BULLUSDT", "BEARUSDT"];
+      const STABLE = ["USDC", "FDUSD", "TUSD", "BUSD", "DAI", "USDP", "EUR", "AEUR", "USD1"];
+      function ok(s) {
+        if (!s || !s.endsWith("USDT")) return false;
+        if (LEV.some(x => s.endsWith(x))) return false;
+        const base = s.slice(0, -4);
+        return base.length > 0 && STABLE.indexOf(base) === -1;
+      }
+      const rows = data
+        .filter(r => ok(r.symbol) && Number(r.quoteVolume) >= MIN && Number(r.priceChangePercent) > 0)
+        .map(r => ({ symbol: r.symbol, chg: Number(r.priceChangePercent), vol: Number(r.quoteVolume) }))
+        .sort((a, b) => b.chg - a.chg)
+        .slice(0, 10)
+        .map((r, i) => ({ rank: i + 1, symbol: r.symbol, chg: r.chg.toFixed(2), volM: (r.vol / 1e6).toFixed(1) }));
+
+      console.log("Top trending USDT spot (quoteVolume >= " + MIN + "):");
+      rows.forEach(r => console.log(r.rank + ". " + r.symbol + "  " + r.chg + "%  vol=" + r.volM + "M USDT"));
+      pm.test("has at least one trending gainer", () => pm.expect(rows.length).to.be.above(0));
+
+      const tpl = `<table style="width:100%;border-collapse:collapse;font-family:sans-serif;font-size:13px">
+      <tr><th style="text-align:right">#</th><th style="text-align:right">Symbol</th><th style="text-align:right">24h %</th><th style="text-align:right">Vol (M USDT)</th></tr>
+      {{#each rows}}<tr><td>{{rank}}</td><td>{{symbol}}</td><td>{{chg}}</td><td>{{volM}}</td></tr>{{/each}}
+      </table>`;
+      pm.visualizer.set(tpl, { rows: rows });

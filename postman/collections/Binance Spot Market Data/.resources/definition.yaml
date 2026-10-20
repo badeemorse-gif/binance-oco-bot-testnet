@@ -1,0 +1,17 @@
+$kind: collection
+name: Binance Spot Market Data
+description: >-
+  Public Binance Spot market-data source used to pull historical klines
+  (candlesticks) for OCOBot recommender backtesting. These endpoints are
+  read-only and require no authentication or API keys.
+auth:
+  type: noauth
+variables:
+  - key: symbol
+    value: BTCUSDT
+  - key: interval
+    value: 1h
+  - key: limit
+    value: '1000'
+  - key: minQuoteVolumeUSDT
+    value: '15000000'

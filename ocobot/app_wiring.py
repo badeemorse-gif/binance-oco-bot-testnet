@@ -6,7 +6,11 @@
 """
 from __future__ import annotations
 
+import logging
+
 from ocobot.cli import _build_feed
+
+_LOG = logging.getLogger("ocobot.dynamic_exit")
 
 
 class SelectionPriceProvider:
@@ -113,7 +117,7 @@ def build_recommendation_provider(klines_service, symbol_fn, *, interval="5m",
                                   limit=1000, filters_fn=None, params=None,
                                   atr_period=14, horizon=24,
                                   htf_interval="1h", htf_limit=500,
-                                  ltf_interval="1m", ltf_limit=200):
+                                  ltf_interval="1m", ltf_limit=200, profile=None):
     """G1.60/G1.61: يبني دالة اقتراح نِسب بلا وسائط (تُسلَّم إلى runner.submit) فوق KlinesService.
 
     الشبكة (GET /api/v3/klines) تمرّ عبر العميل المُحقَن داخل KlinesService، وتُنفَّذ
@@ -128,6 +132,11 @@ def build_recommendation_provider(klines_service, symbol_fn, *, interval="5m",
     from ocobot.domain.rec_provider import make_recommendation_provider
     from ocobot.domain.recommender import RecommenderParams
 
+    # G1.65 (opt-in): profile="champion" ⇒ بطل المُرشِّح المُتحقَّق forward (k_sl=5.0,
+    # trigger_f=0.15, legacy). الافتراضي profile=None ⇒ بلا تغيير (يُبقى افتراض السكالبنج أدناه).
+    if params is None and profile == "champion":
+        from ocobot.domain.dynamic_exit import recommender_profile
+        params = recommender_profile("champion")
     if params is None:
         params = RecommenderParams(
             objective="scalp", round_trip_cost_pct=0.25, rr_target=2.0,
@@ -146,3 +155,83 @@ def build_recommendation_provider(klines_service, symbol_fn, *, interval="5m",
         _candles_fn, symbol_fn=symbol_fn, filters_fn=filters_fn, params=params,
         atr_period=atr_period, horizon=horizon,
         htf_candles_fn=_htf_candles_fn, ltf_candles_fn=_ltf_candles_fn)
+
+
+def build_live_atr_pct_provider(klines_service, symbol_fn, *, atr_win=10,
+                                interval="1m", limit=None, observer=None):
+    """G1.65: يبني مزوّد ATR٪ حيّ **بلا وسائط** (يُحقَن في ``MonitoringEngine.live_atr_pct_provider``).
+
+    يحسب ATR٪ الحيّ بنفس صيغة الباكتست المُتحقَّقة forward
+    (``ocobot.domain.dynamic_exit.live_atr_pct`` ≡ ``exp_021_run._live_atr_pct``):
+    متوسّط المدى الحقيقي لآخر ``atr_win`` شمعة 1m ÷ آخر إغلاق (المرجع الحيّ) ×100.
+    الشبكة (GET /api/v3/klines) تمرّ عبر العميل المُحقَن داخل KlinesService. symbol_fn
+    يُعيد الرمز المُراقَب حاليًّا (أو None/فارغ ⇒ 0.0 بلا نداء شبكة).
+
+    fail-safe: يُعيد 0.0 عند نقص البيانات أو أي خطأ ⇒ يتراجع إلى بذرة التتبّع المتحفّظة
+    (dist_min) فلا يكسر المراقبة أبدًا. وحدة وصل فقط: لا hot_path، لا تنفيذ Live فعلي،
+    ولا يُستدعى أصلًا ما لم يكن الخروج المتكيّف مُفعَّلًا (DynamicExitConfig.enabled).
+    """
+    from ocobot.domain.dynamic_exit import live_atr_pct
+
+    _win = int(atr_win) if atr_win else 10
+    _limit = int(limit) if limit else max(_win + 5, 20)
+
+    # G1.65 (increment #4): observability — عدّادات قراءة-فقط + تسجيل. **صفر تغيير سلوك**:
+    # قيم الإرجاع مطابقة تمامًا لكل مسار (0.0/القيمة)؛ يُضاف فقط تصنيف سبب السقوط والتسجيل.
+    # تُقرأ ``_provider.stats`` بوّابةً أثناء live-forward (المتوقَّع: failsafe == 0).
+    stats = {
+        "calls": 0, "ok": 0, "failsafe": 0,
+        "last_value": 0.0, "last_reason": None,
+        "failsafe_by_reason": {},
+    }
+
+    def _emit(ok, value, reason, symbol, n):
+        # observability نفسها fail-safe: يجب ألّا تكسر المراقبة مهما حدث.
+        try:
+            stats["calls"] += 1
+            stats["last_value"] = value
+            stats["last_reason"] = reason
+            if ok:
+                stats["ok"] += 1
+                _LOG.debug("live_atr_pct ok symbol=%s candles=%s value=%.6f",
+                           symbol, n, value)
+            else:
+                stats["failsafe"] += 1
+                stats["failsafe_by_reason"][reason] = \
+                    stats["failsafe_by_reason"].get(reason, 0) + 1
+                _LOG.warning("live_atr_pct FAIL-SAFE->0.0 reason=%s symbol=%s",
+                             reason, symbol)
+            if callable(observer):
+                observer({"ok": ok, "value": value, "reason": reason,
+                          "symbol": symbol, "candles": n})
+        except Exception:
+            pass
+
+    def _provider():
+        symbol = None
+        try:
+            symbol = symbol_fn() if callable(symbol_fn) else symbol_fn
+            if not symbol:
+                _emit(False, 0.0, "no_symbol", symbol, 0)
+                return 0.0
+            candles = klines_service.get_candles(symbol, interval=interval, limit=_limit)
+            if not candles:
+                _emit(False, 0.0, "empty_candles", symbol, 0)
+                return 0.0
+            highs = [c.high for c in candles]
+            lows = [c.low for c in candles]
+            closes = [c.close for c in candles]
+            ref = closes[-1]
+            value = float(live_atr_pct(highs, lows, closes, _win, ref))
+            if value > 0.0:
+                _emit(True, value, "ok", symbol, len(candles))
+            else:
+                _emit(False, 0.0, "zero_value", symbol, len(candles))
+            return value
+        except Exception as exc:
+            _emit(False, 0.0, "exception", symbol, 0)
+            _LOG.warning("live_atr_pct exception fail-safe: %r", exc)
+            return 0.0  # المراقبة يجب ألّا تنكسر على خطأ المزوّد (fail-safe)
+
+    _provider.stats = stats  # قراءة-فقط (مراقبة/بوّابة live-forward)
+    return _provider

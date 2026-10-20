@@ -1,0 +1,23 @@
+JSON_VALID: True
+protocol_version: 1.6
+bootstrapped_at : 2026-10-15T22:00:00Z
+last_updated    : 2026-10-15T22:00:00Z
+11.8_in_system_prompt: True
+system_prompt_len: 20726
+sp_tail: ح) لتكون النتيجة قابلة للحكم؛ (ج) لا تُعتمَد نتيجتها كتغيير دائم في أي معامل أو كود إلا بأمر «نفّذ» صريح من المستخدم. ويبقى الاختبار الحيّ/Testnet بأوامر فعلية خطوةَ تأكيدٍ لاحقة لا تُنفَّذ إلا بطلب صريح، مع بقاء منع أي Live (T16) قبل بوّابة G1. ولا يُلغي هذا البند حقّ المستخدم في اختيار طريقة مختلفة متى حدّدها صراحةً.
+
+prompt.md protocol_version lines:
+   2) حمّل البروتوكول النافذ من PROJECT_STATE.json.system_prompt (protocol_version = 1.6)
+prompt.md has '= 1.5': False
+
+EXECUTOR 11.8 present: True
+EXECUTOR '(protocol_version 1.6)' present: True
+EXECUTOR 11.7 '(protocol_version 1.5)' still present: True
+
+=== living docs mentioning 'البروتوكول: 1.5' / '** 1.5' (historical sealed reports) ===
+   docs\G1_43_i18n_guard_report.md
+   docs\G1_47_manual_exit_report.md
+   docs\G1_48_tracker_semantics_report.md
+   docs\G1_49_unified_exit_report.md
+   docs\G1_50_btc_slippage_report.md
+living_report_hits_count: 5

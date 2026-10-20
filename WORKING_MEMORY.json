@@ -1,8 +1,542 @@
 {
-  "active": false,
-  "task_id": null,
-  "resume_point": null,
+  "active": true,
+  "task_id": "G1.64",
+  "title": "مسار تجارب مفتوح (دائم): ضبط «مُرشِّح النِّسب» التكيّفي عبر Walk-Forward تاريخي",
   "last_sealed": "G1.63",
-  "note": "G1.63 مختوم: زرّ «تنفيذ الخروج الفوري» يُشعِر الآن عند كل ضغطة — المنفَّذ ✋ بتفاصيل الدخول/الخروج/PnL%، وغير المنفَّذ (abort/gate/no-selection/error) ✋ not placed بالسبب. إضافي بحت بلا مساس بأي نجاح. السويت أخضر (995).",
-  "updated_at": "2026-10-15T13:10:00Z"
+  "resume_point": "EXP-024C (done) يحسم الجزء B من EXP-023: تحقّق forward نقيّ على W3=prevprev90d_full (2026-01-19→04-19، holdout لم تُرَ). بوّابة صفر-انحراف vs EXP-022 PASS ✓؛ بوّابة الإطلاق G1..G6 كلّها PASS ✓. الحافة صمدت وازدادت خارج العيّنة: wadapt_tight W3 net+slip +0.5284 > W1 +0.4026 > W2 +0.3892، cap 0.610، lossBE 4.4% (مقابل ~27%)، lock_base رتيب صاعد حتى 0.95 (+0.8426). EXP-024B (عزل السقف cap=0.98) أثبت أنّ lock_base هو الرافعة لا lock_cap. موثّق كاملًا (experiments_index n=27 EXP-024B، n=28 EXP-024C + EXPERIMENTS_LOG + REPORTS)، وforward_w3_launch_gate مقلوبة إلى MET. لم يبقَ علميًّا عائق داخل G1.64؛ المتبقّي تشغيليًّا قبل رأس المال الحيّ: live-forward بوقت الساعة + «نفّذ» + طرح مرحلي + إدارة ذيل (guardian). المسار مفتوح — لا ختم/أرشفة/تثبيت/Live بلا «نفّذ».",
+  "human_gate": false,
+  "contract": {
+    "task_id": "G1.64",
+    "title": "مسار تجارب مفتوح (دائم): ضبط «مُرشِّح النِّسب» التكيّفي للوصول لأفضل دقّة",
+    "kind": "open_experiment_track",
+    "persistent": true,
+    "resume_always": true,
+    "ref": "state/defects/G1.64.json",
+    "baseline": {
+      "ref": "EXP-003",
+      "params": {
+        "k_sl": 3.0,
+        "trigger_f": 0.4
+      },
+      "key_metrics": {
+        "PF": 2.579,
+        "out_pct_per_trade": 0.5247,
+        "win_pct": 54.9,
+        "nTrades": 543
+      },
+      "source": "backtest_lab/tune_recommender_out.txt"
+    },
+    "realism_notes": [
+      "single-position: البوت في التموضع يعمل بصفقة واحدة حتى تُغلَق؛ أي نموذج backtest واقعي يطبّق قيد عدم التداخل (كما EXP-004 MODEL B).",
+      "time-window: المتداول متاح 13:00–05:00 بتوقيت القاهرة؛ لا يُفتَح دخول خارجها (EXP-004).",
+      "النماذج المستقلة/pooled (EXP-001..003) تبقى مرجعًا لكنها تبالغ في عدد الصفقات مقابل الواقع."
+    ],
+    "definition_of_done": "لا DoD نهائي تلقائي — المهمة مفتوحة. تُختَم فقط بأمر مستخدم صريح عند بلوغ الدقّة المطلوبة في «مُرشِّح النِّسب» مقارنةً بخط الأساس.",
+    "acceptance_checks": [
+      "كل تجربة مُسجّلة كاملةً ومرقّمة في EXPERIMENTS_LOG.md",
+      "لكل تجربة تقرير بنفس الرقم في REPORTS.md بالترتيب",
+      "experiments_index.json مُحدَّث ومتّسق مع آخر تجربة",
+      "كل نتيجة مقارَنة بخط أساس بمقاييس صريحة (§11.8ب)",
+      "النماذج الواقعية تراعي single-position وعامل الوقت عند الاقتضاء",
+      "لا تغيير إنتاجي دائم بلا «نفّذ» (§11.8ج)",
+      "إن مُسّ أي كود يبقى كامل سويت الاختبارات أخضر (وقاعدة ثنائية اللغة §1.5 عند أي نص واجهة)"
+    ],
+    "ordered_steps": [
+      {
+        "id": "EXP-001",
+        "description": "متغيّرات نِسب السكالبنج RR (V0..V4) — تاريخي مستورد",
+        "risk": "low",
+        "status": "done"
+      },
+      {
+        "id": "EXP-002",
+        "description": "متغيّرات التتبّع/Trailing — تاريخي مستورد",
+        "risk": "low",
+        "status": "done"
+      },
+      {
+        "id": "EXP-003",
+        "description": "معايرة المُوصِي grid k_sl×trigger_f (Walk-Forward) — تاريخي؛ منه baseline",
+        "risk": "low",
+        "status": "done"
+      },
+      {
+        "id": "EXP-004",
+        "description": "عامل الوقت (نافذة القاهرة 13:00–05:00 مقابل 24h) + قيد الصفقة الواحدة + مدد الصفقات — النافذة أفضل جودةً/صفقة",
+        "risk": "low",
+        "produces": "EXPERIMENTS_LOG#EXP-004 + REPORTS#EXP-004 + exp_004_results.json + تحديث index",
+        "status": "done"
+      },
+      {
+        "id": "EXP-005",
+        "description": "تجربة ضبط جديدة تبني على EXP-004 — تُحدَّد مع المستخدم ثم تُنفَّذ بأمر «نفّذ»",
+        "risk": "low",
+        "produces": "EXPERIMENTS_LOG#EXP-005 + REPORTS#EXP-005 + تحديث index",
+        "status": "done"
+      },
+      {
+        "id": "EXP-006A",
+        "description": "ذروة على ≥10M (90ي/59) — متانة",
+        "status": "done",
+        "risk": "low",
+        "produces": "EXP-006A artifacts"
+      },
+      {
+        "id": "EXP-006B",
+        "description": "ذروة على ≥1M (90ي/201) — عملات أضعف + انزلاق",
+        "status": "done",
+        "risk": "low",
+        "produces": "EXP-006B artifacts"
+      },
+      {
+        "id": "EXP-007",
+        "description": "نموذج انزلاق per-سيولة لصافٍ واقعي",
+        "status": "done",
+        "risk": "low",
+        "produces": "EXP-007 artifacts (عند التنفيذ)"
+      },
+      {
+        "id": "DATA-FULL-504",
+        "description": "جمع 90 يوم 15m للعالم الكامل USDT سبوت (506، استبعاد 5 مستقرة فقط) ⇐ trend_data_90d_full/ — دعم فلتر سيولة ديناميكي",
+        "risk": "low",
+        "status": "done",
+        "produces": "universe_usdt_spot_full.json + trend_data_90d_full/ + COLLECTION_REASON.md"
+      },
+      {
+        "id": "EXP-013",
+        "description": "MTF: إشارة/حوض على 15m (إعادة استخدام E8 حرفيًا) + دورة صفقة كاملة (fill الدخول + SL + TP + trailing + حارس هبوط BTC) على 1m — تنعيم الضجيج ودقّة تنفيذ كأنها حيّة؛ على W1/W2 مع/بلا حارس مقابل baseline EXP-003 و k4.5_tf0.2",
+        "risk": "long",
+        "status": "done"
+      },
+      {
+        "id": "EXP-019",
+        "description": "Profit-Locked Trailing: 4 صيَغ تتبّع (fixed control=EXP-018 / breakeven / profit_ladder / atr_proxy) × سقف TP {off,10%,20%} + مقاييس (mfe_capture/be_lock/profit_lock/loss_below_entry/regret) على كون≥25M 1m-native، combos{baseline,k4.5_tf0.2,k5.0_tf0.15}×gate{25,50}M×time{all,cairo}، W1/W2 + bootstrap CIs. هدف: تعظيم net+slip مع كبح الذيل.",
+        "risk": "low",
+        "status": "done",
+        "produces": "exp_019_run.py + exp_019_W1_results.json + exp_019_W2_results.json + exp_019_W1_out.txt + exp_019_W2_out.txt + exp_019_out.txt + EXPERIMENTS_LOG#EXP-019 + REPORTS#EXP-019 + experiments_index update"
+      },
+      {
+        "id": "EXP-020",
+        "description": "Event-study حصاد الترند على TUTUSDT/BANKUSDT في أيام الترند >120% (نافذة القاهرة 10:00→03:00، دخول «من نص الترند» ببوّابة ركض مسبق سببية M=30%)؛ محرّك EXP-019 حرفيًّا + قناع دخول سببي. يؤكّد breakeven≈ladder>fixed>atr. دراسة حالة (عيّنة منتقاة).",
+        "risk": "low",
+        "status": "done"
+      },
+      {
+        "id": "EXP-020b",
+        "description": "مسح أفق التتبّع {16,32,60} دقيقة على event-study EXP-020 (TUT/BANK): هل يقلّل الأفق الأطول regret؟ النتيجة: يرفع الربح المطلق لا يحلّ give-back (cap ثابت؛ regret متحيّز). الترتيب be≈ladder>fixed>atr ثابت. دراسة حالة.",
+        "risk": "low",
+        "status": "done"
+      },
+      {
+        "id": "EXP-021",
+        "status": "done"
+      },
+      {
+        "id": "EXP-022",
+        "status": "done"
+      },
+      {
+        "id": "EXP-023",
+        "status": "done_partA"
+      },
+      {
+        "id": "EXP-024",
+        "status": "done"
+      },
+      {
+        "id": "EXP-024B",
+        "status": "done"
+      },
+      {
+        "id": "EXP-024C",
+        "status": "done"
+      }
+    ],
+    "closure_policy": {
+      "sealing_in_steps": false,
+      "note": "ممنوع إدراج خطوة ختم/أرشفة في ordered_steps/todos. تُنفَّذ فقط بأمر مستخدم صريح عند بلوغ الدقّة المطلوبة."
+    },
+    "scope_boundary": {
+      "in": [
+        "backtest_lab/g1_64_ratio_filter/** (سجلّات/تقارير/سكربتات التجارب)",
+        "backtest_lab/*.py (تشغيل محاكاة تاريخية)",
+        "backtest_lab/data/** و backtest_lab/trend_data/**",
+        "قراءة كود المُوصِي recommender لفهم المعاملات"
+      ],
+      "out": [
+        "أي أمر حقيقي/Testnet/Live",
+        "أي تعديل دائم على معاملات/كود الإنتاج بلا «نفّذ»",
+        "ختم/أرشفة بلا أمر مستخدم صريح"
+      ]
+    },
+    "expected_evidence": {
+      "command": "python backtest_lab/g1_64_ratio_filter/exp_005_peak_window.py (آخر مُنفَّذة؛ أو سكربت التجربة التالية)",
+      "evidence_path": "backtest_lab/g1_64_ratio_filter/"
+    },
+    "default_method": "§11.8 Historical-First Walk-Forward + baseline + مقاييس صريحة (صفر مخاطرة)",
+    "human_gate": false,
+    "special_rules": [
+      "1) مهمة مفتوحة دائمًا: لا تُختَم/تُؤرشَف إلا بأمر مستخدم صريح؛ الحالة تبقى in_progress وactive:true.",
+      "2) لا خطوة ختم/أرشفة في ordered_steps أو أي todo list إطلاقًا — تُنفَّذ فقط بأمر صريح (استثناء مقصود من §11.3 و1.3).",
+      "3) ظهور دائم في الاستئناف: WORKING_MEMORY تبقى active:true/task_id=G1.64؛ لو صُفِّرت، أول خطوة لأي نموذج = إعادة بناء العقد من state/defects/G1.64.json والاستئناف.",
+      "4) لا تنفيذ تلقائي: ابنِ على آخر تجربة، اعرض الاقتراح التالي، وانتظر «نفّذ».",
+      "5) مسموح فتح بنود جانبية G1.<n> وختمها عاديًا دون غلق هذا المسار؛ بعد الختم أعِد تنشيط G1.64 في WORKING_MEMORY وعُد لإكماله.",
+      "6) كل تجربة مرقّمة ومُسجّلة كاملةً في EXPERIMENTS_LOG.md ولها تقرير بنفس الرقم في REPORTS.md؛ ويُحدَّث experiments_index.json.",
+      "7) صفر مخاطرة (محاكاة تاريخية فقط)؛ لا تغيير إنتاجي دائم بلا «نفّذ»؛ لا Live قبل G1.",
+      "الهدف المُوجِّه للمسار (يراه أيّ نموذج يدخل G1.64): استمرار تجارب Walk-Forward التاريخية حتى بلوغ أقوى أداء في تحقيق الصفقات الناجحة لأداة «مُرشِّح النِّسب» (ocobot.domain.recommender) داخل فرع المراقبة (dynamic monitoring) — أي أفضل trigger%/sl%/tp% (مسافة إعادة التموضع والوقف والهدف) بصافٍ واقعي قابل للحكم مقابل baseline وبالمحرّك الواقعي NET per-سيولة. وبعد بلوغ هذا الأداء فقط نبدأ تطبيق النتائج على المُرشِّح في الإنتاج، ولا يكون التطبيق إلا بأمر «نفّذ» صريح (§11.8ج). حتى ذلك الحين: التجارب مستمرة، صفر مخاطرة، بلا تثبيت إنتاجي وبلا ختم/أرشفة."
+    ],
+    "exp019_chunks": [
+      {
+        "id": "C3",
+        "desc": "بناء exp_019_run.py (resim_1m_v + 4 trail modes + hard TP + metrics + bootstrap)",
+        "risk": "long",
+        "status": "done"
+      },
+      {
+        "id": "C4",
+        "desc": "smoke (EXP019_SMOKE) ثم تشغيل كامل W1/W2 + التقاط المخرجات + فحص sanity (fixed==EXP-018)",
+        "risk": "long",
+        "status": "done"
+      },
+      {
+        "id": "C5",
+        "desc": "توثيق EXPERIMENTS_LOG#EXP-019 + REPORTS#EXP-019 + تحديث index + resume_point (المسار مفتوح)",
+        "risk": "low",
+        "status": "done"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "id": "EXP-001",
+      "description": "متغيّرات نِسب السكالبنج RR (V0..V4) — تاريخي",
+      "status": "done"
+    },
+    {
+      "id": "EXP-002",
+      "description": "متغيّرات التتبّع/Trailing — تاريخي",
+      "status": "done"
+    },
+    {
+      "id": "EXP-003",
+      "description": "معايرة المُوصِي grid (Walk-Forward) — تاريخي؛ baseline",
+      "status": "done"
+    },
+    {
+      "id": "EXP-004",
+      "description": "عامل الوقت + قيد الصفقة الواحدة + مدد الصفقات",
+      "status": "done"
+    },
+    {
+      "id": "EXP-005",
+      "description": "تجربة ضبط جديدة تبني على EXP-004",
+      "status": "done"
+    },
+    {
+      "id": "EXP-006A",
+      "description": "ذروة على ≥10M (90ي/59) — متانة",
+      "status": "done"
+    },
+    {
+      "id": "EXP-006B",
+      "description": "ذروة على ≥1M (90ي/201) — عملات أضعف + انزلاق",
+      "status": "done"
+    },
+    {
+      "id": "EXP-007",
+      "description": "نموذج انزلاق per-سيولة لصافٍ واقعي",
+      "status": "done"
+    },
+    {
+      "id": "DATA-FULL-504",
+      "description": "جمع 90 يوم 15m للعالم الكامل USDT سبوت (506، استبعاد 5 مستقرة فقط) ⇐ trend_data_90d_full/ — دعم فلتر سيولة ديناميكي",
+      "status": "done"
+    },
+    {
+      "id": "EXP-008",
+      "description": "شبكة ضبط المُوصِي k_sl×trigger_f تحت المحرّك الواقعي (NET per-سيولة، 10M، OOS)",
+      "status": "done"
+    },
+    {
+      "id": "EXP-009",
+      "description": "توسيع شبكة المُوصِي خارج الركن (k_sl>3.0، trigger_f<0.4) تحت المحرّك الواقعي NET per-سيولة",
+      "status": "done"
+    },
+    {
+      "id": "DATA-PREV-90D",
+      "description": "جمع نافذة 90 يوم سابقة متجاورة (OOS زمني مستقل) لنفس العالم الكامل بنفس pipeline — trend_data_prev90d_full/",
+      "status": "done"
+    },
+    {
+      "id": "EXP-010",
+      "description": "جزءان: (1) تحليل ذيلي لأفضل خلطة k4.5_tf0.2 على نافذة EXP-009 (أسوأ صفقة + max drawdown + توزيع الخسائر)؛ (2) تشغيل k4.5_tf0.2 + anchor k3.0_tf0.4 على النافذة الزمنية المستقلة trend_data_prev90d_full ومقارنة win/out/PF/أسوأ صفقة بنافذة EXP-009 (معيار «مش صدفة»). المحرّك نفسه (exp_008_run، NET per-سيولة، single-position، 10M، OOS).",
+      "produces": "exp_010_run.py + exp_010_results.json + exp_010_out.txt + EXPERIMENTS_LOG#EXP-010 + REPORTS#EXP-010 + تحديث index",
+      "risk": "low",
+      "status": "done"
+    },
+    {
+      "id": "EXP-011",
+      "description": "توسيع شبكة المُوصِي خارج ركن EXP-009 (k_sl∈{4.5,5.0,5.5,6.0}×trigger_f∈{0.2,0.15,0.1}) تحت المحرّك الواقعي NET per-سيولة + مقاييس ذيلية لكل تركيبة",
+      "status": "done"
+    },
+    {
+      "id": "EXP-012-G",
+      "description": "حارس هبوط BTC على 1m + بوّابة ≥5M، إعادة خروج 1m على W1/W2 (paired) — الحارس خامل",
+      "status": "done"
+    },
+    {
+      "id": "EXP-013",
+      "description": "دورة الصفقة الكاملة على 1m (fill+SL+TP+trailing+حارس) على W1/W2 مقابل baseline EXP-003 وk4.5_tf0.2",
+      "status": "done"
+    },
+    {
+      "id": "EXP-014",
+      "description": "توسيع التتبّع trigger_f × TP on/off على دورة 1m، W1/W2 — الفرضية مرفوضة OOS",
+      "status": "done"
+    },
+    {
+      "id": "EXP-015",
+      "description": "فلتر تأكيد دخول 1m (N إغلاقات 1m صاعدة متتالية قبل التعبئة) لقصّ الوقف الفوري، على دورة 1m الكاملة TP-off، k_sl=4.5، trigger_f∈{0.4,0.7}، N∈{0,1,2,3}، maxbars=10، W1/W2",
+      "status": "done"
+    },
+    {
+      "id": "EXP-016",
+      "description": "توسيع الستوب المبدئي على 1m (sl_pct×SL_MULT عند التنفيذ الدقائقي، التتبّع trigger_pct ثابت) على دورة 1m كاملة TP-off، k_sl=4.5، trigger_f∈{0.4,0.7}، SL_MULT∈{1.0,1.25,1.5,2.0}، W1/W2",
+      "status": "done"
+    },
+    {
+      "id": "EXP-017",
+      "description": "مُرشِّح النِّسب مولودٌ على 1m أصالةً (1m-native) — دورة صفقة كاملة TP-off، k3.0_tf0.4 (baseline) وk4.5_tf0.2 (البطل)، صمود net_after_commission عند 0.25% RT على W1/W2",
+      "status": "done"
+    },
+    {
+      "id": "EXP-018",
+      "description": "تعميق/معايرة البطل k4.5_tf0.2 1m-native: كون فرعي سيولة>=25M + شبكة k_sl{4,4.5,5}xtf{0.15,0.2,0.25} + مسح بوّابة {5,10,25,50}M + فلتر وقت القاهرة؛ رفع net_after_commission_plus_slip فوق الانزلاق per-سيولة",
+      "status": "done"
+    },
+    {
+      "id": "EXP-019",
+      "description": "معايرة breakeven/ladder + سقف TP على دورة 1m — breakeven/profit_ladder يتفوّقان على fixed (CI>0، p=1.0)؛ الأقوى k5.0_tf0.15+breakeven",
+      "status": "done"
+    },
+    {
+      "id": "EXP-020",
+      "description": "event-study TUT/BANK أيام الترند + دخول من نص الترند (M=30%) — be≈ladder>fixed>atr؛ دراسة حالة (عيّنة منتقاة)",
+      "status": "done"
+    },
+    {
+      "id": "EXP-020b",
+      "description": "مسح أفق التتبّع {16,32,60}م على event-study EXP-020 — الأفق يرفع الربح المطلق لا يحلّ give-back (cap ثابت)",
+      "status": "done"
+    },
+    {
+      "id": "EXP-021",
+      "description": "تتبّع متكيّف مع حجم الموجة wave_adaptive (tight/bal/ride) على TUT/BANK — wadapt_tight الأفضل عند الهدف (cap↑، give-back↓)",
+      "status": "done"
+    },
+    {
+      "id": "EXP-022",
+      "description": "تعميم wadapt_tight على كون واسع W1/W2 (OOS) — المتانة تتأكّد: يتفوّق على fixed/be_tpoff في كل مقياس ونافذة",
+      "status": "done"
+    },
+    {
+      "id": "EXP-023",
+      "description": "حساسية/استقرار بارامترات wadapt_tight (هضبة مقابل قمّة) — هضبة مؤكّدة؛ lock_base رافعة رتيبة صاعدة (الجزء A؛ forward W3 مؤجّل)",
+      "status": "done_partA"
+    },
+    {
+      "id": "EXP-024",
+      "description": "تشبّع رافعة lock_base 0.60→0.95 على W1/W2 — لا تشبّع؛ رتيبة صاعدة حتى 0.95 (أفضل مشترك 0.95)؛ seen-data ⇒ يلزم forward W3",
+      "status": "done"
+    },
+    {
+      "id": "EXP-024B",
+      "description": "عزل السقف (OFAT): lock_base 0.60→0.95 عند lock_cap ثابت 0.98 — lock_base هو الرافعة لا lock_cap (رتيب صاعد W1/W2)",
+      "status": "done"
+    },
+    {
+      "id": "EXP-024C",
+      "description": "تحقّق forward نقيّ على W3 holdout (prevprev90d) — الحافة صمدت وازدادت خارج العيّنة؛ بوّابة W3 مُجتازة (G1..G6)؛ التحيّز الزمني محسوم",
+      "status": "done"
+    }
+  ],
+  "last_completed_step": "EXP-024C",
+  "current_step": {
+    "id": "EXP-024C",
+    "state": "done — تحقّق forward نقيّ على W3 (holdout لم تُرَ): بوّابة W3 مُجتازة (G1..G6 PASS ✓)؛ wadapt_tight net+slip +0.5284 (>W1/W2)، cap 0.610، lossBE 4.4%، CI>0 p=1.00؛ التحيّز الزمني محسوم. EXP-024B أكّد أنّ lock_base هو الرافعة لا lock_cap. موثّق (index n=27/28 + LOG + REPORTS)."
+  },
+  "delegated_op": {
+    "op_id": "EXP-018-build-run",
+    "description": "بناء exp_018_run.py وتشغيله على W1+W2 (كون فرعي >=25M، شبكة حول (4.5,0.2)، مسح بوّابة/وقت) وإنتاج الأدلة",
+    "target_files": [
+      "backtest_lab/g1_64_ratio_filter/exp_018_run.py",
+      "backtest_lab/g1_64_ratio_filter/exp_018_W1_results.json",
+      "backtest_lab/g1_64_ratio_filter/exp_018_W2_results.json",
+      "backtest_lab/g1_64_ratio_filter/exp_018_W1_out.txt",
+      "backtest_lab/g1_64_ratio_filter/exp_018_W2_out.txt",
+      "backtest_lab/g1_64_ratio_filter/exp_018_out.txt"
+    ],
+    "expected_outcome": "لكل نافذة: Stage A (10 combos @gate5M,time=all: net+slip/net/gross out+PF+win+n + vs EXP003) + Stage B (champion k4.5_tf0.2 x gate{5,10,25,50}M x time{all,cairo}: net+slip out/PF/win/n) لتحديد هل يرتفع net+slip موجبًا باطّراد W1&W2",
+    "status": "verified",
+    "ts": "2026-10-19T09:13:32.623623+00:00",
+    "run_log": "C:\\Users\\badee\\AppData\\Local\\Temp\\postman-shell-term_1792393574648_k03k72f1u.log",
+    "verified_on_disk": true
+  },
+  "remaining": [
+    "التطبيق الإنتاجي المُعلَّم (بأمر «نفّذ»): دمج wadapt_tight + lock_base (ونِسب البطل k5.0_tf0.15) في ocobot.domain.recommender ومنطق الخروج بالمراقبة، config-driven + feature-flag OFF افتراضيًّا، اختبارات خضراء، ثنائية اللغة.",
+    "قبل رأس المال الحيّ فقط: live-forward بوقت الساعة (paper/testnet) + سدّ تحفّظات W3 (تحيّز البقاء، بوّابة EXP-021) + طرح مرحلي maxpos=1 + guardian.",
+    "فرع التداول الديناميكي (بند مستقلّ، بأمر «نفّذ»): بناء مرحليّ حسب مقترح v2 (قرار خالص + supervisor fail-safe OFF + إعادة استخدام التنفيذ)."
+  ],
+  "decisions_session": [
+    {
+      "id": "G1.64-open",
+      "note": "فتح مسار التجارب المفتوح؛ القواعد مضمَّنة داخل البند (لا البروتوكول)؛ الختم/الأرشفة خارج الخطة حتى أمر مستخدم صريح؛ المسار يظهر دائمًا في الاستئناف."
+    },
+    {
+      "id": "G1.64-backfill",
+      "note": "استيراد EXP-001..003 التاريخية من backtest_lab إلى المسار؛ baseline=EXP-003 (k_sl=3.0, trigger_f=0.4)."
+    },
+    {
+      "id": "G1.64-EXP-004",
+      "note": "عامل الوقت: نافذة القاهرة 13:00–05:00 ترفع كل مقاييس الجودة مقابل 24h؛ 24h طابق baseline بالضبط."
+    },
+    {
+      "id": "G1.64-EXP-004-singlepos",
+      "note": "قيد الصفقة الواحدة (single-position عالمي): 24h 543→113، النافذة 348→72؛ النافذة تبقى أفضل/صفقة (out 0.6849 vs 0.5020، PF 2.776 vs 2.133)؛ مدد قصيرة (وسيط 30د، أقصى 1h15m)، 5.6% فقط تُغلَق بعد الخروج (OCO)؛ توثيق تجريبي بلا تثبيت إنتاجي."
+    },
+    {
+      "id": "G1.64-EXP-005",
+      "note": "ذروة الدخول 17:00–23:00 (القاهرة) + single-position: تتفوّق على نافذة EXP-004 الكاملة في كل مقياس (win 54.2→67.5%، out/trade 0.6849→1.4628، PF 2.776→9.385) وبإجمالي عائد أعلى (49.31→58.51) رغم 72→40 صفقة؛ 0% تُغلَق بعد الخروج، 0 بلغت سقف 4h؛ تحذير عيّنة صغيرة (40) ⇒ out-of-sample لاحقًا؛ توثيق تجريبي بلا تثبيت إنتاجي."
+    },
+    {
+      "id": "G1.64-EXP-006A",
+      "note": "اختبار متانة على عالم USDT سبوت ديناميكي (509→59 عند ≥10M، 90 يومًا، 519 صفقة): PF ذروة single-position = 2.709 (لا 9.385)، out/trade 0.4381، win 61.1%. EXP-005 كان ضجيج عيّنة صغيرة + تحيّز 8 عملات. فلتر الوقت فائدته متواضعة؛ pooled النافذة الكاملة > الذروة. مسح التكلفة: PF 2.71→1.69 عند 0.2% و<1 عند ~0.45% ⇒ حساسية عالية للانزلاق/الرسوم."
+    },
+    {
+      "id": "G1.64-EXP-006B",
+      "note": "توسيع العالم إلى ≥1M (201 زوج، 90 يومًا، 755 صفقة ذروة): PF 2.759 (مقابل 2.709 لـ≥10M) — ثابت ~2.7–2.8. العملات الأضعف رفعت out/trade الخام (0.4381→0.5647) وخفضت win% (61→57). مسح التكلفة: PF 2.76→1.88 عند 0.2% و1.11 عند 0.5% ⇒ ربح الزبالة الخام مضلّل (انزلاقها الواقعي أعلى). لا PF=12 ولا انهيار؛ الخلاصة: ميزة فلتر الوقت متواضعة وثابتة والمخاطرة الحقيقية هي التكلفة/الانزلاق."
+    },
+    {
+      "id": "G1.64-DATA-FULL",
+      "note": "طلب المستخدم جمع 90 يوم 15m للعالم الكامل USDT سبوت (استبعاد 5 مستقرة فقط: USDCUSDT/USD1USDT/RLUSDUSDT/FDUSDUSDT/TUSDUSDT) = 506 زوج، بنفس طريقة EXP-006B بالضبط، لتفعيل فلتر سيولة ديناميكي لحظة الإشارة بدل الفلتر الثابت >=1M (الذي يقتل فرص العملات الصغيرة التي تدخل ترند: 300K اليوم قد تصبح 12M في يوم ترند). صفر مخاطرة — جمع داتا عامة فقط. المخرجات: universe_usdt_spot_full.json + trend_data_90d_full/ + COLLECTION_REASON.md + build_universe_full.py + fetch_universe_90d_full_mt.py + verify_full.py."
+    },
+    {
+      "id": "G1.64-DATA-FULL-verified",
+      "note": "اكتمل تجميع العالم الكامل والتحقّق منه على القرص: 506/506، missing=0، err=0، extra=0؛ 443 بشمعة كاملة 8640، 453 صالحة للتجربة (>=8000)، 53 حديثة الإدراج (<8000، كل تاريخها المتاح مجلوب). رمزان غير لاتينيَّين في العالم (牛来USDT، 币安人生USDT) أُبقِيا (ليسا مستقرَّين) وسيتخطّاهما المحرّك لصِغَرهما/حداثتهما؛ أُصلح ترميز UTF-8 في verify_full.py و fetch_universe_90d_full_mt.py. VERDICT=COLLECTION_COMPLETE. الخطوة DATA-FULL-504 = done (دون ختم المسار G1.64 المفتوح)."
+    },
+    {
+      "id": "G1.64-EXP-007",
+      "note": "انزلاق per-سيولة + فلتر سيولة ديناميكي على العالم الكامل (453 رمزًا، 76076 مرشّحًا). الخام يطابق 006B (~2.76) لكن الصافي الواقعي 1.3–1.8؛ أنظف صافٍ 10M/24h (NET PF=1.782، out/trd=0.4612، win=49%). خفض العتبة <10M يرفع الخام ويبدّده الانزلاق (حتى 0.8%). الخلاصة: حافة رفيعة واقعية، المخاطرة الأولى الانزلاق لا جودة الإشارة. توثيق تجريبي بلا تثبيت إنتاجي ولا ختم."
+    },
+    {
+      "id": "G1.64-goal",
+      "note": "الهدف المُوجِّه للمسار (يراه أيّ نموذج يدخل G1.64): استمرار تجارب Walk-Forward التاريخية حتى بلوغ أقوى أداء في تحقيق الصفقات الناجحة لأداة «مُرشِّح النِّسب» (ocobot.domain.recommender) داخل فرع المراقبة (dynamic monitoring) — أي أفضل trigger%/sl%/tp% (مسافة إعادة التموضع والوقف والهدف) بصافٍ واقعي قابل للحكم مقابل baseline وبالمحرّك الواقعي NET per-سيولة. وبعد بلوغ هذا الأداء فقط نبدأ تطبيق النتائج على المُرشِّح في الإنتاج، ولا يكون التطبيق إلا بأمر «نفّذ» صريح (§11.8ج). حتى ذلك الحين: التجارب مستمرة، صفر مخاطرة، بلا تثبيت إنتاجي وبلا ختم/أرشفة."
+    },
+    {
+      "id": "G1.64-EXP-008",
+      "note": "شبكة k_sl×trigger_f (4×4) على العالم الكامل تحت المحرّك الواقعي NET per-سيولة (453 رمزًا، 76076 مرشّحًا/تركيبة). الأمثل = k_sl=3.0 trigger_f=0.4 (NET PF 1.782 @24h، 1.538 @peak) = خط الأساس EXP-003 نفسه؛ تحقّق مدمج طابق EXP-007 بالضبط. k_sl↑ يرفع الصافي، trigger_f↑ يخفضه؛ الأمثل على ركن الشبكة ⇒ EXP-009 يوسّع خارجه. توثيق تجريبي بلا تثبيت/ختم."
+    },
+    {
+      "id": "G1.64-EXP-009",
+      "note": "توسيع شبكة المُوصِي خارج ركن EXP-008 (k_sl∈{3.5,4.0,4.5}×trigger_f∈{0.3,0.25,0.2} ضمن 4×4 superset مع نقطة الأساس 3.0/0.4) على نفس المحرّك الواقعي (453 رمزًا، 76076 مرشّحًا/تركيبة، OOS). التحقّق المدمج طابق EXP-007/008 بالضبط. الأمثل تحرّك إلى الركن الموسّع k4.5_tf0.2: NET PF 3.305 @24h / 3.716 @peak، win 61.0%، out/trd 0.7823، n=2336 — PF ×1.85 وout +69.6% مقابل ركن EXP-008، وأول تجاوز للصافي على baseline الخام EXP-003. k_sl↑ وtrigger_f↓ يحسّنان الصافي باطّراد والأثر يتضاعف؛ الأمثل مجددًا على ركن الشبكة ⇒ EXP-010 يوسّع أكثر. تحذير احترافي: نظام وقف واسع/إطلاق ضيّق يرفع win% عبر أرباح صغيرة مع وقف نادر الملامسة داخل 90ي ⇒ خطر ذيل مركّز/انحياز عيّنة؛ يلزم تحليل الخسارة القصوى + OOS زمني مستقل قبل أي اعتماد. توثيق تجريبي بلا تثبيت/ختم."
+    },
+    {
+      "id": "G1.64-DATA-PREV-90D",
+      "note": "طلب المستخدم تجهيز بيانات OOS زمني مستقل قبل EXP-010. جُمِعت نافذة 90 يوم سابقة متجاورة بنفس pipeline بالضبط (نفس universe_usdt_spot_full.json ونفس الفاصل 15m وBARS_NEEDED=8640 وCOMPLETE_MIN=8600 ونفس المصدر العام)، عبر تثبيت END_TIME = أقدم شمعة BTCUSDT في trend_data_90d_full ناقص 1ms ⇒ نافذة 2026-04-19..2026-07-18 (القاهرة) بلا أي تداخل مع نافذة EXP-009. النتيجة: 506 ملف، missing=0، err=0، usable_ge8000=400، full_8640=399، empty=63، young=106؛ VERDICT=COLLECTION_COMPLETE. صفر مخاطرة — داتا عامة فقط. لا ختم للمسار."
+    },
+    {
+      "id": "G1.64-EXP-010",
+      "note": "تحليل الذيل + OOS زمني مستقل لأفضل خلطة k4.5_tf0.2 بالمحرّك الواقعي نفسه (sanity طابق EXP-009 تمامًا). الذيل: أسوأ صفقة -29.66% حدث مفرد نادر، أقصى تراجع 35.59 نقطة مقابل +1827 نقطة صافٍ (~1.9%) ⇒ لا تآكل تراكمي. المتانة: على نافذة مستقلة (2026-04..07، 400 رمزًا) PF 3.238 (0.98×) win 59.4% out 0.7573 worst -13.5% maxDD 17.3، وتتفوّق على anchor k3.0_tf0.4 (PF 1.588) الذي تراجع هو نفسه. VERDICT=ليست صدفة/متين زمنيًا مشروط بإدارة الذيل. توثيق تجريبي بلا تثبيت إنتاجي وبلا ختم."
+    },
+    {
+      "id": "G1.64-EXP-011",
+      "note": "توسيع شبكي 4×4 خارج ركن EXP-009 بالمحرّك الواقعي + مقاييس ذيلية لكل تركيبة (sanity k4.5_tf0.2 طابق EXP-009). قمّة الخام k6.0_tf0.1 (PF 5.869) على الركن ⇒ قد تمتدّ، لكن بذيل أثقل (worst -39.49%، maxDD 39.49). الاكتشاف: الرافعة = trigger_f↓ (يرفع PF ويخفض maxDD بنفس أسوأ صفقة) لا k_sl↑ (يضخّم الذيل بمكسب هامشي). النقطة المُثلى مُخاطَرةً = k4.5_tf0.1 (PF 5.016، أسوأ صفقة = EXP-009، تراجع أقل). الذروة تلطّف الذيل (peak best worst -9.32%). توثيق تجريبي بلا تثبيت إنتاجي وبلا ختم."
+    },
+    {
+      "id": "G1.64-EXP-012-G-guard-mapping",
+      "note": "حارس BTC على دقّة 1m: بما أنّ window_seconds=3 و confirm_seconds=1 أقل من دقيقة، نُكيّفها على مستوى الشمعة: التقييم لكل شمعة BTC 1m؛ نافذة القياس = معدّل التغيّر خلال الدقيقة الأخيرة (ذروة الشمعة الحالية+السابقة مقابل إغلاق الشمعة الحالية) ⇒ ARM عند هبوط 1m ≥ drop_pct=0.8٪؛ التأكيد = الشمعة 1m التالية ما زال الهبوط ≥ drop_pct ⇒ TIGHTEN (window→lookback شمعة واحدة، confirm→شمعة واحدة)؛ الارتداد (<drop_pct) ⇒ العودة إلى IDLE (هزّة وهمية، لا فعل). عند TIGHTEN: ارفع ستوب العملة الواقي إلى max(الستوب الحالي, close_t*(1 - tighten_offset_pct/100=0.2٪)) — تضييق فقط لا تخفيف."
+    },
+    {
+      "ts": "2026-10-18T12:00:00Z",
+      "decision": "EXP-013 design = MTF (signal 15m / execution 1m)",
+      "note": "الإشارة/الترشيح على 15m لتنعيم الضجيج + تنفيذ دورة الصفقة كاملة (دخول/SL/TP/تتبّع/حارس) على 1m لدقّة كأنها حيّة. إعادة استخدام E8/E11/E12 حرفيًا لتوليد الحوض؛ صفر-مخاطرة §11.8؛ لا تثبيت إنتاجي/ختم بلا «نفّذ»."
+    },
+    {
+      "ts": "2026-10-18T19:10:00Z",
+      "decision": "EXP-014 design chosen under §6-3 (reversible, zero-risk §11.8) after «نفّذ»",
+      "note": "يختبر مباشرةً سببَي انهيار EXP-013: توسيع التتبّع trigger_f∈{0.4,0.7,1.0,1.5,2.0} عند k_sl=4.5 ثابت، ووضعا خروج TP-on/TP-off لعزل أثر TP، على دورة 1m الكاملة، بلا حارس (ثبت خموله EXP-012/013)، على W1/W2، مقارنةً بـbaseline EXP-003 + مرجع net15(15m) + EXP-013. السؤال: هل يُعيد توسيع التتبّع/إطفاء TP الصافيَ الدقائقي إلى الموجب؟"
+    },
+    {
+      "ts": "2026-10-18T19:30:00Z",
+      "decision": "EXP-015 design chosen under §6-3 (reversible, zero-risk §11.8) after «نفّذ»",
+      "note": "اختير النوع (أ) من قائمة EXP-015 = فلتر تأكيد دخول على 1m، لأنه يستهدف السبب الجذري المُثبت في EXP-013/014 (الوقف الفوري أمام ضجيج الدقيقة) وهو الرافعة غير المُختبَرة (التتبّع وTP استُنفدا). التعريف: N إغلاقات 1m صاعدة (close>open) متتالية قبل التعبئة؛ التعبئة عند open الشمعة التالية؛ عدم التأكيد خلال maxbars=10 ⇒ لا دخول (تُسقَط الصفقة). k_sl=4.5 ثابت، trigger_f∈{0.4,0.7} (0.4=baseline EXP-003، 0.7=أقل سوءًا في EXP-014)، TP-off (أنقى للتتبّع وأفضل في EXP-014)، N∈{0,1,2,3} حيث N=0 ضابط يعيد إنتاج EXP-014 TP-off بالضبط (استمرارية صفر-انحراف)، W1/W2. بُني على آخر تجربة EXP-014 (charter rule 4). صفر-مخاطرة، بلا تثبيت إنتاجي، بلا ختم/أرشفة."
+    },
+    {
+      "ts": "2026-10-18T20:20:00Z",
+      "decision": "EXP-015 result — entry-confirmation filter rejected OOS",
+      "note": "EXP-015 done+verified على القرص (exp_015_run.py + W1/W2 results.json + out.txt). الفرضية مرفوضة OOS: فلتر تأكيد الدخول لا يُنتج صافيًا موجبًا (كل out<0، PF<1). W1 أفضل تحسّن tf0.4 N1 +0.0221 (لكن tf0.7 يتضرّر بأي N)؛ W2 أفضل tf0.7 N1 +0.0355 (لكن tf0.4 يتضرّر). entry% يهبط ~44% عند N=3 والانزلاق يرتفع حتى +0.94%. الضابط N=0 = EXP-014 TP-off (صفر انحراف) وnet15 مطابق. الحافة 15m-only عبر ثلاث محاولات 1m."
+    },
+    {
+      "ts": "2026-10-18T20:30:00Z",
+      "decision": "EXP-016 executed by explicit «نفّذ» — direction (أ) widen initial 1m stop (k_sl)",
+      "note": "اختار المستخدم صراحةً الاتجاه (أ) من قائمة EXP-016: توسيع الستوب المبدئي على 1m (تخفيف الستوب لا التتبّع). التصميم: إبقاء توليد/اختيار 15m مطابقًا تمامًا (نفس حوض k4.5)، وتطبيق مضاعِف SL_MULT على sl_pct عند التنفيذ الدقائقي فقط (stop0=fill·(1−sl_pct·MULT/100))، والتتبّع peak·(1−trigger_pct/100) ثابت دون مساس. TP-off، بلا حارس. SL_MULT∈{1.0,1.25,1.5,2.0} حيث 1.0 ضابط يستدعي E13.resim_1m_full(tp_pct=0) = EXP-014 TP-off بالضبط (صفر انحراف). k_sl=4.5، trigger_f∈{0.4,0.7}، W1/W2. السؤال: هل يقصّ توسيعُ الستوب المبدئي الوقفَ الفوري أمام ضجيج الدقيقة ويُعيد الصافي للموجب، وبأي كلفة في أسوأ صفقة/maxDD؟ صفر-مخاطرة §11.8، بلا تثبيت إنتاجي، بلا ختم/أرشفة."
+    },
+    {
+      "ts": "2026-10-18T20:55:00Z",
+      "decision": "EXP-016 result — initial-stop widening rejected OOS",
+      "note": "EXP-016 done+verified على القرص (exp_016_run.py + W1/W2 results.json + out.txt). الفرضية مرفوضة OOS: توسيع الستوب المبدئي لا يُنتج صافيًا موجبًا (كل out<0، PF<1). W1: يضرّ قليلًا باطّراد (tf0.4 −0.1033→−0.1087؛ tf0.7 −0.0256→−0.0368). W2: يحسّن قليلًا (أفضل tf0.4 MULT1.5 −0.1586 +0.0067؛ tf0.7 MULT1.25 −0.2075 +0.0063). win% ثابت عبر كل المضاعِفات ⇒ التتبّع لا الستوب المبدئي يحكم الوقف. الضابط MULT=1.0 = EXP-014 TP-off وnet15 مطابق."
+    },
+    {
+      "ts": "2026-10-19T06:56:20.138083+00:00",
+      "decision": "EXP-018 design",
+      "note": "فلتر السيولة = كون فرعي ساكن max_daily_qv>=25M (يخدم هدف خفض الانزلاق ويحدّ زمن التشغيل ~35-40د)؛ توسيع الشبكة شبه مجّاني (الكلفة المهيمنة = تحميل 1m + إحصاءات الطيّات المستقلّة عن التركيبات، بدليل سجلّ EXP-017 W1=3136s لتركيبتين)؛ المقياس الأساسي net+slip لأن هدف البند رفع الصافي فوق الانزلاق per-سيولة؛ المحرّك مُعاد استخدامه حرفيًّا من EXP-017 لضمان صفر-انحراف في التوليد (قابلية مقارنة)."
+    },
+    {
+      "ts": "2026-10-19T12:14:00Z",
+      "decision": "EXP-019 result (post safety-fix) — adaptive trailing beats fixed",
+      "note": "عيب سلامة في resim_1m_v (رفع الستوب المتحرّك كل شمعة قبل أوّل قمّة جديدة ⇒ تضخيم الصافي وكسر ضابط fixed) اكتُشِف بفحص §9.4 (fixed لم يطابق EXP-018)؛ أُصلح برفع الستوب داخل شرط «قمّة جديدة» فقط (if hi>peak، مطابق E17/E18)؛ الإثبات _difftest2=0 اختلاف وfixed≡EXP-018 حرفيًّا في النافذتين. أُعيد التشغيل الكامل المصحّح. النتيجة: breakeven وprofit_ladder (شبه متطابقين) يرفعان net+slip/PF/profit_lock فوق fixed في W1/W2 لكل الأبطال بفواصل bootstrap موجبة (p(>0)=1.0)؛ الأقوى k5.0_tf0.15+breakeven؛ سقف TP {10,20}% هامشي؛ atr_proxy الأسوأ. توثيق كامل (EXPERIMENTS_LOG/REPORTS/index n=20). لا تثبيت إنتاجي/ختم بلا «نفّذ»."
+    },
+    {
+      "ts": "2026-10-19T13:05:00Z",
+      "decision": "EXP-020 (بأمر «نفّذ») — event-study TUT/BANK على أيام الترند + دخول من نص الترند",
+      "note": "المستخدم حدّد عملتين (TUTUSDT 08-08/08-09، BANKUSDT 18-27 يوليو) في أيام ترند >120%، نافذة القاهرة 10:00→03:00، ودخولًا «من نص الترند» (بوّابة ركض مسبق سببية M=30% من قاع الجلسة الجاري). أُعيد استخدام محرّك EXP-019 حرفيًّا والجديد قناع الدخول السببي فقط. النتيجة تؤكّد EXP-019: breakeven≈profit_ladder>fixed>atr (البطل k5.0+breakeven +0.8137 net+slip، يتفوّق على fixed بـ+0.128، CIs>0 p=1.0)؛ سقف TP هامشي؛ regret ~15% على القطع-مكافئ. سُجِّل تحفّظ منهجي صريح (عيّنة صغيرة/أيام منتقاة ⇒ دراسة حالة لا متانة). لا تثبيت/ختم بلا «نفّذ»."
+    },
+    {
+      "ts": "2026-10-19T13:20:00Z",
+      "decision": "EXP-020b (بأمر «نفّذ») — مسح أفق التتبّع {16,32,60}م على event-study EXP-020",
+      "note": "المستخدم طلب نسخة EXP-020b بأفق تتبّع أطول لقياس أثره على regret خصوصًا TUT 08-09 (+235%). نفس المحرّك والقناع؛ التغيير الوحيد E19.HORIZON_1M. النتيجة: الأفق الأطول يرفع الربح المطلق باطّراد (be: +0.8137→+0.8948، PF 3.40→4.31) ويقلّل الخروج الاضطراري، لكن cap ثابت ~0.45 وregret يرتفع (متحيّز بنافذة post_runup المتغيّرة عبر الآفاق) ⇒ الأفق وحده لا يحلّ give-back؛ يلزم تتبّع متكيّف مع نسبة الموجة. سُجّل التحيّز القياسي صراحةً. لا تثبيت/ختم بلا «نفّذ»."
+    },
+    {
+      "id": "G1.64-EXP-021",
+      "note": "تتبّع متكيّف مع حجم الموجة (wave_adaptive): مسافة التتبّع% = wave_k·ATR%_live محصورة + أرضية قفل تصاعدية lf=min(lock_cap, lock_base+lock_slope·g). على TUT/BANK: wadapt_tight يرفع cap 0.387→0.606 وyخفض loss_below_entry 27.7%→1.4% (المقايضة: حافة مطلقة أصغر على الموجات الصغيرة). ترتيب tight>bal>ride. دراسة حالة لا متانة. لا تثبيت/ختم بلا «نفّذ»."
+    },
+    {
+      "id": "G1.64-EXP-022",
+      "note": "تعميم wadapt_tight على كون واسع (≥25M) كل الأيام، W1(144)/W2(123 OOS)، maxpos∈{1,2}، bootstrap: يتفوّق على fixed/be_tpoff في كل مقياس وكل نافذة (net+slip أعلى، PF 2.7–3.2، win 60–61%، cap ~0.61 مقابل 0.37–0.43، lossBE 3.7–6.2% مقابل 27–29%)، p(>0)=1.00. المتانة تتأكّد. لا تثبيت/ختم بلا «نفّذ»."
+    },
+    {
+      "id": "G1.64-EXP-023-A",
+      "note": "حساسية/استقرار (الجزء A): 20 إزاحة OFAT + 8 joint على W1/W2 — هضبة مؤكّدة (C1 CI>0 20/20، C2 cap≥0.50 20/20، joint 8/8). ستة محاور شبه-مسطّحة ⇒ قيم البطل ليست overfit. lock_base المحور الوحيد عالي-الكسب لكنه رتيب صاعد ⇒ رافعة قابلة للتنفيذ. forward W3 (الجزء B) مؤجّل بطلب المستخدم. لا تثبيت/ختم بلا «نفّذ»."
+    },
+    {
+      "id": "G1.64-EXP-024",
+      "note": "تشبّع رافعة lock_base (0.60→0.95) على W1+W2، بوّابة صفر-انحراف vs EXP-022 PASS ✓: لا تشبّع داخل المدى — رتيبة صاعدة في النافذتين (W1 net+slip +0.4026→+0.6490 cap 0.610→0.955؛ W2 +0.3892→+0.6117 cap 0.612→0.957)، regret يهبط مع رفع القفل، lossBE ثابت؛ أفضل مشترك 0.95 (متوسّط net+slip +0.6303). H1 مرفوضة. seen-data ⇒ يلزم forward W3 قبل اعتماد أي lock_base عالٍ. عتبة الإطلاق سُجِّلت في الفهرس (forward_w3_launch_gate). لا تثبيت/ختم بلا «نفّذ»."
+    },
+    {
+      "id": "G1.64-EXP-024B",
+      "note": "عزل السقف (cap=0.98 ثابت): lock_base وحده يرفع net+slip/cap باطّراد في W1/W2 ⇒ الرافعة هي lock_base لا lock_cap؛ فحص حتمية iso0.95≟lb0.95_cap0.98. seen-data."
+    },
+    {
+      "id": "G1.64-EXP-024C",
+      "note": "تحقّق forward نقيّ على W3 (holdout prevprev90d لم تُرَ): بوّابة صفر-انحراف PASS ✓؛ wadapt_tight يتفوّق على fixed/be في net+slip وcap، CI>0 p=1.00، lossBE 4.4%؛ الحافة ازدادت خارج العيّنة (W3 +0.5284 > W1/W2). بوّابة forward_w3_launch_gate مقلوبة إلى MET (G1..G6 PASS). التحيّز الزمني محسوم؛ المتبقّي live-forward + «نفّذ» + طرح مرحلي. لا تثبيت/Live بلا «نفّذ»."
+    }
+  ],
+  "evidence_partial": "EXP-020b done على القرص: exp_020b_run.py + exp_020b_results.json + exp_020b_out.txt. مسح HORIZON∈{16,32,60}؛ الإدخالات متطابقة (kept 266/172). k5.0/be_tpoff net+slip 16=+0.8137/32=+0.8392/60=+0.8948 (PF 3.40/3.66/4.31)، cap ثابت ~0.46، regret 8.9/17.2/23.4 (متحيّز بنافذة post_runup). TUT08-09: meanNS +1.138/+1.192/+1.321، regret 15.4/21.5/28.6. fixed يتبع نفس النمط. الخلاصة: الأفق يرفع الربح المطلق لا يحلّ give-back.",
+  "note": "مسار G1.64 مفتوح ومركون للتطوير المستقبلي. علميًّا: بوّابة forward W3 مُجتازة (EXP-024C على holdout تاريخي؛ الحافة صمدت وازدادت خارج العيّنة؛ G1..G6 PASS)، وEXP-024B عزل أثبت أنّ lock_base هو الرافعة. السجلّ أصبح متّسقًا مع القرص (EXP-024/024B/024C موثّقة؛ الفهرس n=28؛ البوّابة MET). المتبقّي تشغيليّ لا علميّ: live-forward + «نفّذ» + طرح مرحلي قبل أي رأس مال حيّ. صفر-مخاطرة حتى الآن؛ لا ختم/أرشفة/تثبيت إنتاجي إلا بأمر صريح.",
+  "updated_at": "2026-10-20T10:00:00Z",
+  "side_item_active": {
+    "id": "G1.65",
+    "status": "in_progress (increment #1 done)",
+    "note": "dynamic_exit + ╪¿╪▒┘ê┘ü╪º┘è┘ä ╪º┘ä╪¿╪╖┘ä + config/flag (╪º┘ü╪¬╪▒╪º╪╢┘è=╪¿┘ä╪º ╪¬╪║┘è┘è╪▒) ┘à┘Å╪╖╪¿┘Ä┘æ┘é╪⌐ ┘ê┘à┘Å╪«╪¬╪¿┘Ä╪▒╪⌐╪¢ ┘â╪º┘à┘ä ╪º┘ä╪│┘ê┘è╪¬ 1014 OK. ╪º┘ä┘à╪¬╪¿┘é┘æ┘è increment #2 (┘ê╪╡┘ä reposition/monitoring ╪«┘ä┘ü flag) ╪½┘à live-forward+┬½┘å┘ü┘æ╪░┬╗. G1.64 ╪¬╪¿┘é┘ë ╪º┘ä╪ú╪│╪º╪│ ╪º┘ä┘à┘ü╪¬┘ê╪¡ active:true"
+  }
 }
