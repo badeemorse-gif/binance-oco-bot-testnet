@@ -619,3 +619,30 @@ base_url=https://data-api.binance.vision  current_sl=2.0%  atr_win=10
 
 RESULT: ALL symbols produced live ATR% > 0
 
+===== run #24 @ 2026-10-24T17:52:37Z =====
+=== G1.65 shadow-mode probe (REAL data, read-only) ===
+base_url=https://data-api.binance.vision  current_sl=2.0%  atr_win=10
+
+-- BTCUSDT  last=80273.5900  liveATR%=0.048819 --
+    runUp%  trailDist%  adaptEffSL%  divergence%
+      0.50      0.5000      -0.4100      -2.4100
+      1.00      0.5000      -0.8400      -2.8400
+      2.00      0.5000      -1.7600      -3.7600
+      3.00      0.5000      -2.6400      -4.6400
+
+-- ETHUSDT  last=2324.8000  liveATR%=0.088481 --
+    runUp%  trailDist%  adaptEffSL%  divergence%
+      0.50      0.5000      -0.4100      -2.4100
+      1.00      0.5000      -0.8400      -2.8400
+      2.00      0.5000      -1.7600      -3.7600
+      3.00      0.5000      -2.6400      -4.6400
+
+-- SOLUSDT  last=100.5500  liveATR%=0.088513 --
+    runUp%  trailDist%  adaptEffSL%  divergence%
+      0.50      0.5000      -0.4100      -2.4100
+      1.00      0.5000      -0.8400      -2.8400
+      2.00      0.5000      -1.7600      -3.7600
+      3.00      0.5000      -2.6400      -4.6400
+
+RESULT: ALL symbols produced live ATR% > 0
+
